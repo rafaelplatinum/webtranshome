@@ -1,0 +1,37 @@
+syntax = "v1"
+
+info (
+	title:   "Transhome API"
+	desc:    "Website Transhome Muka 1: Katalog & Membership"
+	version: "v1"
+)
+
+// =====================================================================
+// Aturan:
+// - Setiap group di bawah menghasilkan folder internal/handler/<group>
+//   dan internal/logic/<group>. Nama group = nama modul di internal/modules.
+// - Type di file ini hanya untuk request/response HTTP (internal/types).
+//   Input/output use case ada di modules/<modul>/application/dto.
+// =====================================================================
+
+type HealthResp {
+	Status   string `json:"status"`
+	Database string `json:"database"`
+}
+
+@server (
+	prefix: /api/v1
+)
+service transhome-api {
+	@doc "Cek status server dan koneksi database"
+	@handler HealthHandler
+	get /health returns (HealthResp)
+}
+
+// Group berikut ditambahkan saat endpoint-nya mulai dibuat:
+//   group: identityaccess  (login, register, lupa password, role, menu)
+//   group: catalog         (produk, kategori, brand, ruangan)
+//   group: membership      (profil member, poin)
+//   group: content         (artikel, banner, pengaturan situs)
+//   group: audit           (log aktivitas admin)
+//   group: integration     (status sync Qontak)

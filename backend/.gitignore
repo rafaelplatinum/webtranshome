@@ -1,0 +1,19 @@
+# Rahasia
+.env
+
+# Hasil build
+/bin/
+*.exe
+
+# Editor
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Binary hasil go build di folder backend
+/worker
+/transhome
