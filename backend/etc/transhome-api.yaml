@@ -1,0 +1,12 @@
+Name: transhome-api
+Host: 0.0.0.0
+Port: 8888
+
+# Diisi dari environment variable (lihat .env.example).
+# Muat dengan conf.MustLoad(file, &c, conf.UseEnv()).
+Database:
+  DataSource: ${DATABASE_URL}
+
+Qontak:
+  BaseURL: ${QONTAK_BASE_URL}
+  Token: ${QONTAK_API_TOKEN}
