@@ -7,6 +7,10 @@ Port: 8888
 Database:
   DataSource: ${DATABASE_URL}
 
+Auth:
+  AccessSecret: ${JWT_SECRET}
+  AccessExpire: 86400 # Token berlaku 24 jam
+
 Qontak:
   BaseURL: ${QONTAK_BASE_URL}
   Token: ${QONTAK_API_TOKEN}
