@@ -17,7 +17,7 @@ Penjelasan struktur dan aturan arsitektur: [docs/ARCHITECTURE.md](docs/ARCHITECT
 ```bash
 cd backend
 cp .env.example .env        # lalu isi DATABASE_URL dan lainnya
-make migrate-up             # buat tabel di database CRM_TH
+make migrate-up             # buat tabel di database transhome
 make gen                    # generate handler, logic, types, dan transhome.go
 go mod tidy                 # unduh dependency go-zero
 make run                    # server jalan di http://localhost:8888

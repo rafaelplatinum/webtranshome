@@ -1,7 +1,7 @@
 # Arsitektur Backend Transhome
 
 Backend memakai **DDD modular monolith** di atas framework **go-zero**.
-Satu aplikasi, satu database PostgreSQL (`CRM_TH`, schema `"CRM_Schema"`),
+Satu aplikasi, satu database PostgreSQL (`transhome`, schema `crm_schema`),
 dibagi menjadi beberapa modul (bounded context) yang tidak saling mengakses
 tabel milik modul lain.
 

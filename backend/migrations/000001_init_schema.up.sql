@@ -3,15 +3,14 @@
 -- Dipakai oleh golang-migrate (make migrate-up) atau dijalankan manual di
 -- DBeaver -> Execute SQL Script (Alt+X).
 -- Aman dijalankan ulang (pakai IF NOT EXISTS / ON CONFLICT).
--- Database: CRM_TH | Schema: "CRM_Schema"
--- Nama huruf besar-kecil WAJIB pakai tanda kutip ganda: "CRM_Schema"
+-- Database: transhome | Schema: crm_schema
 -- =====================================================================
 
-CREATE SCHEMA IF NOT EXISTS "CRM_Schema";
-SET search_path TO "CRM_Schema";
+CREATE SCHEMA IF NOT EXISTS crm_schema;
+SET search_path TO crm_schema;
 
 -- Fungsi untuk auto-update kolom updated_at (pengganti ON UPDATE CURRENT_TIMESTAMP di MySQL)
-CREATE OR REPLACE FUNCTION "CRM_Schema".set_updated_at()
+CREATE OR REPLACE FUNCTION crm_schema.set_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
     NEW.updated_at = CURRENT_TIMESTAMP;
@@ -287,9 +286,9 @@ BEGIN
         'categories','brands','rooms','products',
         'banners','articles','site_settings','qontak_contacts'
     ] LOOP
-        EXECUTE format('DROP TRIGGER IF EXISTS trg_%1$s_updated_at ON "CRM_Schema".%1$I', t);
-        EXECUTE format('CREATE TRIGGER trg_%1$s_updated_at BEFORE UPDATE ON "CRM_Schema".%1$I
-                        FOR EACH ROW EXECUTE FUNCTION "CRM_Schema".set_updated_at()', t);
+        EXECUTE format('DROP TRIGGER IF EXISTS trg_%1$s_updated_at ON crm_schema.%1$I', t);
+        EXECUTE format('CREATE TRIGGER trg_%1$s_updated_at BEFORE UPDATE ON crm_schema.%1$I
+                        FOR EACH ROW EXECUTE FUNCTION crm_schema.set_updated_at()', t);
     END LOOP;
 END $$;
 

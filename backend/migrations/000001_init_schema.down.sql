@@ -1,8 +1,8 @@
 -- Rollback migration 000001: menghapus semua tabel Muka 1.
 -- PERHATIAN: semua data di tabel-tabel ini ikut terhapus.
--- Schema "CRM_Schema" sendiri tidak dihapus.
+-- Schema crm_schema sendiri tidak dihapus.
 
-SET search_path TO "CRM_Schema";
+SET search_path TO crm_schema;
 
 DROP TABLE IF EXISTS
     sync_logs,
@@ -28,4 +28,4 @@ DROP TABLE IF EXISTS
     users
 CASCADE;
 
-DROP FUNCTION IF EXISTS "CRM_Schema".set_updated_at();
+DROP FUNCTION IF EXISTS crm_schema.set_updated_at();
