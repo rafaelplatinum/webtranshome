@@ -19,6 +19,15 @@ type HealthResp {
 	Database string `json:"database"`
 }
 
+type LoginRequest {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+type LoginResponse {
+	AccessToken string `json:"accessToken"`
+}
+
 @server (
 	prefix: /api/v1
 )
@@ -26,6 +35,9 @@ service transhome-api {
 	@doc "Cek status server dan koneksi database"
 	@handler HealthHandler
 	get /health returns (HealthResp)
+
+	@handler LoginHandler
+	post /auth/login (LoginRequest) returns (LoginResponse)
 }
 
 // Group berikut ditambahkan saat endpoint-nya mulai dibuat:
