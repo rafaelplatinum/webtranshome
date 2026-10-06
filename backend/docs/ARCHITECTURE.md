@@ -117,6 +117,9 @@ kebijakan keamanan.
 
 ### Kondisi implementasi saat ini
 
+- Kerangka awal RBAC sudah disiapkan di domain `role`, `permission`, dan `menu`,
+  serta query aplikasi `CheckPermission`. Kontrak repository permission berada di
+  domain; adapter PostgreSQL dan middleware belum dibuat.
 - Login memeriksa email/password, status aktif, dan role staf/admin aktif
   (`SUPER_ADMIN`, `ADMIN_KATALOG`, `ADMIN_MEMBERSHIP`, atau `ADMIN_KONTEN`)
   sebelum menerbitkan token admin. Gerbang ini hanya menentukan kelayakan masuk
