@@ -18,7 +18,7 @@ backend/
 └── internal/
     ├── config/                Struct konfigurasi (dibuat goctl)
     ├── svc/                   ServiceContext: tempat merakit repository & service
-    ├── middleware/            Auth JWT, cek permission, logging
+    ├── middleware/            Adapter HTTP untuk autentikasi JWT, otorisasi, logging
     ├── types/                 Request/response HTTP (dibuat goctl dari .api)
     ├── handler/<modul>/       Handler HTTP (dibuat goctl)
     ├── logic/<modul>/         Penghubung HTTP -> use case (TIPIS, tanpa aturan bisnis)
@@ -64,14 +64,73 @@ Folder `listener/` dan `port/` hanya dibuat di modul yang memang membutuhkannya.
 ## Alur request
 
 ```
-HTTP -> handler/<modul> -> logic/<modul> -> modules/<modul>/application/command|query
-                                                   |
-                                                   v
-                                        domain (entity + interface repository)
-                                                   ^
-                                                   | implementasi
-                                        infrastructure/postgres
+Request publik:
+HTTP -> handler -> logic -> application use case -> domain/repository port
+                                                   ^                 |
+                                                   |                 v
+                                    infrastructure adapter <- PostgreSQL
+
+Request terlindungi:
+HTTP -> authentication middleware -> authorization middleware -> handler -> logic
+             |                               |
+             v                               v
+       verifikasi JWT              application query/policy
+                                             |
+                                             v
+                                    permission repository
 ```
+
+## Authentication dan authorization
+
+Authentication dan authorization adalah tanggung jawab berbeda:
+
+- **Authentication** membuktikan identitas pemanggil. Login admin mencari akun,
+  memverifikasi password terhadap hash bcrypt, lalu menerbitkan access token JWT.
+- **Authorization** memutuskan apakah identitas yang sudah terautentikasi boleh
+  menjalankan aksi tertentu. Keputusan dibuat per route/aksi berdasarkan permission,
+  bukan hanya karena pengguna berhasil login atau memiliki token.
+
+### Alur yang direncanakan untuk request terlindungi
+
+1. Route menyatakan permission code yang diwajibkan, misalnya permission untuk
+   membaca katalog. Permission code adalah identifier stabil dari konfigurasi/data,
+   bukan teks pesan yang ditampilkan kepada pengguna.
+2. Authentication middleware mengambil bearer token dan memverifikasi signature
+   dengan algoritma yang diizinkan, expiration, serta klaim identitas. Middleware
+   menaruh principal terverifikasi ke request context. Klaim dari token yang belum
+   diverifikasi tidak boleh dipakai.
+3. Authorization middleware mengambil principal dan permission yang diwajibkan
+   route, lalu meminta keputusan kepada application query/policy Identity & Access.
+4. Application layer memakai repository interface milik domain. Adapter PostgreSQL
+   Identity & Access membaca relasi `user_roles`, `roles`, `role_permissions`, dan
+   `permissions`, termasuk status aktif yang relevan.
+5. Middleware melanjutkan request hanya jika permission diberikan; jika tidak,
+   request ditolak. Ketiadaan/kegagalan autentikasi dibedakan dari penolakan akses.
+
+Middleware adalah adapter HTTP: ia boleh membaca request dan menulis response,
+tetapi tidak memuat query SQL atau aturan role/permission. Handler dan logic tetap
+tipis. Aturan keputusan berada di application/domain; akses tabel hanya berada pada
+adapter PostgreSQL dalam modul Identity & Access. Permission tidak dipercaya dari
+body request atau klaim role yang dikirim client. Jika permission di-cache kelak,
+aturan invalidasi cache harus memastikan perubahan role/permission berlaku sesuai
+kebijakan keamanan.
+
+### Kondisi implementasi saat ini
+
+- Login memeriksa email/password, status aktif, dan role staf/admin aktif
+  (`SUPER_ADMIN`, `ADMIN_KATALOG`, `ADMIN_MEMBERSHIP`, atau `ADMIN_KONTEN`)
+  sebelum menerbitkan token admin. Gerbang ini hanya menentukan kelayakan masuk
+  ke aplikasi administratif; tidak memilih API atau aksi yang boleh diakses.
+- JWT saat ini adalah access token HS256 dengan expiration; belum ada refresh token
+  atau mekanisme logout/revocation.
+- Authentication middleware dan authorization per permission **belum
+  diimplementasikan**. Karena itu, selain endpoint login, route belum mendapat
+  perlindungan dari middleware autentikasi/otorisasi.
+- Authorization tetap terpisah dan nantinya membatasi API per route/aksi
+  berdasarkan role/permission, misalnya katalog, membership, atau akses
+  administratif yang lebih luas.
+- Detail kebijakan logout/token revocation dan penyimpanan status sesi masih perlu
+  diputuskan sebelum implementasi.
 
 ## 5 aturan wajib
 

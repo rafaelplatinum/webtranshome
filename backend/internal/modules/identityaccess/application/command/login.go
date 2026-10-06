@@ -54,7 +54,7 @@ func (l *Login) Execute(ctx context.Context, command LoginCommand) (LoginResult,
 		return LoginResult{}, err
 	}
 
-	if !account.IsActive || !account.IsAdmin() || account.PasswordHash == "" {
+	if !account.IsActive || !account.HasStaffRole || account.PasswordHash == "" {
 		return LoginResult{}, ErrInvalidCredentials
 	}
 

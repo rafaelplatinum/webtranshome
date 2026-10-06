@@ -48,7 +48,7 @@ func TestLoginHandlerReturnsTokenForValidAdmin(t *testing.T) {
 		Email:        "admin@example.test",
 		PasswordHash: "stored-hash",
 		IsActive:     true,
-		RoleCodes:    []string{user.RoleAdminCatalog},
+		HasStaffRole: true,
 	}, nil, "signed-token", nil)
 
 	request := httptest.NewRequest(http.MethodPost, "/api/v1/auth/login", bytes.NewBufferString(
@@ -77,7 +77,7 @@ func TestLoginHandlerMapsInvalidCredentialsToUnauthorized(t *testing.T) {
 		ID:           42,
 		PasswordHash: "stored-hash",
 		IsActive:     true,
-		RoleCodes:    []string{user.RoleSuperAdmin},
+		HasStaffRole: true,
 	}, port.ErrPasswordMismatch, "", nil)
 
 	request := httptest.NewRequest(http.MethodPost, "/api/v1/auth/login", bytes.NewBufferString(
@@ -120,7 +120,7 @@ func TestLoginHandlerDoesNotExposeInternalErrors(t *testing.T) {
 		ID:           42,
 		PasswordHash: "stored-hash",
 		IsActive:     true,
-		RoleCodes:    []string{user.RoleSuperAdmin},
+		HasStaffRole: true,
 	}, nil, "", errors.New("token signing failure"))
 	request := httptest.NewRequest(http.MethodPost, "/api/v1/auth/login", bytes.NewBufferString(
 		`{"email":"admin@example.test","password":"submitted-password"}`,

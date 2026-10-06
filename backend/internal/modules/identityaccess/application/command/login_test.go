@@ -41,7 +41,7 @@ func (s *tokenIssuerStub) Issue(_ context.Context, userID int64) (string, error)
 	return s.token, s.err
 }
 
-func TestLoginExecuteIssuesTokenForActiveAdmin(t *testing.T) {
+func TestLoginExecuteIssuesTokenForActiveStaffUser(t *testing.T) {
 	verifier := &passwordVerifierStub{}
 	issuer := &tokenIssuerStub{token: "signed-token"}
 	login := NewLogin(
@@ -51,7 +51,7 @@ func TestLoginExecuteIssuesTokenForActiveAdmin(t *testing.T) {
 				Email:        "admin@example.test",
 				PasswordHash: "stored-hash",
 				IsActive:     true,
-				RoleCodes:    []string{user.RoleAdminCatalog},
+				HasStaffRole: true,
 			},
 		},
 		verifier,
@@ -76,15 +76,15 @@ func TestLoginExecuteIssuesTokenForActiveAdmin(t *testing.T) {
 	}
 }
 
-func TestLoginExecuteRejectsNonAdminWithoutVerifyingPassword(t *testing.T) {
+func TestLoginExecuteRejectsInactiveUser(t *testing.T) {
 	verifier := &passwordVerifierStub{}
 	login := NewLogin(
 		userRepositoryStub{
 			account: user.User{
 				ID:           42,
 				PasswordHash: "stored-hash",
-				IsActive:     true,
-				RoleCodes:    []string{"MEMBER"},
+				IsActive:     false,
+				HasStaffRole: true,
 			},
 		},
 		verifier,
@@ -99,7 +99,33 @@ func TestLoginExecuteRejectsNonAdminWithoutVerifyingPassword(t *testing.T) {
 		t.Fatalf("Execute() error = %v, want ErrInvalidCredentials", err)
 	}
 	if verifier.hash != "" {
-		t.Fatal("password verifier was called for a non-admin user")
+		t.Fatal("password verifier was called for an inactive user")
+	}
+}
+
+func TestLoginExecuteRejectsUserWithoutStaffRole(t *testing.T) {
+	verifier := &passwordVerifierStub{}
+	login := NewLogin(
+		userRepositoryStub{
+			account: user.User{
+				ID:           42,
+				PasswordHash: "stored-hash",
+				IsActive:     true,
+			},
+		},
+		verifier,
+		&tokenIssuerStub{},
+	)
+
+	_, err := login.Execute(context.Background(), LoginCommand{
+		Email:    "customer@example.test",
+		Password: "submitted-password",
+	})
+	if !errors.Is(err, ErrInvalidCredentials) {
+		t.Fatalf("Execute() error = %v, want ErrInvalidCredentials", err)
+	}
+	if verifier.hash != "" {
+		t.Fatal("password verifier was called for a user without a staff role")
 	}
 }
 
@@ -112,7 +138,7 @@ func TestLoginExecuteRejectsInvalidPassword(t *testing.T) {
 				ID:           42,
 				PasswordHash: "stored-hash",
 				IsActive:     true,
-				RoleCodes:    []string{user.RoleSuperAdmin},
+				HasStaffRole: true,
 			},
 		},
 		verifier,
@@ -139,7 +165,7 @@ func TestLoginExecutePropagatesPasswordVerifierFailures(t *testing.T) {
 				ID:           42,
 				PasswordHash: "stored-hash",
 				IsActive:     true,
-				RoleCodes:    []string{user.RoleSuperAdmin},
+				HasStaffRole: true,
 			},
 		},
 		&passwordVerifierStub{err: verifierErr},

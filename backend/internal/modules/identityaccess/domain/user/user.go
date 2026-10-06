@@ -1,7 +1,5 @@
 package user
 
-import "strings"
-
 const (
 	RoleSuperAdmin      = "SUPER_ADMIN"
 	RoleAdminCatalog    = "ADMIN_KATALOG"
@@ -14,22 +12,14 @@ type User struct {
 	Email        string
 	PasswordHash string
 	IsActive     bool
-	RoleCodes    []string
+	HasStaffRole bool
 }
 
-func (u User) IsAdmin() bool {
-	for _, roleCode := range u.RoleCodes {
-		if roleCode == RoleSuperAdmin ||
-			roleCode == RoleAdminCatalog ||
-			roleCode == RoleAdminMembership ||
-			roleCode == RoleAdminContent {
-			return true
-		}
-
-		if strings.HasPrefix(roleCode, "ADMIN_") {
-			return true
-		}
+func StaffRoleCodes() []string {
+	return []string{
+		RoleSuperAdmin,
+		RoleAdminCatalog,
+		RoleAdminMembership,
+		RoleAdminContent,
 	}
-
-	return false
 }

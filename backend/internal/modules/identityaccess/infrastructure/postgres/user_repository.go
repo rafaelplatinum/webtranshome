@@ -31,26 +31,30 @@ func (r *UserRepository) FindForAuthentication(ctx context.Context, email string
 		return user.User{}, err
 	}
 
-	var roles []struct {
-		Code string `db:"code"`
-	}
-	const query = `
-		SELECT DISTINCT r.code
-		FROM crm_schema.user_roles ur
-		JOIN crm_schema.roles r ON r.id = ur.role_id
-		WHERE ur.user_id = $1 AND r.is_active = TRUE`
-	if err := r.connection.QueryRowsCtx(ctx, &roles, query, record.Id); err != nil {
-		return user.User{}, err
-	}
-
-	roleCodes := make([]string, 0, len(roles))
-	for _, role := range roles {
-		roleCodes = append(roleCodes, role.Code)
-	}
-
 	passwordHash := ""
 	if record.PasswordHash.Valid {
 		passwordHash = record.PasswordHash.String
+	}
+
+	roleCodes := user.StaffRoleCodes()
+	query := `SELECT EXISTS (
+		SELECT 1
+		FROM crm_schema.user_roles ur
+		JOIN crm_schema.roles r ON r.id = ur.role_id
+		WHERE ur.user_id = $1 AND r.is_active = TRUE AND r.code IN ($2, $3, $4, $5)
+	)`
+	var hasStaffRole bool
+	if err := r.connection.QueryRowCtx(
+		ctx,
+		&hasStaffRole,
+		query,
+		record.Id,
+		roleCodes[0],
+		roleCodes[1],
+		roleCodes[2],
+		roleCodes[3],
+	); err != nil {
+		return user.User{}, err
 	}
 
 	return user.User{
@@ -58,7 +62,7 @@ func (r *UserRepository) FindForAuthentication(ctx context.Context, email string
 		Email:        record.Email,
 		PasswordHash: passwordHash,
 		IsActive:     record.IsActive,
-		RoleCodes:    roleCodes,
+		HasStaffRole: hasStaffRole,
 	}, nil
 }
 
