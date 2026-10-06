@@ -11,7 +11,7 @@ tabel milik modul lain.
 backend/
 ├── api/transhome.api          Definisi endpoint HTTP (sumber untuk goctl)
 ├── etc/transhome-api.yaml     Konfigurasi server
-├── migrations/                File SQL golang-migrate (000001_init_schema.up/down.sql)
+├── migrations/                File SQL golang-migrate (000001_init_schema, 000002_admin_refresh_sessions)
 ├── cmd/worker/                Proses background (sync Qontak, retry, notifikasi)
 ├── transhome.go               Entry point API (dibuat oleh `make gen`)
 ├── docs/ARCHITECTURE.md       Dokumen ini
@@ -29,7 +29,7 @@ backend/
     │   ├── mailer/            Kirim email
     │   └── storage/           Simpan foto produk & datasheet PDF
     └── modules/
-        ├── identityaccess/    users, password_resets, roles, menus, permissions, user_roles, role_permissions
+        ├── identityaccess/    users, password_resets, admin_refresh_sessions, roles, menus, permissions, user_roles, role_permissions
         ├── membership/        member_profiles, point_transactions
         ├── catalog/           categories, brands, products (+ product_images, product_rooms), rooms
         ├── content/           articles, banners, site_settings
@@ -121,8 +121,12 @@ kebijakan keamanan.
   (`SUPER_ADMIN`, `ADMIN_KATALOG`, `ADMIN_MEMBERSHIP`, atau `ADMIN_KONTEN`)
   sebelum menerbitkan token admin. Gerbang ini hanya menentukan kelayakan masuk
   ke aplikasi administratif; tidak memilih API atau aksi yang boleh diakses.
-- JWT saat ini adalah access token HS256 dengan expiration; belum ada refresh token
-  atau mekanisme logout/revocation.
+- Kebijakan token yang disepakati: access token JWT HS256 berlaku 15 menit dan
+  refresh session admin berlaku absolut 7 hari. Migration `000002` menyiapkan
+  tabel untuk menyimpan hash refresh token, bukan token mentah, serta mendukung
+  rotasi dan revocation; runtime lifecycle belum diimplementasikan.
+- Cookie refresh token, endpoint refresh/logout, dan penerbitan pasangan token
+  belum diimplementasikan. Konfigurasi access token yang berjalan masih 24 jam.
 - Authentication middleware dan authorization per permission **belum
   diimplementasikan**. Karena itu, selain endpoint login, route belum mendapat
   perlindungan dari middleware autentikasi/otorisasi.
