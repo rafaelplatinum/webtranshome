@@ -1,0 +1,12 @@
+node_modules/
+dist/
+*.local
+.env
+.env.*
+!.env.example
+
+# Cache Python dari skill ui-ux-pro-max
+__pycache__/
+
+# Dokumen bisnis (BRD/PRD) tidak masuk repo; simpan di luar git (keputusan pemilik proyek 8 Okt 2026).
+docs/*.pdf

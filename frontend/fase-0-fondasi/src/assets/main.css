@@ -1,0 +1,219 @@
+@import "tailwindcss";
+
+/*
+ * Token desain Transhome dari sketsa pemilik (design-system/transhome/MASTER.md).
+ * Komponen hanya memakai nama token (bg-primary, text-muted, border-border, ...), tanpa hex.
+ */
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --color-foreground: #1c2b3a;
+  --color-secondary: #1c2b3a;
+  --color-secondary-hover: #24364a;
+  --color-secondary-foreground: #ffffff;
+
+  --color-primary: #c2410c;
+  --color-primary-hover: #9a3412;
+  --color-primary-soft: #ffedd5;
+  --color-primary-foreground: #ffffff;
+  --color-primary-on-dark: #fb923c;
+
+  --color-accent: #facc15;
+  --color-accent-foreground: #1c2b3a;
+
+  --color-whatsapp: #15803d;
+  --color-whatsapp-hover: #166534;
+  --color-whatsapp-foreground: #ffffff;
+
+  --color-background: #fafaf7;
+  --color-background-admin: #f5f5f2;
+  --color-surface: #ffffff;
+  --color-subtle: #f3f1ec;
+  --color-border: #e7e5e0;
+  --color-border-strong: #d6d3cd;
+  --color-muted: #57534e;
+  --color-faint: #78716c;
+  --color-on-dark: #e7e5e0;
+  --color-on-dark-muted: #a8a29e;
+  --color-ring: #c2410c;
+
+  --color-success: #15803d;
+  --color-success-soft: #dcfce7;
+  --color-success-ink: #14532d;
+  --color-warning: #b45309;
+  --color-warning-soft: #ffedd5;
+  --color-warning-ink: #9a3412;
+  --color-info: #1d4ed8;
+  --color-info-soft: #dbeafe;
+  --color-info-ink: #1e3a8a;
+  --color-danger: #b91c1c;
+  --color-danger-soft: #fee2e2;
+  --color-danger-ink: #7f1d1d;
+  --color-danger-foreground: #ffffff;
+}
+
+/*
+ * Ilustrasi rumah 3D di hero Beranda (Fase 5, components/beranda/geometriRumah.js), dari sketsa "Landing3D".
+ * Satu warna dasar per material; sisi depan/samping digelapkan dengan color-mix di komponen.
+ * `static`: variabel selalu tersedia walau tidak dipakai sebagai class Tailwind.
+ */
+@theme static {
+  --color-rumah-beton: #bdb6aa;
+  --color-rumah-pondasi: #a39c90;
+  --color-rumah-kolom: #a8a194;
+  --color-rumah-lantai: #efeae2;
+  --color-rumah-teras: #e4ddd2;
+  --color-rumah-nat: #c9bfb0;
+  --color-rumah-dinding: #f1e8da;
+  --color-rumah-dinding-dalam: #fbf7f0;
+  --color-rumah-lubang: #3b342c;
+  --color-rumah-kaca: #8db8d6;
+  --color-rumah-kaca-bingkai: #6b93b0;
+  --color-rumah-kayu: #8a5a38;
+  --color-rumah-porselen: #e2e8f0;
+  --color-rumah-air: #bfdbfe;
+  --color-rumah-kabinet: #a0714f;
+  --color-rumah-pipa: #3b82f6;
+  --color-rumah-pipa-panas: #f59e0b;
+  --color-rumah-panel: #64748b;
+  --color-rumah-indikator: #22c55e;
+  --color-rumah-lampu: #fde68a;
+  --color-rumah-gevel: #e9dfce;
+  --color-rumah-genteng: #ea580c;
+  --color-rumah-bubungan: #7c2d12;
+  --color-rumah-cerobong: #78716c;
+  --color-rumah-talang: #a8a29e;
+  --color-rumah-bayangan: #16222d;
+}
+
+/* Sembunyikan scrollbar (carousel); konten tetap bisa digeser dan punya tombol navigasi. */
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@layer base {
+  /* Header publik menempel di atas (AppHeader): lompatan gulir & anchor berhenti di bawahnya. */
+  html {
+    scroll-padding-top: var(--tinggi-header, 0px);
+  }
+
+  body {
+    @apply bg-background font-sans text-foreground antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  /* Jaring pengaman: setiap elemen interaktif punya fokus yang terlihat. */
+  :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* ---------- Animasi situs publik (composables/useAnimasi.js) ----------
+   Hanya transform & opacity (diproses GPU). Masuk: ease-out-quint; keluar: ease-in.
+   <html data-area="publik|admin"> dipasang router; panel admin tidak dianimasikan.
+   Semua di dalam no-preference: mati bila pengguna meminta animasi dikurangi. */
+@media (prefers-reduced-motion: no-preference) {
+  /* Pindah halaman: halaman lama memudar cepat, halaman baru masuk sambil naik sedikit.
+     Header & tombol WhatsApp punya nama sendiri, jadi tetap diam. */
+  ::view-transition-old(root) {
+    animation: 150ms cubic-bezier(0.4, 0, 1, 1) both pudar-keluar;
+  }
+  ::view-transition-new(root) {
+    animation: 300ms cubic-bezier(0.22, 1, 0.36, 1) both naik-masuk;
+  }
+
+  /* Scroll reveal: v-reveal. */
+  .muncul {
+    opacity: 0;
+    transform: translateY(20px);
+    transition:
+      opacity 500ms cubic-bezier(0.22, 1, 0.36, 1) var(--jeda-muncul, 0ms),
+      transform 500ms cubic-bezier(0.22, 1, 0.36, 1) var(--jeda-muncul, 0ms);
+  }
+  .muncul.muncul-tampil {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Logo "Brand pilihan" berjalan pelan (BrandPilihan.vue): dua salinan digeser -50% lalu berulang.
+     Gerak terus-menerus memang linear. Berhenti saat disorot; ada tombol Jeda. */
+  .brand-berjalan {
+    animation: geser-brand var(--durasi-brand, 60s) linear infinite;
+  }
+  .brand-berjalan:hover {
+    animation-play-state: paused;
+  }
+
+  /* Tombol sedikit mengecil saat ditekan. */
+  html[data-area="publik"] [data-tombol] {
+    transition-property: color, background-color, border-color, transform;
+  }
+  html[data-area="publik"] [data-tombol]:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+
+  /* Modal muncul dari arah yang logis: membesar sedikit di tengah; sheet naik dari bawah di HP. */
+  html[data-area="publik"] [data-panel-modal] {
+    animation: 220ms cubic-bezier(0.22, 1, 0.36, 1) both modal-masuk;
+  }
+  @media (max-width: 639px) {
+    html[data-area="publik"] [data-panel-modal][data-sheet] {
+      animation: 300ms cubic-bezier(0.22, 1, 0.36, 1) both sheet-masuk;
+    }
+  }
+}
+
+@keyframes geser-brand {
+  to {
+    transform: translateX(-50%);
+  }
+}
+@keyframes pudar-keluar {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes naik-masuk {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@keyframes modal-masuk {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+  }
+}
+@keyframes sheet-masuk {
+  from {
+    transform: translateY(100%);
+  }
+}
