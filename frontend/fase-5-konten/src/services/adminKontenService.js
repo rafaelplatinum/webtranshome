@@ -1,0 +1,74 @@
+import http from '@/services/http'
+
+// Konten di panel admin (Fase 5): banner, artikel/promo/event, dan pengaturan toko.
+// Pesan gagal ditampilkan di halaman (form/toast), jadi permintaan ubah memakai tanpaToast.
+const TANPA_TOAST = { tanpaToast: true }
+
+/** Semua banner (termasuk nonaktif/berakhir) dengan `status`: TAYANG | TERJADWAL | BERAKHIR | NONAKTIF. */
+export async function listAdminBanners() {
+  const { data } = await http.get('/admin/banners')
+  return data.data
+}
+
+export async function getAdminBanner(id) {
+  const { data } = await http.get(`/admin/banners/${id}`)
+  return data.data
+}
+
+/** { title, image_url, link_url, position, start_date, end_date, is_active }; tanggal YYYY-MM-DD. */
+export async function createBanner(payload) {
+  const { data } = await http.post('/admin/banners', payload, TANPA_TOAST)
+  return data.data
+}
+
+export async function updateBanner(id, payload) {
+  const { data } = await http.put(`/admin/banners/${id}`, payload, TANPA_TOAST)
+  return data.data
+}
+
+/** { is_active } atau { sort_order }. */
+export async function patchBanner(id, perubahan) {
+  const { data } = await http.patch(`/admin/banners/${id}`, perubahan, TANPA_TOAST)
+  return data.data
+}
+
+/** Daftar artikel: q, type, status (DRAFT | PUBLISHED), page. Hasil { data, meta }. */
+export async function listAdminArticles(params = {}, { signal } = {}) {
+  const { data } = await http.get('/admin/articles', { params, signal })
+  return data
+}
+
+/** Artikel lengkap untuk editor: + content dan preview_token. */
+export async function getAdminArticle(id) {
+  const { data } = await http.get(`/admin/articles/${id}`)
+  return data.data
+}
+
+/** { type, title, slug, thumbnail_url, content } → artikel baru berstatus DRAFT. 409 slug dipakai. */
+export async function createArticle(payload) {
+  const { data } = await http.post('/admin/articles', payload, TANPA_TOAST)
+  return data.data
+}
+
+export async function updateArticle(id, payload) {
+  const { data } = await http.put(`/admin/articles/${id}`, payload, TANPA_TOAST)
+  return data.data
+}
+
+/** Terbitkan ('PUBLISHED') atau batalkan terbit ('DRAFT'); izin article.publish. */
+export async function setArticleStatus(id, status) {
+  const { data } = await http.patch(`/admin/articles/${id}`, { status }, TANPA_TOAST)
+  return data.data
+}
+
+/** { wa_number, address, opening_hours, maps_url, point_ratio_rupiah }. */
+export async function getAdminSettings() {
+  const { data } = await http.get('/admin/settings')
+  return data.data
+}
+
+/** Simpan pengaturan toko. Rasio poin hanya bisa diubah pemegang izin setting.point_ratio (403). */
+export async function updateSettings(payload) {
+  const { data } = await http.put('/admin/settings', payload, TANPA_TOAST)
+  return data.data
+}
