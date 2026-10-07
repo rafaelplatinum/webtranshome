@@ -1,10 +1,12 @@
 package user
 
+import "webtranshome/internal/modules/identityaccess/domain/role"
+
 const (
-	RoleSuperAdmin      = "SUPER_ADMIN"
-	RoleAdminCatalog    = "ADMIN_KATALOG"
-	RoleAdminMembership = "ADMIN_MEMBERSHIP"
-	RoleAdminContent    = "ADMIN_KONTEN"
+	RoleSuperAdmin      = role.SuperAdminCode
+	RoleAdminCatalog    = role.AdminCatalog
+	RoleAdminMembership = role.AdminMember
+	RoleAdminContent    = role.AdminContent
 )
 
 type User struct {

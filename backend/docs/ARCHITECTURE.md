@@ -11,7 +11,7 @@ tabel milik modul lain.
 backend/
 ├── api/transhome.api          Definisi endpoint HTTP (sumber untuk goctl)
 ├── etc/transhome-api.yaml     Konfigurasi server
-├── migrations/                File SQL golang-migrate (000001_init_schema, 000002_admin_refresh_sessions)
+├── migrations/                File SQL golang-migrate (000001_init_schema, 000002_admin_refresh_sessions, 000003_rbac_access_management)
 ├── cmd/worker/                Proses background (sync Qontak, retry, notifikasi)
 ├── transhome.go               Entry point API (dibuat oleh `make gen`)
 ├── docs/ARCHITECTURE.md       Dokumen ini
@@ -117,9 +117,35 @@ kebijakan keamanan.
 
 ### Kondisi implementasi saat ini
 
-- Kerangka awal RBAC sudah disiapkan di domain `role`, `permission`, dan `menu`,
-  serta query aplikasi `CheckPermission`. Kontrak repository permission berada di
-  domain; adapter PostgreSQL dan middleware belum dibuat.
+- Skema `users`, `roles`, `menus`, `permissions`, `user_roles`, dan
+  `role_permissions` menjadi sumber data RBAC. Query aplikasi `CheckPermission`
+  memakai kontrak repository domain; adapter PostgreSQL memeriksa user, role,
+  menu, dan permission yang terhubung, termasuk status aktif user/role/menu.
+- Authentication middleware memverifikasi bearer access token JWT HS256 dan
+  menaruh user ID terverifikasi ke request context. Permission middleware
+  memeriksa kode permission yang ditetapkan pada route; keputusan tidak dibuat
+  dari role di middleware. `GET /api/v1/auth/me/access` mengembalikan menu dan
+  permission efektif milik principal untuk kebutuhan UI; endpoint itu tidak
+  menggantikan pemeriksaan permission pada setiap route. Endpoint katalog dan
+  assignment RBAC berikut dilindungi permission `rbac.manage`:
+  `GET /api/v1/admin/access-control/catalog`,
+  `GET /api/v1/admin/users?email=...`,
+  `POST /api/v1/admin/roles`, `PUT /api/v1/admin/roles/{roleId}`,
+  `GET|PUT /api/v1/admin/users/{userId}/roles`, dan
+  `GET|PUT /api/v1/admin/roles/{roleId}/permissions`.
+- Migration `000003` menambahkan menu/permission pengelolaan akses dan memberi
+  `rbac.manage` kepada role `SUPER_ADMIN` melalui `role_permissions`. API hanya
+  menampilkan katalog menu/permission; penambahan katalog harus dilakukan
+  melalui migration bersama route yang menerapkannya. API membuat role baru,
+  mengubah nama/deskripsi/status role tanpa mengubah code, dan mengganti
+  assignment user-role serta role-permission secara atomik. Role dinonaktifkan
+  sebagai pengganti penghapusan; role `SUPER_ADMIN` tidak dapat dinonaktifkan
+  melalui API.
+- Kode role baru di-trim dan dinormalisasi ke huruf besar; format yang diterima
+  adalah `^[A-Z][A-Z0-9_]*$` dengan panjang maksimal 50 karakter.
+- Penggantian permission pada role `SUPER_ADMIN` ditolak jika akan menghapus
+  permission `rbac.manage`. Ini adalah invariant untuk mencegah role bootstrap
+  kehilangan izin, bukan mekanisme authorization untuk route.
 - Login memeriksa email/password, status aktif, dan role staf/admin aktif
   (`SUPER_ADMIN`, `ADMIN_KATALOG`, `ADMIN_MEMBERSHIP`, atau `ADMIN_KONTEN`)
   sebelum menerbitkan token admin. Gerbang ini hanya menentukan kelayakan masuk
@@ -130,14 +156,40 @@ kebijakan keamanan.
   rotasi dan revocation; runtime lifecycle belum diimplementasikan.
 - Cookie refresh token, endpoint refresh/logout, dan penerbitan pasangan token
   belum diimplementasikan. Konfigurasi access token yang berjalan masih 24 jam.
-- Authentication middleware dan authorization per permission **belum
-  diimplementasikan**. Karena itu, selain endpoint login, route belum mendapat
-  perlindungan dari middleware autentikasi/otorisasi.
-- Authorization tetap terpisah dan nantinya membatasi API per route/aksi
-  berdasarkan role/permission, misalnya katalog, membership, atau akses
-  administratif yang lebih luas.
-- Detail kebijakan logout/token revocation dan penyimpanan status sesi masih perlu
-  diputuskan sebelum implementasi.
+- Health check dan login tetap publik. Endpoint fitur lain harus didaftarkan
+  dengan authentication middleware dan permission spesifik; jangan menambah
+  pengecualian Super Admin berdasarkan role di middleware.
+- Jika akses RBAC terkunci, recovery dilakukan sebagai operasi manual terkontrol
+  oleh operator database. Pastikan email admin tepercaya sebelum menjalankan
+  SQL berikut, lalu ganti nilai placeholder:
+
+  ```sql
+  BEGIN;
+
+  INSERT INTO crm_schema.role_permissions (role_id, permission_id)
+  SELECT r.id, p.id
+  FROM crm_schema.roles r
+  CROSS JOIN crm_schema.permissions p
+  WHERE r.code = 'SUPER_ADMIN'
+    AND p.code = 'rbac.manage'
+  ON CONFLICT (role_id, permission_id) DO NOTHING;
+
+  INSERT INTO crm_schema.user_roles (user_id, role_id)
+  SELECT u.id, r.id
+  FROM crm_schema.users u
+  CROSS JOIN crm_schema.roles r
+  WHERE u.email = 'REPLACE_WITH_TRUSTED_ADMIN_EMAIL'
+    AND u.is_active = TRUE
+    AND r.code = 'SUPER_ADMIN'
+    AND r.is_active = TRUE
+  ON CONFLICT (user_id, role_id) DO NOTHING;
+
+  COMMIT;
+  ```
+
+  Setelah operasi, verifikasi user-role dan role-permission yang terbentuk
+  sebelum mengembalikan akses melalui API. SQL recovery ini tidak diekspos
+  sebagai endpoint.
 
 ## 5 aturan wajib
 

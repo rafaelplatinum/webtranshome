@@ -6,6 +6,7 @@ package handler
 import (
 	"net/http"
 
+	"webtranshome/internal/modules/identityaccess/domain/permission"
 	"webtranshome/internal/svc"
 
 	"github.com/zeromicro/go-zero/rest"
@@ -26,6 +27,68 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Handler: LoginHandler(serverCtx),
 			},
 		},
+		rest.WithPrefix("/api/v1"),
+	)
+	server.AddRoutes(
+		rest.WithMiddleware(
+			serverCtx.Authenticate,
+			rest.Route{
+				Method:  http.MethodGet,
+				Path:    "/auth/me/access",
+				Handler: CurrentUserAccessHandler(serverCtx),
+			},
+		),
+		rest.WithPrefix("/api/v1"),
+	)
+	server.AddRoutes(
+		rest.WithMiddlewares(
+			[]rest.Middleware{
+				serverCtx.Authenticate,
+				serverCtx.RequirePermission(permission.AccessControlManageCode),
+			},
+			[]rest.Route{
+				{
+					Method:  http.MethodGet,
+					Path:    "/admin/access-control/catalog",
+					Handler: AccessControlCatalogHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
+					Path:    "/admin/roles",
+					Handler: CreateRoleHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPut,
+					Path:    "/admin/roles/:roleId",
+					Handler: UpdateRoleHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodGet,
+					Path:    "/admin/users",
+					Handler: SearchAccessControlUsersHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodGet,
+					Path:    "/admin/users/:userId/roles",
+					Handler: UserRolesHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPut,
+					Path:    "/admin/users/:userId/roles",
+					Handler: ReplaceUserRolesHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodGet,
+					Path:    "/admin/roles/:roleId/permissions",
+					Handler: RolePermissionsHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPut,
+					Path:    "/admin/roles/:roleId/permissions",
+					Handler: ReplaceRolePermissionsHandler(serverCtx),
+				},
+			}...,
+		),
 		rest.WithPrefix("/api/v1"),
 	)
 }

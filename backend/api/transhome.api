@@ -28,6 +28,87 @@ type LoginResponse {
 	AccessToken string `json:"accessToken"`
 }
 
+type AccessControlRole {
+	ID          int64  `json:"id"`
+	Code        string `json:"code"`
+	Name        string `json:"name"`
+	Description string `json:"description,omitempty"`
+	IsActive    bool   `json:"isActive"`
+}
+
+type AccessControlMenu {
+	ID        int64  `json:"id"`
+	ParentID  int64  `json:"parentId,omitempty"`
+	Name      string `json:"name"`
+	Code      string `json:"code"`
+	Route     string `json:"route,omitempty"`
+	Icon      string `json:"icon,omitempty"`
+	SortOrder int64  `json:"sortOrder"`
+	IsActive  bool   `json:"isActive"`
+}
+
+type AccessControlPermission {
+	ID          int64  `json:"id"`
+	MenuID      int64  `json:"menuId"`
+	Code        string `json:"code"`
+	Action      string `json:"action"`
+	Description string `json:"description,omitempty"`
+}
+
+type AccessControlCatalogResponse {
+	Roles       []AccessControlRole       `json:"roles"`
+	Menus       []AccessControlMenu       `json:"menus"`
+	Permissions []AccessControlPermission `json:"permissions"`
+}
+
+type ReplaceUserRolesRequest {
+	RoleIDs []int64 `json:"roleIds"`
+}
+
+type ReplaceRolePermissionsRequest {
+	PermissionIDs []int64 `json:"permissionIds"`
+}
+
+type CreateRoleRequest {
+	Code        string `json:"code"`
+	Name        string `json:"name"`
+	Description string `json:"description,omitempty"`
+}
+
+type UpdateRoleRequest {
+	Name        string `json:"name"`
+	Description string `json:"description,omitempty"`
+	IsActive    bool   `json:"isActive"`
+}
+
+type AccessControlRoleAssignmentsResponse {
+	RoleIDs []int64 `json:"roleIds"`
+}
+
+type AccessControlPermissionAssignmentsResponse {
+	PermissionIDs []int64 `json:"permissionIds"`
+}
+
+type AccessControlUserResponse {
+	ID       int64  `json:"id"`
+	Email    string `json:"email"`
+	IsActive bool   `json:"isActive"`
+	RoleIDs  []int64 `json:"roleIds"`
+}
+
+type AccessControlMutationResponse {
+	Success bool `json:"success"`
+}
+
+type UserAccessResponse {
+	Menus           []AccessControlMenu `json:"menus"`
+	PermissionCodes []string            `json:"permissionCodes"`
+}
+
+type SearchAccessControlUsersRequest {
+	Email string `form:"email"`
+}
+
 @server (
 	prefix: /api/v1
 )
@@ -38,6 +119,33 @@ service transhome-api {
 
 	@handler LoginHandler
 	post /auth/login (LoginRequest) returns (LoginResponse)
+
+	@handler CurrentUserAccessHandler
+	get /auth/me/access returns (UserAccessResponse)
+
+	@handler AccessControlCatalogHandler
+	get /admin/access-control/catalog returns (AccessControlCatalogResponse)
+
+	@handler SearchAccessControlUsersHandler
+	get /admin/users (SearchAccessControlUsersRequest) returns (AccessControlUserResponse)
+
+	@handler CreateRoleHandler
+	post /admin/roles (CreateRoleRequest) returns (AccessControlRole)
+
+	@handler UpdateRoleHandler
+	put /admin/roles/:roleId (UpdateRoleRequest) returns (AccessControlMutationResponse)
+
+	@handler UserRolesHandler
+	get /admin/users/:userId/roles returns (AccessControlRoleAssignmentsResponse)
+
+	@handler ReplaceUserRolesHandler
+	put /admin/users/:userId/roles (ReplaceUserRolesRequest) returns (AccessControlMutationResponse)
+
+	@handler RolePermissionsHandler
+	get /admin/roles/:roleId/permissions returns (AccessControlPermissionAssignmentsResponse)
+
+	@handler ReplaceRolePermissionsHandler
+	put /admin/roles/:roleId/permissions (ReplaceRolePermissionsRequest) returns (AccessControlMutationResponse)
 }
 
 // Group berikut ditambahkan saat endpoint-nya mulai dibuat:
