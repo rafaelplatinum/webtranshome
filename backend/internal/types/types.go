@@ -3,7 +3,181 @@
 
 package types
 
+type AccessControlCatalogResponse struct {
+	Roles       []AccessControlRole       `json:"roles"`
+	Menus       []AccessControlMenu       `json:"menus"`
+	Permissions []AccessControlPermission `json:"permissions"`
+}
+
+type AccessControlMenu struct {
+	ID        int64  `json:"id"`
+	ParentID  int64  `json:"parentId,omitempty"`
+	Name      string `json:"name"`
+	Code      string `json:"code"`
+	Route     string `json:"route,omitempty"`
+	Icon      string `json:"icon,omitempty"`
+	SortOrder int64  `json:"sortOrder"`
+	IsActive  bool   `json:"isActive"`
+}
+
+type AccessControlMutationResponse struct {
+	Success bool `json:"success"`
+}
+
+type AccessControlPermission struct {
+	ID          int64  `json:"id"`
+	MenuID      int64  `json:"menuId"`
+	Code        string `json:"code"`
+	Action      string `json:"action"`
+	Description string `json:"description,omitempty"`
+}
+
+type AccessControlPermissionAssignmentsResponse struct {
+	PermissionIDs []int64 `json:"permissionIds"`
+}
+
+type AccessControlRole struct {
+	ID          int64  `json:"id"`
+	Code        string `json:"code"`
+	Name        string `json:"name"`
+	Description string `json:"description,omitempty"`
+	IsActive    bool   `json:"isActive"`
+}
+
+type AccessControlRoleAssignmentsResponse struct {
+	RoleIDs []int64 `json:"roleIds"`
+}
+
+type AccessControlUserResponse struct {
+	ID       int64   `json:"id"`
+	Email    string  `json:"email"`
+	IsActive bool    `json:"isActive"`
+	RoleIDs  []int64 `json:"roleIds"`
+}
+
+type CatalogBrand struct {
+	ID       int64  `json:"id"`
+	Name     string `json:"name"`
+	Slug     string `json:"slug"`
+	LogoURL  string `json:"logoUrl,omitempty"`
+	IsActive bool   `json:"isActive"`
+}
+
+type CatalogBrandListResponse struct {
+	Brands []CatalogBrand `json:"brands"`
+}
+
+type CatalogCategory struct {
+	ID        int64  `json:"id"`
+	Name      string `json:"name"`
+	Slug      string `json:"slug"`
+	ParentID  *int64 `json:"parentId,omitempty"`
+	ImageURL  string `json:"imageUrl,omitempty"`
+	SortOrder int64  `json:"sortOrder"`
+	IsActive  bool   `json:"isActive"`
+}
+
+type CatalogCategoryListResponse struct {
+	Categories []CatalogCategory `json:"categories"`
+}
+
+type CatalogRoom struct {
+	ID         int64  `json:"id"`
+	Name       string `json:"name"`
+	Slug       string `json:"slug"`
+	ImageCover string `json:"imageCover"`
+	SortOrder  int64  `json:"sortOrder"`
+	IsActive   bool   `json:"isActive"`
+}
+
+type CatalogRoomListResponse struct {
+	Rooms []CatalogRoom `json:"rooms"`
+}
+
+type CreateBrandRequest struct {
+	Name    string `json:"name"`
+	Slug    string `json:"slug"`
+	LogoURL string `json:"logoUrl,omitempty"`
+}
+
+type CreateCategoryRequest struct {
+	Name      string `json:"name"`
+	Slug      string `json:"slug"`
+	ParentID  *int64 `json:"parentId,omitempty"`
+	ImageURL  string `json:"imageUrl,omitempty"`
+	SortOrder int64  `json:"sortOrder"`
+}
+
+type CreateRoleRequest struct {
+	Code        string `json:"code"`
+	Name        string `json:"name"`
+	Description string `json:"description,omitempty"`
+}
+
+type CreateRoomRequest struct {
+	Name       string `json:"name"`
+	Slug       string `json:"slug"`
+	ImageCover string `json:"imageCover"`
+	SortOrder  int64  `json:"sortOrder"`
+}
+
 type HealthResp struct {
 	Status   string `json:"status"`
 	Database string `json:"database"`
+}
+
+type LoginRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+type LoginResponse struct {
+	AccessToken string `json:"accessToken"`
+}
+
+type ReplaceRolePermissionsRequest struct {
+	PermissionIDs []int64 `json:"permissionIds"`
+}
+
+type ReplaceUserRolesRequest struct {
+	RoleIDs []int64 `json:"roleIds"`
+}
+
+type SearchAccessControlUsersRequest struct {
+	Email string `form:"email"`
+}
+
+type UpdateBrandRequest struct {
+	Name     *string `json:"name,omitempty"`
+	Slug     *string `json:"slug,omitempty"`
+	LogoURL  *string `json:"logoUrl,omitempty"`
+	IsActive *bool   `json:"isActive,omitempty"`
+}
+
+type UpdateCategoryRequest struct {
+	Name      *string `json:"name,omitempty"`
+	Slug      *string `json:"slug,omitempty"`
+	ParentID  *int64  `json:"parentId,omitempty"`
+	ImageURL  *string `json:"imageUrl,omitempty"`
+	SortOrder *int64  `json:"sortOrder,omitempty"`
+	IsActive  *bool   `json:"isActive,omitempty"`
+}
+
+type UpdateRoleRequest struct {
+	Name        string `json:"name"`
+	Description string `json:"description,omitempty"`
+	IsActive    bool   `json:"isActive"`
+}
+
+type UpdateRoomRequest struct {
+	Name       *string `json:"name,omitempty"`
+	Slug       *string `json:"slug,omitempty"`
+	ImageCover *string `json:"imageCover,omitempty"`
+	SortOrder  *int64  `json:"sortOrder,omitempty"`
+	IsActive   *bool   `json:"isActive,omitempty"`
+}
+
+type UserAccessResponse struct {
+	Menus           []AccessControlMenu `json:"menus"`
+	PermissionCodes []string            `json:"permissionCodes"`
 }

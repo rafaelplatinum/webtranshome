@@ -1,6 +1,11 @@
 package permission
 
-const AccessControlManageCode = "rbac.manage"
+const (
+	AccessControlManageCode   = "rbac.manage"
+	CatalogBrandManageCode    = "catalog.brand.manage"
+	CatalogCategoryManageCode = "catalog.category.manage"
+	CatalogRoomManageCode     = "catalog.room.manage"
+)
 
 type Permission struct {
 	ID          int64

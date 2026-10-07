@@ -4,6 +4,9 @@ import (
 	"webtranshome/internal/config"
 	"webtranshome/internal/middleware"
 	"webtranshome/internal/model"
+	catalogcommand "webtranshome/internal/modules/catalog/application/command"
+	catalogquery "webtranshome/internal/modules/catalog/application/query"
+	catalogpostgres "webtranshome/internal/modules/catalog/infrastructure/postgres"
 	"webtranshome/internal/modules/identityaccess/application/command"
 	"webtranshome/internal/modules/identityaccess/application/query"
 	passwordbcrypt "webtranshome/internal/modules/identityaccess/infrastructure/password/bcrypt"
@@ -21,6 +24,18 @@ type ServiceContext struct {
 	AccessControlQueries     *query.AccessControl
 	ReplaceAccessAssignments *command.ReplaceAccessAssignments
 	ManageRoles              *command.ManageRoles
+	ListCategories           *catalogquery.ListCategories
+	GetCategory              *catalogquery.GetCategory
+	CreateCategory           *catalogcommand.CreateCategory
+	UpdateCategory           *catalogcommand.UpdateCategory
+	ListBrands               *catalogquery.ListBrands
+	GetBrand                 *catalogquery.GetBrand
+	CreateBrand              *catalogcommand.CreateBrand
+	UpdateBrand              *catalogcommand.UpdateBrand
+	ListRooms                *catalogquery.ListRooms
+	GetRoom                  *catalogquery.GetRoom
+	CreateRoom               *catalogcommand.CreateRoom
+	UpdateRoom               *catalogcommand.UpdateRoom
 	Authenticate             rest.Middleware
 	RequirePermission        func(string) rest.Middleware
 }
@@ -31,6 +46,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	userRepository := authpostgres.NewUserRepository(conn, userModel)
 	permissionRepository := authpostgres.NewPermissionRepository(conn)
 	accessControlRepository := authpostgres.NewAccessControlRepository(conn)
+	categoryRepository := catalogpostgres.NewCategoryRepository(conn)
 	loginAdmin := command.NewLogin(
 		userRepository,
 		passwordbcrypt.NewVerifier(),
@@ -45,6 +61,20 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	)
 	replaceAccessAssignments := command.NewReplaceAccessAssignments(accessControlRepository)
 	manageRoles := command.NewManageRoles(accessControlRepository)
+	listCategories := catalogquery.NewListCategories(categoryRepository)
+	getCategory := catalogquery.NewGetCategory(categoryRepository)
+	createCategory := catalogcommand.NewCreateCategory(categoryRepository, categoryRepository)
+	updateCategory := catalogcommand.NewUpdateCategory(categoryRepository, categoryRepository)
+	brandRepository := catalogpostgres.NewBrandRepository(conn)
+	listBrands := catalogquery.NewListBrands(brandRepository)
+	getBrand := catalogquery.NewGetBrand(brandRepository)
+	createBrand := catalogcommand.NewCreateBrand(brandRepository)
+	updateBrand := catalogcommand.NewUpdateBrand(brandRepository, brandRepository)
+	roomRepository := catalogpostgres.NewRoomRepository(conn)
+	listRooms := catalogquery.NewListRooms(roomRepository)
+	getRoom := catalogquery.NewGetRoom(roomRepository)
+	createRoom := catalogcommand.NewCreateRoom(roomRepository)
+	updateRoom := catalogcommand.NewUpdateRoom(roomRepository, roomRepository)
 
 	return &ServiceContext{
 		Config:                   c,
@@ -53,6 +83,18 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		AccessControlQueries:     accessControlQueries,
 		ReplaceAccessAssignments: replaceAccessAssignments,
 		ManageRoles:              manageRoles,
+		ListCategories:           listCategories,
+		GetCategory:              getCategory,
+		CreateCategory:           createCategory,
+		UpdateCategory:           updateCategory,
+		ListBrands:               listBrands,
+		GetBrand:                 getBrand,
+		CreateBrand:              createBrand,
+		UpdateBrand:              updateBrand,
+		ListRooms:                listRooms,
+		GetRoom:                  getRoom,
+		CreateRoom:               createRoom,
+		UpdateRoom:               updateRoom,
 		Authenticate:             middleware.Authenticate(tokenVerifier),
 		RequirePermission: func(code string) rest.Middleware {
 			return middleware.RequirePermission(checkPermission, code)

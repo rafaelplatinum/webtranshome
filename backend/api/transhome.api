@@ -13,7 +13,6 @@ info (
 // - Type di file ini hanya untuk request/response HTTP (internal/types).
 //   Input/output use case ada di modules/<modul>/application/dto.
 // =====================================================================
-
 type HealthResp {
 	Status   string `json:"status"`
 	Database string `json:"database"`
@@ -90,9 +89,9 @@ type AccessControlPermissionAssignmentsResponse {
 }
 
 type AccessControlUserResponse {
-	ID       int64  `json:"id"`
-	Email    string `json:"email"`
-	IsActive bool   `json:"isActive"`
+	ID       int64   `json:"id"`
+	Email    string  `json:"email"`
+	IsActive bool    `json:"isActive"`
 	RoleIDs  []int64 `json:"roleIds"`
 }
 
@@ -109,6 +108,90 @@ type SearchAccessControlUsersRequest {
 	Email string `form:"email"`
 }
 
+type CatalogCategory {
+	ID        int64  `json:"id"`
+	Name      string `json:"name"`
+	Slug      string `json:"slug"`
+	ParentID  *int64 `json:"parentId,omitempty"`
+	ImageURL  string `json:"imageUrl,omitempty"`
+	SortOrder int64  `json:"sortOrder"`
+	IsActive  bool   `json:"isActive"`
+}
+
+type CatalogCategoryListResponse {
+	Categories []CatalogCategory `json:"categories"`
+}
+
+type CreateCategoryRequest {
+	Name      string `json:"name"`
+	Slug      string `json:"slug"`
+	ParentID  *int64 `json:"parentId,omitempty"`
+	ImageURL  string `json:"imageUrl,omitempty"`
+	SortOrder int64  `json:"sortOrder"`
+}
+
+type UpdateCategoryRequest {
+	Name      *string `json:"name,omitempty"`
+	Slug      *string `json:"slug,omitempty"`
+	ParentID  *int64  `json:"parentId,omitempty"`
+	ImageURL  *string `json:"imageUrl,omitempty"`
+	SortOrder *int64  `json:"sortOrder,omitempty"`
+	IsActive  *bool   `json:"isActive,omitempty"`
+}
+
+type CatalogBrand {
+	ID       int64  `json:"id"`
+	Name     string `json:"name"`
+	Slug     string `json:"slug"`
+	LogoURL  string `json:"logoUrl,omitempty"`
+	IsActive bool   `json:"isActive"`
+}
+
+type CatalogBrandListResponse {
+	Brands []CatalogBrand `json:"brands"`
+}
+
+type CreateBrandRequest {
+	Name    string `json:"name"`
+	Slug    string `json:"slug"`
+	LogoURL string `json:"logoUrl,omitempty"`
+}
+
+type UpdateBrandRequest {
+	Name     *string `json:"name,omitempty"`
+	Slug     *string `json:"slug,omitempty"`
+	LogoURL  *string `json:"logoUrl,omitempty"`
+	IsActive *bool   `json:"isActive,omitempty"`
+}
+
+type CatalogRoom {
+	ID         int64  `json:"id"`
+	Name       string `json:"name"`
+	Slug       string `json:"slug"`
+	ImageCover string `json:"imageCover"`
+	SortOrder  int64  `json:"sortOrder"`
+	IsActive   bool   `json:"isActive"`
+}
+
+type CatalogRoomListResponse {
+	Rooms []CatalogRoom `json:"rooms"`
+}
+
+type CreateRoomRequest {
+	Name       string `json:"name"`
+	Slug       string `json:"slug"`
+	ImageCover string `json:"imageCover"`
+	SortOrder  int64  `json:"sortOrder"`
+}
+
+type UpdateRoomRequest {
+	Name       *string `json:"name,omitempty"`
+	Slug       *string `json:"slug,omitempty"`
+	ImageCover *string `json:"imageCover,omitempty"`
+	SortOrder  *int64  `json:"sortOrder,omitempty"`
+	IsActive   *bool   `json:"isActive,omitempty"`
+}
+
 @server (
 	prefix: /api/v1
 )
@@ -122,6 +205,42 @@ service transhome-api {
 
 	@handler CurrentUserAccessHandler
 	get /auth/me/access returns (UserAccessResponse)
+
+	@handler CatalogCategoriesHandler
+	get /admin/catalog/categories returns (CatalogCategoryListResponse)
+
+	@handler CatalogCategoryHandler
+	get /admin/catalog/categories/:categoryId returns (CatalogCategory)
+
+	@handler CreateCatalogCategoryHandler
+	post /admin/catalog/categories (CreateCategoryRequest) returns (CatalogCategory)
+
+	@handler UpdateCatalogCategoryHandler
+	patch /admin/catalog/categories/:categoryId (UpdateCategoryRequest) returns (CatalogCategory)
+
+	@handler CatalogBrandsHandler
+	get /admin/catalog/brands returns (CatalogBrandListResponse)
+
+	@handler CatalogBrandHandler
+	get /admin/catalog/brands/:brandId returns (CatalogBrand)
+
+	@handler CreateCatalogBrandHandler
+	post /admin/catalog/brands (CreateBrandRequest) returns (CatalogBrand)
+
+	@handler UpdateCatalogBrandHandler
+	patch /admin/catalog/brands/:brandId (UpdateBrandRequest) returns (CatalogBrand)
+
+	@handler CatalogRoomsHandler
+	get /admin/catalog/rooms returns (CatalogRoomListResponse)
+
+	@handler CatalogRoomHandler
+	get /admin/catalog/rooms/:roomId returns (CatalogRoom)
+
+	@handler CreateCatalogRoomHandler
+	post /admin/catalog/rooms (CreateRoomRequest) returns (CatalogRoom)
+
+	@handler UpdateCatalogRoomHandler
+	patch /admin/catalog/rooms/:roomId (UpdateRoomRequest) returns (CatalogRoom)
 
 	@handler AccessControlCatalogHandler
 	get /admin/access-control/catalog returns (AccessControlCatalogResponse)

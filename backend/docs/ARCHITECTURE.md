@@ -11,7 +11,7 @@ tabel milik modul lain.
 backend/
 ├── api/transhome.api          Definisi endpoint HTTP (sumber untuk goctl)
 ├── etc/transhome-api.yaml     Konfigurasi server
-├── migrations/                File SQL golang-migrate (000001_init_schema, 000002_admin_refresh_sessions, 000003_rbac_access_management)
+├── migrations/                File SQL golang-migrate (000001_init_schema, 000002_admin_refresh_sessions, 000003_rbac_access_management, 000004_catalog_permissions)
 ├── cmd/worker/                Proses background (sync Qontak, retry, notifikasi)
 ├── transhome.go               Entry point API (dibuat oleh `make gen`)
 ├── docs/ARCHITECTURE.md       Dokumen ini
@@ -143,6 +143,29 @@ kebijakan keamanan.
   melalui API.
 - Kode role baru di-trim dan dinormalisasi ke huruf besar; format yang diterima
   adalah `^[A-Z][A-Z0-9_]*$` dengan panjang maksimal 50 karakter.
+- Category Admin API menyediakan daftar, detail, pembuatan, dan partial update
+  kategori melalui `/api/v1/admin/catalog/categories`. Route membutuhkan
+  authentication dan permission `catalog.category.manage`, yang diberikan
+  migration `000004` kepada `SUPER_ADMIN` dan `ADMIN_KATALOG`. Migration hanya
+  menyemai data menu/permission dan relasi role; tidak mengubah struktur schema.
+  Deaktivasi memakai `isActive: false`; `parentId: 0` pada PATCH menghapus
+  relasi parent, `imageUrl: ""` menghapus URL gambar, sedangkan field yang
+  dihilangkan tidak diubah.
+- Brand Admin API menyediakan daftar, detail, pembuatan, dan partial update
+  melalui `/api/v1/admin/catalog/brands`. Route membutuhkan authentication dan
+  permission `catalog.brand.manage`, yang diberikan migration `000004` kepada
+  `SUPER_ADMIN` dan `ADMIN_KATALOG`. Migration hanya menyemai data
+  menu/permission dan relasi role; tidak mengubah struktur schema.
+  Deaktivasi memakai `isActive: false`; `logoUrl: ""` menghapus URL logo,
+  sedangkan field yang dihilangkan tidak diubah.
+- Room Admin API menyediakan daftar, detail, pembuatan, dan partial update
+  melalui `/api/v1/admin/catalog/rooms`. Route membutuhkan authentication dan
+  permission `catalog.room.manage`, yang diberikan migration `000004` kepada
+  `SUPER_ADMIN` dan `ADMIN_KATALOG`. Migration hanya menyemai data
+  menu/permission dan relasi role; tidak mengubah struktur schema.
+  Deaktivasi memakai `isActive: false`; `imageCover` wajib selalu memiliki
+  nilai sesuai constraint schema, sedangkan field lain yang dihilangkan tidak
+  diubah.
 - Penggantian permission pada role `SUPER_ADMIN` ditolak jika akan menghapus
   permission `rbac.manage`. Ini adalah invariant untuk mencegah role bootstrap
   kehilangan izin, bukan mekanisme authorization untuk route.
