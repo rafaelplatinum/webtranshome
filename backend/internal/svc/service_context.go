@@ -36,6 +36,11 @@ type ServiceContext struct {
 	GetRoom                  *catalogquery.GetRoom
 	CreateRoom               *catalogcommand.CreateRoom
 	UpdateRoom               *catalogcommand.UpdateRoom
+	ListProducts             *catalogquery.ListProducts
+	GetProduct               *catalogquery.GetProduct
+	CreateProduct            *catalogcommand.CreateProduct
+	UpdateProduct            *catalogcommand.UpdateProduct
+	ReplaceProductRooms      *catalogcommand.ReplaceProductRooms
 	Authenticate             rest.Middleware
 	RequirePermission        func(string) rest.Middleware
 }
@@ -75,6 +80,12 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	getRoom := catalogquery.NewGetRoom(roomRepository)
 	createRoom := catalogcommand.NewCreateRoom(roomRepository)
 	updateRoom := catalogcommand.NewUpdateRoom(roomRepository, roomRepository)
+	productRepository := catalogpostgres.NewProductRepository(conn)
+	listProducts := catalogquery.NewListProducts(productRepository)
+	getProduct := catalogquery.NewGetProduct(productRepository)
+	createProduct := catalogcommand.NewCreateProduct(productRepository, productRepository)
+	updateProduct := catalogcommand.NewUpdateProduct(productRepository, productRepository)
+	replaceProductRooms := catalogcommand.NewReplaceProductRooms(productRepository, roomRepository, productRepository)
 
 	return &ServiceContext{
 		Config:                   c,
@@ -95,6 +106,11 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		GetRoom:                  getRoom,
 		CreateRoom:               createRoom,
 		UpdateRoom:               updateRoom,
+		ListProducts:             listProducts,
+		GetProduct:               getProduct,
+		CreateProduct:            createProduct,
+		UpdateProduct:            updateProduct,
+		ReplaceProductRooms:      replaceProductRooms,
 		Authenticate:             middleware.Authenticate(tokenVerifier),
 		RequirePermission: func(code string) rest.Middleware {
 			return middleware.RequirePermission(checkPermission, code)

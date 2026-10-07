@@ -92,6 +92,11 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				serverCtx.RequirePermission(permission.AccessControlManageCode),
 			},
 			[]rest.Route{
+				{Method: http.MethodGet, Path: "/admin/catalog/products", Handler: CatalogProductsHandler(serverCtx)},
+				{Method: http.MethodGet, Path: "/admin/catalog/products/:productId", Handler: CatalogProductHandler(serverCtx)},
+				{Method: http.MethodPost, Path: "/admin/catalog/products", Handler: CreateCatalogProductHandler(serverCtx)},
+				{Method: http.MethodPatch, Path: "/admin/catalog/products/:productId", Handler: UpdateCatalogProductHandler(serverCtx)},
+				{Method: http.MethodPut, Path: "/admin/catalog/products/:productId/rooms", Handler: ReplaceCatalogProductRoomsHandler(serverCtx)},
 				{Method: http.MethodGet, Path: "/admin/access-control/catalog", Handler: AccessControlCatalogHandler(serverCtx)},
 				{Method: http.MethodPost, Path: "/admin/roles", Handler: CreateRoleHandler(serverCtx)},
 				{Method: http.MethodPut, Path: "/admin/roles/:roleId", Handler: UpdateRoleHandler(serverCtx)},

@@ -94,6 +94,35 @@ type CatalogRoomListResponse struct {
 	Rooms []CatalogRoom `json:"rooms"`
 }
 
+type CatalogMutationResponse struct {
+	Success bool `json:"success"`
+}
+
+type CatalogProduct struct {
+	ID              int64   `json:"id"`
+	SKU             string  `json:"sku"`
+	Name            string  `json:"name"`
+	Slug            string  `json:"slug"`
+	CategoryID      int64   `json:"categoryId"`
+	BrandID         *int64  `json:"brandId,omitempty"`
+	Description     string  `json:"description,omitempty"`
+	Specifications  string  `json:"specifications,omitempty"`
+	DatasheetPDFURL string  `json:"datasheetPdfUrl,omitempty"`
+	PriceGeneral    float64 `json:"priceGeneral"`
+	UnitSale        string  `json:"unitSale"`
+	MinOrder        int64   `json:"minOrder"`
+	StockStatus     string  `json:"stockStatus"`
+	StockQtyLabel   string  `json:"stockQtyLabel,omitempty"`
+	IsFeatured      bool    `json:"isFeatured"`
+	IsActive        bool    `json:"isActive"`
+	MetaTitle       string  `json:"metaTitle,omitempty"`
+	MetaDescription string  `json:"metaDescription,omitempty"`
+}
+
+type CatalogProductListResponse struct {
+	Products []CatalogProduct `json:"products"`
+}
+
 type CreateBrandRequest struct {
 	Name    string `json:"name"`
 	Slug    string `json:"slug"`
@@ -106,6 +135,26 @@ type CreateCategoryRequest struct {
 	ParentID  *int64 `json:"parentId,omitempty"`
 	ImageURL  string `json:"imageUrl,omitempty"`
 	SortOrder int64  `json:"sortOrder"`
+}
+
+type CreateProductRequest struct {
+	SKU             string  `json:"sku"`
+	Name            string  `json:"name"`
+	Slug            string  `json:"slug"`
+	CategoryID      int64   `json:"categoryId"`
+	BrandID         *int64  `json:"brandId,omitempty"`
+	Description     string  `json:"description,omitempty"`
+	Specifications  string  `json:"specifications,omitempty"`
+	DatasheetPDFURL string  `json:"datasheetPdfUrl,omitempty"`
+	PriceGeneral    float64 `json:"priceGeneral"`
+	UnitSale        string  `json:"unitSale"`
+	MinOrder        int64   `json:"minOrder"`
+	StockStatus     string  `json:"stockStatus"`
+	StockQtyLabel   string  `json:"stockQtyLabel,omitempty"`
+	IsFeatured      bool    `json:"isFeatured"`
+	IsActive        bool    `json:"isActive"`
+	MetaTitle       string  `json:"metaTitle,omitempty"`
+	MetaDescription string  `json:"metaDescription,omitempty"`
 }
 
 type CreateRoleRequest struct {
@@ -161,6 +210,30 @@ type UpdateCategoryRequest struct {
 	ImageURL  *string `json:"imageUrl,omitempty"`
 	SortOrder *int64  `json:"sortOrder,omitempty"`
 	IsActive  *bool   `json:"isActive,omitempty"`
+}
+
+type UpdateProductRequest struct {
+	SKU             *string  `json:"sku,omitempty"`
+	Name            *string  `json:"name,omitempty"`
+	Slug            *string  `json:"slug,omitempty"`
+	CategoryID      *int64   `json:"categoryId,omitempty"`
+	BrandID         *int64   `json:"brandId,omitempty"`
+	Description     *string  `json:"description,omitempty"`
+	Specifications  *string  `json:"specifications,omitempty"`
+	DatasheetPDFURL *string  `json:"datasheetPdfUrl,omitempty"`
+	PriceGeneral    *float64 `json:"priceGeneral,omitempty"`
+	UnitSale        *string  `json:"unitSale,omitempty"`
+	MinOrder        *int64   `json:"minOrder,omitempty"`
+	StockStatus     *string  `json:"stockStatus,omitempty"`
+	StockQtyLabel   *string  `json:"stockQtyLabel,omitempty"`
+	IsFeatured      *bool    `json:"isFeatured,omitempty"`
+	IsActive        *bool    `json:"isActive,omitempty"`
+	MetaTitle       *string  `json:"metaTitle,omitempty"`
+	MetaDescription *string  `json:"metaDescription,omitempty"`
+}
+
+type ReplaceProductRoomsRequest struct {
+	RoomIDs []int64 `json:"roomIds"`
 }
 
 type UpdateRoleRequest struct {

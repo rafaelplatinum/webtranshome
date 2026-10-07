@@ -192,6 +192,79 @@ type UpdateRoomRequest {
 	IsActive   *bool   `json:"isActive,omitempty"`
 }
 
+type CatalogProduct {
+	ID              int64   `json:"id"`
+	SKU             string  `json:"sku"`
+	Name            string  `json:"name"`
+	Slug            string  `json:"slug"`
+	CategoryID      int64   `json:"categoryId"`
+	BrandID         *int64  `json:"brandId,omitempty"`
+	Description     string  `json:"description,omitempty"`
+	Specifications  string  `json:"specifications,omitempty"`
+	DatasheetPDFURL string  `json:"datasheetPdfUrl,omitempty"`
+	PriceGeneral    float64 `json:"priceGeneral"`
+	UnitSale        string  `json:"unitSale"`
+	MinOrder        int64   `json:"minOrder"`
+	StockStatus     string  `json:"stockStatus"`
+	StockQtyLabel   string  `json:"stockQtyLabel,omitempty"`
+	IsFeatured      bool    `json:"isFeatured"`
+	IsActive        bool    `json:"isActive"`
+	MetaTitle       string  `json:"metaTitle,omitempty"`
+	MetaDescription string  `json:"metaDescription,omitempty"`
+}
+
+type CatalogProductListResponse {
+	Products []CatalogProduct `json:"products"`
+}
+
+type CreateProductRequest {
+	SKU             string  `json:"sku"`
+	Name            string  `json:"name"`
+	Slug            string  `json:"slug"`
+	CategoryID      int64   `json:"categoryId"`
+	BrandID         *int64  `json:"brandId,omitempty"`
+	Description     string  `json:"description,omitempty"`
+	Specifications  string  `json:"specifications,omitempty"`
+	DatasheetPDFURL string  `json:"datasheetPdfUrl,omitempty"`
+	PriceGeneral    float64 `json:"priceGeneral"`
+	UnitSale        string  `json:"unitSale"`
+	MinOrder        int64   `json:"minOrder"`
+	StockStatus     string  `json:"stockStatus"`
+	StockQtyLabel   string  `json:"stockQtyLabel,omitempty"`
+	IsFeatured      bool    `json:"isFeatured"`
+	IsActive        bool    `json:"isActive"`
+	MetaTitle       string  `json:"metaTitle,omitempty"`
+	MetaDescription string  `json:"metaDescription,omitempty"`
+}
+
+type UpdateProductRequest {
+	SKU             *string  `json:"sku,omitempty"`
+	Name            *string  `json:"name,omitempty"`
+	Slug            *string  `json:"slug,omitempty"`
+	CategoryID      *int64   `json:"categoryId,omitempty"`
+	BrandID         *int64   `json:"brandId,omitempty"`
+	Description     *string  `json:"description,omitempty"`
+	Specifications  *string  `json:"specifications,omitempty"`
+	DatasheetPDFURL *string  `json:"datasheetPdfUrl,omitempty"`
+	PriceGeneral    *float64 `json:"priceGeneral,omitempty"`
+	UnitSale        *string  `json:"unitSale,omitempty"`
+	MinOrder        *int64   `json:"minOrder,omitempty"`
+	StockStatus     *string  `json:"stockStatus,omitempty"`
+	StockQtyLabel   *string  `json:"stockQtyLabel,omitempty"`
+	IsFeatured      *bool    `json:"isFeatured,omitempty"`
+	IsActive        *bool    `json:"isActive,omitempty"`
+	MetaTitle       *string  `json:"metaTitle,omitempty"`
+	MetaDescription *string  `json:"metaDescription,omitempty"`
+}
+
+type ReplaceProductRoomsRequest {
+	RoomIDs []int64 `json:"roomIds"`
+}
+
+type CatalogMutationResponse {
+	Success bool `json:"success"`
+}
+
 @server (
 	prefix: /api/v1
 )
@@ -241,6 +314,21 @@ service transhome-api {
 
 	@handler UpdateCatalogRoomHandler
 	patch /admin/catalog/rooms/:roomId (UpdateRoomRequest) returns (CatalogRoom)
+
+	@handler CatalogProductsHandler
+	get /admin/catalog/products returns (CatalogProductListResponse)
+
+	@handler CatalogProductHandler
+	get /admin/catalog/products/:productId returns (CatalogProduct)
+
+	@handler CreateCatalogProductHandler
+	post /admin/catalog/products (CreateProductRequest) returns (CatalogProduct)
+
+	@handler UpdateCatalogProductHandler
+	patch /admin/catalog/products/:productId (UpdateProductRequest) returns (CatalogProduct)
+
+	@handler ReplaceCatalogProductRoomsHandler
+	put /admin/catalog/products/:productId/rooms (ReplaceProductRoomsRequest) returns (CatalogMutationResponse)
 
 	@handler AccessControlCatalogHandler
 	get /admin/access-control/catalog returns (AccessControlCatalogResponse)
