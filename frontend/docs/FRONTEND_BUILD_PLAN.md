@@ -423,28 +423,29 @@ Catatan implementasi:
 ### Yang dibangun
 | Bagian | Isi |
 |---|---|
-| Halaman publik | `views/public/`: `Beranda` (hero rumah 3D + seksi sketsa "Main"), `ArtikelDaftar` (`/artikel`, Muat lebih banyak), `Promo` (`/promo`, chip Semua/Promo/Event di `?jenis=`), `ArtikelDetail` (`/artikel/:slug`, pratinjau draf `?preview=`, 404, WhatsApp, artikel lainnya), `InfoToko` (`/info-toko`). `Home.vue` sementara dihapus |
+| Halaman publik | `views/public/`: `Beranda` (hero rumah 3D + seksi sketsa "Main"; hero diganti hero banner 30 Okt 2026, KEPUTUSAN #16), `ArtikelDaftar` (`/artikel`, Muat lebih banyak), `Promo` (`/promo`, chip Semua/Promo/Event di `?jenis=`), `ArtikelDetail` (`/artikel/:slug`, pratinjau draf `?preview=`, 404, WhatsApp, artikel lainnya), `InfoToko` (`/info-toko`). `Home.vue` sementara dihapus |
 | Halaman admin | `views/admin/konten/`: `BannerDaftar` (per posisi, status, ↑ ↓, switch Aktif, Perpanjang), `BannerForm` (baru/ubah, `#periode`), `ArtikelDaftar` (filter di URL, paginasi), `ArtikelForm` (simpan draf, pratinjau, terbitkan, batalkan terbit), `Pengaturan` (WA, alamat, jam buka, peta, rasio poin) |
-| Komponen | `components/beranda/`: `HeroRumah`, `RumahTigaDimensi` (= `HouseExploded` di rencana, CSS 3D murni) + `geometriRumah.js` + `bagianRumah.js`, `BannerPromo`, `BannerSlider`, `KategoriTahap`, `ProdukUnggulan`, `PromoEvent`, `InspirasiRuangan`, `BrandPilihan`, `Keunggulan`, `AjakanMember`, `JudulSeksi`, `PesanGagal`; `components/konten/`: `KartuArtikel`, `DaftarArtikel`, `IsiArtikel`, `ArtikelLainnya`; `components/admin/konten/`: `StatusBanner`, `StatusArtikel`, `ArtikelFilterBar` |
+| Komponen | `components/beranda/`: `HeroBanner` (sejak 30 Okt 2026; menggantikan `HeroRumah`, `RumahTigaDimensi`, `geometriRumah.js`, `bagianRumah.js` yang dihapus), `BannerPromo`, `BannerSlider`, `KategoriTahap`, `ProdukUnggulan`, `PromoEvent`, `InspirasiRuangan`, `BrandPilihan`, `Keunggulan`, `AjakanMember`, `JudulSeksi`, `PesanGagal`; `components/konten/`: `KartuArtikel`, `DaftarArtikel`, `IsiArtikel`, `ArtikelLainnya`; `components/admin/konten/`: `StatusBanner`, `StatusArtikel`, `ArtikelFilterBar`, `VideoField` (30 Okt 2026) |
 | Composable & util | `useMuat`, `useDaftarBanner`, `useFormBanner`, `useFormArtikel`; `utils/artikel.js`, `utils/banner.js` |
-| Service | `kontenService` (banner, artikel, bagian rumah), `adminKontenService` (banner, artikel, pengaturan) |
-| Mock | `routesKonten.js` + `data/beranda.js`; banner (tayang, terjadwal, berakhir, nonaktif) dan artikel (promo, event, artikel, satu draf) di `data/konten.js`, ikut tersimpan di localStorage |
+| Service | `kontenService` (banner, artikel; bagian rumah dihapus 30 Okt 2026), `adminKontenService` (banner, artikel, pengaturan) |
+| Mock | `routesKonten.js` (`data/beranda.js` dihapus 30 Okt 2026); banner (tayang, terjadwal, berakhir, nonaktif) dan artikel (promo, event, artikel, satu draf) di `data/konten.js`, ikut tersimpan di localStorage |
 
 Catatan implementasi:
 - Status banner (`TAYANG` / `TERJADWAL` / `BERAKHIR` / `NONAKTIF`) dihitung server dari `is_active` + periode WIB. Form memakai tanggal saja: mulai 00.00, selesai 23.59 WIB, jadi tanggal selesai boleh sama dengan tanggal mulai (banner satu hari). Form menampilkan perkiraan status sebelum disimpan.
-- Urutan banner berlaku per posisi (`HOME_SLIDER`, `HOME_SIDE`); ↑ ↓ memberi nomor ulang 1..n dan hanya mengirim yang berubah.
+- Urutan banner berlaku per posisi (`HOME_HERO`, `HOME_SLIDER`, `HOME_SIDE`); ↑ ↓ memberi nomor ulang 1..n dan hanya mengirim yang berubah.
 - "Simpan draf" tidak mengubah status. Artikel yang sudah terbit disimpan dengan "Simpan perubahan" dan tetap terbit (tidak ikut jadi draf); menarik artikel lewat "Batalkan terbit". "Terbitkan" menyimpan isi dulu bila ada perubahan atau artikel masih baru.
 - Isi artikel ditulis teks biasa: baris kosong = paragraf baru, `## ` = subjudul, `- ` = daftar. Dirender per blok tanpa `v-html` (aman dari skrip sisipan).
 - Rasio poin hanya bisa diubah pemegang izin baru `setting.point_ratio` (usulan: Super Admin), dengan konfirmasi. Admin lain melihatnya sebagai teks.
 - Setelah pengaturan disimpan, store `settings` dimuat ulang, jadi header, footer, Info toko, dan semua tombol WhatsApp langsung memakai data baru.
-- Hero 3D: semua warna dari token `--color-rumah-*` (`@theme static` di main.css), animasi 0,8 detik (pengecualian di MASTER.md) dan mati dengan "kurangi animasi"; slider banner tidak berputar otomatis bila "kurangi animasi" aktif.
-- Setiap seksi Beranda memuat datanya sendiri; bila API gagal, seksi itu menampilkan pesan + Coba lagi dan hero tetap tampil ("Lihat produk" jatuh ke `/katalog`).
+- (Sampai 30 Okt 2026) Hero 3D: semua warna dari token `--color-rumah-*` (`@theme static` di main.css), animasi 0,8 detik (pengecualian di MASTER.md) dan mati dengan "kurangi animasi"; slider banner tidak berputar otomatis bila "kurangi animasi" aktif.
+- Setiap seksi Beranda memuat datanya sendiri; bila API gagal, seksi itu menampilkan pesan + Coba lagi dan hero tetap tampil dengan teks bawaan + "Jelajahi katalog".
 
 ### `/admin/banner`
 | Tombol | Izin | Aksi | Gagal / catatan |
 |---|---|---|---|
 | **+ Buat banner** | `banner.create` | → form | — |
 | Form: **Unggah gambar** | `banner.create` | `POST /admin/uploads` | Wajib |
+| Form posisi **Hero Beranda**: Subjudul, **Unggah video**, Label & Tautan tombol, Label & Tautan tombol kedua | `banner.create` | `POST /admin/uploads` (`jenis=video`) | 30 Okt 2026. Gambar tetap wajib (cadangan video). Video MP4/WebM ≤ 20 MB (mock 3 MB); daftar menandai "Dengan video" |
 | Form: tanggal mulai & selesai | — | — | Selesai sebelum mulai → error (tanggal saja: selesai 23.59, jadi sama dengan mulai = banner satu hari) |
 | Form: **Simpan** | `banner.create/update` | `POST/PUT /admin/banners` | — |
 | **Ubah** / **Perpanjang** | `banner.update` | → form | — |
@@ -468,15 +469,15 @@ Catatan implementasi:
 | Rasio poin (`point_ratio_rupiah`) | Super Admin | Peringatan: "Hanya berlaku untuk transaksi baru" |
 | **Simpan** | `setting.update` | `PUT /admin/settings` |
 
-### Publik: Beranda `/` (hero 3D + section Beranda), `/artikel`, `/promo`, `/info-toko`
+### Publik: Beranda `/` (hero banner + section Beranda), `/artikel`, `/promo`, `/info-toko`
 | Tombol | Aksi | Catatan |
 |---|---|---|
-| **Jelajahi katalog** | → `/katalog` | CTA utama |
-| **Tanya via WhatsApp** (hero) | `generalLink()` | — |
-| Hero 3D: daftar bagian rumah | Pilih bagian → terangkat + kartu detail | Komponen `HouseExploded.vue`, CSS 3D murni |
-| Hero 3D: **Rakit jadi rumah / Pisahkan bagian** | Ganti state `exploded` | — |
-| Hero 3D: slider **Putar rumah**, **Atur ulang** | Ubah sudut / kembali ke awal | `prefers-reduced-motion` → animasi mati |
-| Hero 3D: **Lihat produk …** | → `/katalog/[kategori bagian itu]` | Pemetaan bagian → slug kategori dari API |
+| Hero: tombol utama (bawaan **Jelajahi katalog**) | → tautan banner, bawaan `/katalog` | Label & tautan dari banner `HOME_HERO` |
+| Hero: **Tanya via WhatsApp** | `generalLink()` | Selalu tampil |
+| Hero: tombol kedua (mis. **Lihat promo**) | → tautan kedua banner | Tampil bila admin mengisi label + tautan |
+| Hero: **Lihat selengkapnya** | Gulir ke seksi berikutnya + fokus pindah | Hero setinggi layar |
+| Hero: **Jeda video / Putar video** | Jeda/putar video latar | Hanya bila banner punya video; "kurangi animasi" → tidak berputar sendiri |
+| ~~Hero 3D: bagian rumah, Rakit/Pisahkan, Putar rumah, Atur ulang, Lihat produk~~ | Dihapus 30 Okt 2026, KEPUTUSAN #16 | — |
 | Banner: ‹ › titik | Ganti slide | Autoplay berhenti saat hover/fokus |
 | Kartu kategori / produk unggulan / promo / ruangan / brand | Navigasi ke halaman terkait | Pakai komponen dari Fase 1 |
 | **Daftar sekarang** / **Masuk dengan Google** | → `/daftar` / OAuth | Disembunyikan jika sudah login |
@@ -488,7 +489,7 @@ Catatan implementasi:
 - [x] Banner dengan `end_at` kemarin → tidak tampil di beranda, status "Berakhir" di admin (begitu juga banner terjadwal dan nonaktif). Setelah diperpanjang → Tayang dan tampil lagi.
 - [x] Artikel DRAFT tidak bisa dibuka publik tanpa token pratinjau (token salah juga 404); dengan token benar tampil bertanda "Pratinjau draf".
 - [x] Ganti nomor WA di pengaturan → semua tombol WhatsApp memakai nomor baru (Beranda 11 tautan, Info toko, detail artikel, katalog 27 tautan, detail produk), juga setelah halaman dimuat ulang.
-- [x] Hero 3D lancar di HP kelas menengah: 375 px dengan CPU diperlambat 4× → rata-rata 56–60 fps saat animasi rakit/pisah (Chrome headless, render software). Dengan "kurangi animasi" aktif → bagian rumah langsung ke posisi akhir, slider tidak berganti otomatis.
+- [x] (Hero 3D, dihapus 30 Okt 2026) Hero 3D lancar di HP kelas menengah: 375 px dengan CPU diperlambat 4× → rata-rata 56–60 fps saat animasi rakit/pisah (Chrome headless, render software). Dengan "kurangi animasi" aktif → bagian rumah langsung ke posisi akhir, slider tidak berganti otomatis.
 - [x] Tambahan: hero (pilih bagian + kartu + "Lihat produk" ke kategori dari API, rakit/pisah, putar, atur ulang); slider (‹ › titik, aria-current, jeda, autoplay 6 detik berhenti saat fokus); banner samping + kartu Trans Family terlihat utuh; urutan seksi sesuai MASTER.md; semua gambar termuat; ajakan member hilang setelah masuk; `/artikel` + Muat lebih banyak; `/promo` + chip di URL; detail (breadcrumb, isi per blok, pesan WhatsApp berisi judul + tautan, artikel lainnya, isi berisi HTML tetap jadi teks); Info toko (peta di tab baru, Salin alamat → clipboard + toast); akses per role; admin banner (status, nonaktifkan dengan konfirmasi, ↑ ↓ tersimpan + fokus, Perpanjang `#periode`, validasi, unggah gambar, Buang perubahan?); admin artikel (filter di URL, slug otomatis, slug kembar 409, simpan draf → pratinjau, terbitkan/batalkan terbit dengan konfirmasi, tanpa izin `article.publish`); pengaturan (validasi WA & peta, rasio khusus Super Admin + konfirmasi); log aktivitas; API mati → pesan + Coba lagi; 375/768/1024 px tanpa scroll horizontal; konsol bersih.
 
 ---
@@ -563,7 +564,11 @@ Diminta pemilik proyek setelah semua fase selesai. Semua tanpa library baru.
 | Animasi situs publik | View Transitions (pindah halaman), `v-reveal` (scroll reveal + stagger), tombol ditekan `scale(0.97)`, modal/sheet dari arah logis. Panel admin tidak dianimasikan; semua mati saat "kurangi animasi". Rincian di `design-system/transhome/MASTER.md` |
 | Brand untuk jumlah besar | Halaman `/brand` (A–Z, cari, lompat huruf); "Brand pilihan" di Beranda berisi semua brand aktif, logo berjalan (jeda, berhenti saat disorot/difokus); filter Brand katalog punya kotak cari bila > 10 opsi; admin: cari brand, pilihan brand berupa combobox, hapus permanen brand nonaktif yang tidak dipakai produk (`brand.delete`) |
 
-Hasil uji: header 33/33, animasi 22/22, brand 41/41 (Chrome DevTools Protocol); regresi browser Fase 0–6 tetap lulus.
+| Harga boleh disembunyikan (15 Okt 2026) | Per produk switch "Tampilkan harga di website" di form produk dan di modal **Ubah harga** (tombol baru di daftar produk admin: harga, satuan, tampil/sembunyi, tanpa membuka form lengkap). Harga disembunyikan → "Harga via WhatsApp" + tombol "Tanya harga" di kartu, baris katalog, detail produk, dan bar bawah HP; pesan WhatsApp "saya ingin menanyakan harga produk ini". Tabel admin menandai "Disembunyikan" / "Belum ada harga". KEPUTUSAN #15 |
+| Hero banner + halaman Brand (30 Okt 2026) | Hero rumah 3D dihapus, diganti `HeroBanner` sesuai wireframe XLSX: gambar/video dari banner posisi baru **Hero Beranda** (`HOME_HERO`) + judul, subjudul; hero setinggi layar dengan tombol utama, Tanya via WhatsApp, tombol kedua opsional (admin), dan Lihat selengkapnya; video tanpa suara berulang, tombol Jeda/Putar, tidak berputar sendiri saat "kurangi animasi", tidak dimuat saat hemat data. Admin: kolom Subjudul, Video hero (`VideoField`), Label & Tautan tombol. Seksi Beranda lain tidak berubah. `/brand` mengikuti sheet "Brand": "N Brand Partner", Cari (tombol), filter kategori, A–Z, kartu 6/3/2 kolom, 24 per halaman, filter di URL. KEPUTUSAN #16 |
+| SEO halaman Brand (30 Okt 2026) | `useSeo` diperluas (canonical, robots, Open Graph, `image`, JSON-LD) tanpa library. `/brand` dan `/brand/:slug`: judul/deskripsi dinamis, BreadcrumbList + CollectionPage/ItemList/Brand, hasil cari/filter `noindex, follow` + canonical ke halaman bersih, brand tanpa produk `noindex`. Paginasi `/brand` dan katalog berupa `<a href>` (klik tetap tanpa muat ulang). Breadcrumb detail brand jadi Beranda › Brand › nama. `public/robots.txt`, og:site_name/og:locale di `index.html`, `VITE_SITE_URL`. KEPUTUSAN #17 |
+
+Hasil uji: header 33/33, animasi 22/22, brand 41/41, harga 34/34, hero banner + `/brand` + SEO 64/64, uji asap SEO semua halaman 23/23, video hero 2,87 MB tersimpan & tampil setelah muat ulang (Chrome DevTools Protocol); regresi browser Fase 0–6 tetap lulus (harga: lihat catatan uji di bawah).
 
 Katalog produk sudah memakai paginasi server (24 per halaman), jadi jumlah produk dibatasi backend, bukan browser. Untuk ribuan produk backend perlu index di kolom pencarian & filter (`sku`, `name`, `category_id`, `brand_id`, `is_active`).
 
@@ -652,7 +657,7 @@ Semua `/admin/*`: tanpa sesi → 401, bukan admin atau tidak punya izin → 403.
 | `POST` / `PUT /admin/products(/:id)` | Kolom produk + `specifications` (objek) + `images: [{ image_url, is_primary, sort_order }]` + `room_ids`. 422 per field (`images` bila aktif tanpa foto utama), 409 `sku` / `slug` |
 | `PATCH /admin/products/:id` | `{ is_featured }`, `{ is_active }` (422 tanpa foto utama), `{ stock_status, stock_qty_label }` |
 | `GET` / `POST` / `PUT` / `PATCH /admin/categories`, `/admin/brands`, `/admin/rooms` | Daftar berisi yang nonaktif + `product_count`. Simpan `{ name, slug, is_active, parent_id \| image_url \| logo_url \| image_cover }`; 409 slug; kategori maks 2 tingkat (422 `parent_id`); cover ruangan wajib (422). `PATCH { is_active }` / `{ sort_order }` |
-| `POST /admin/uploads` | multipart `file` + `jenis` (`gambar`: JPG/PNG/WebP ≤ 2 MB, `dokumen`: PDF ≤ 10 MB) → `{ url, name, size, type }`; 422 `errors.file` |
+| `POST /admin/uploads` | multipart `file` + `jenis` (`gambar`: JPG/PNG/WebP ≤ 2 MB, `dokumen`: PDF ≤ 10 MB, `video`: MP4/WebM ≤ 20 MB sejak 30 Okt 2026) → `{ url, name, size, type }`; 422 `errors.file` |
 | `POST /admin/qontak/contacts/:id/retry` | 202 `{ sync_status: 'PENDING', … }`; status akhir dibaca lewat `GET /admin/qontak/contacts/:id` (frontend mengecek tiap 1 detik, maks 15 kali) |
 
 Setiap perubahan admin mencatat `activity_logs` (`action` = kode izin, mis. `product.update`).
@@ -693,12 +698,12 @@ Waktu `start_at`, `end_at`, `published_at` = TIMESTAMP WIB tanpa zona, sama deng
 
 | Endpoint | Isi |
 |---|---|
-| `GET /banners?position=` | Hanya banner tayang (aktif dan dalam periode), urut `sort_order`: `{ id, title, image_url, link_url, position, start_at, end_at }`. `position` = `HOME_SLIDER` / `HOME_SIDE` |
+| `GET /banners?position=` | Hanya banner tayang (aktif dan dalam periode), urut `sort_order`: `{ id, title, image_url, link_url, position, start_at, end_at }`. `position` = `HOME_HERO` / `HOME_SLIDER` / `HOME_SIDE`. Khusus `HOME_HERO` + `subtitle`, `video_url`, `cta_label`, `cta2_label`, `cta2_url` (boleh `null`); Beranda memakai yang pertama |
 | `GET /articles?type=&page=&per_page=` | Hanya `PUBLISHED`, terbaru dulu, `per_page` bawaan 9. `type` boleh beberapa dipisah koma (`PROMO,EVENT`); tanpa `type` → semua kecuali `HALAMAN`. Item `{ id, type, title, slug, thumbnail_url, excerpt, published_at }` (`excerpt` = paragraf pertama, ±160 karakter) |
 | `GET /articles/:slug?preview=` | Item di atas + `content`, `status`. Draf hanya dengan token pratinjau yang benar; selain itu 404 seperti artikel yang tidak ada |
-| `GET /home/house-parts` | `[{ key, category: { slug, name } \| null }]` untuk bagian `pondasi`, `lantai`, `dinding`, `bukaan`, `sanitasi`, `atap` (pemetaan ke kategori ditentukan backend; kategori nonaktif → `null`) |
+| ~~`GET /home/house-parts`~~ (tidak dipakai lagi sejak 30 Okt 2026) | `[{ key, category: { slug, name } \| null }]` untuk bagian `pondasi`, `lantai`, `dinding`, `bukaan`, `sanitasi`, `atap` (pemetaan ke kategori ditentukan backend; kategori nonaktif → `null`) |
 | `GET /admin/banners` | Semua banner + `status` (`TAYANG` / `TERJADWAL` / `BERAKHIR` / `NONAKTIF`, dihitung server). Izin `banner.view` |
-| `POST /admin/banners`, `PUT /admin/banners/:id` | `{ title, image_url, link_url?, position, start_date, end_date?, is_active }`, tanggal `YYYY-MM-DD` → disimpan `T00:00:00` / `T23:59:59`. 422: `title`, `image_url`, `position`, `start_date`, `end_date` (sebelum mulai), `link_url` (harus diawali `/` atau `https://`). Banner baru masuk urutan terakhir di posisinya. Izin `banner.create` / `banner.update` |
+| `POST /admin/banners`, `PUT /admin/banners/:id` | `{ title, image_url, link_url?, position, start_date, end_date?, is_active }`, tanggal `YYYY-MM-DD` → disimpan `T00:00:00` / `T23:59:59`. 422: `title`, `image_url`, `position`, `start_date`, `end_date` (sebelum mulai), `link_url` (harus diawali `/` atau `https://`). Untuk `HOME_HERO` juga `subtitle?` (≤ 160), `video_url?` (URL hasil unggah), `cta_label?` (≤ 30), `cta2_label?` (≤ 30) + `cta2_url?` (berpasangan: label tanpa tautan → 422 `cta2_url`, tautan tanpa label → 422 `cta2_label`; diawali `/` atau `https://`); posisi lain mengabaikannya. Banner baru masuk urutan terakhir di posisinya. Izin `banner.create` / `banner.update` |
 | `PATCH /admin/banners/:id` | `{ is_active }` atau `{ sort_order }`. Izin `banner.update` |
 | `GET /admin/articles?q=&type=&status=&page=` | `{ id, type, title, slug, thumbnail_url, status, published_at, updated_at, author_name }`, urut terakhir diubah. Izin `article.view` |
 | `GET /admin/articles/:id` | + `content`, `preview_token` |
@@ -742,6 +747,9 @@ Format error yang disarankan agar helper error form bisa memetakan ke field:
 - `POST /admin/uploads` perlu penyimpanan file (lokal/objek) yang mengembalikan URL publik; mock memakai data URL.
 - Akun (Fase 3): endpoint di "Detail kontrak akun", termasuk `POST /auth/email/verify` (belum ada di daftar awal), pengiriman email verifikasi & reset password, dan alur Google yang kembali ke `return_to#token=…`.
 - Konten (Fase 5): endpoint di "Detail kontrak konten". Tabel `articles` belum punya kolom untuk token pratinjau draf: tambah kolom `preview_token` atau buat token bertanda tangan (mis. HMAC id artikel + kedaluwarsa) di `GET /admin/articles/:id`. Status banner dihitung server dengan waktu WIB. Izin baru `setting.point_ratio` untuk rasio poin.
-- Brand (8 Okt 2026): `GET /brands` mengirim semua brand aktif + `product_count` (produk aktif), tanpa paginasi (ratusan brand masih kecil). `DELETE /admin/brands/:id` (izin baru `brand.delete`, usulan: Super Admin + Admin Katalog): 422 bila brand masih aktif, 409 `{ message, product_count }` bila masih dipakai produk mana pun (aktif atau nonaktif) — penting karena FK `products.brand_id` memakai `ON DELETE SET NULL`, jadi tanpa cek ini produk diam-diam kehilangan brand. 204 bila berhasil; dicatat `brand.delete` dengan `before_data`.
+- Harga (15 Okt 2026): migration `products.show_price BOOLEAN NOT NULL DEFAULT TRUE` dan `products.price_general` boleh NULL. Validasi server: harga wajib bila `show_price` true; bila false harga boleh kosong. API publik (`/products`, `/products/:slug`) **tidak mengirim harga** produk dengan `show_price` false (`price_general: null`, `show_price: false`) supaya harga tidak bocor; produk itu tidak ikut filter `min`/`max` dan `facets.price`, dan diletakkan di akhir `sort=harga_terendah|harga_tertinggi`. `PATCH /admin/products/:id` menerima `{ price_general, unit_sale, show_price }` (sebagian boleh) untuk ubah cepat harga, izin `product.update`, dicatat `product.update` dengan harga lama/baru.
+- Hero banner (30 Okt 2026): kolom baru `banners.subtitle VARCHAR(160) NULL`, `banners.video_url VARCHAR(255) NULL`, `banners.cta_label VARCHAR(30) NULL`, `banners.cta2_label VARCHAR(30) NULL`, `banners.cta2_url VARCHAR(255) NULL`; `position` (VARCHAR) menerima `HOME_HERO`. `POST /admin/uploads` menerima `jenis=video` (MP4/WebM, usulan ≤ 20 MB) dan perlu penyimpanan file yang bisa melayani video (HTTP range request). `GET /home/house-parts` tidak dipakai lagi.
+- SEO (30 Okt 2026, KEPUTUSAN #17): `GET /sitemap.xml` dari backend (Beranda, `/katalog/*`, `/produk/*`, `/brand`, `/brand/*` yang punya produk, `/ruangan/*`, `/artikel/*`, `/promo`, `/info-toko`; `lastmod` dari `updated_at`), lalu aktifkan baris `Sitemap:` di `public/robots.txt` dengan domain produksi dan isi `VITE_SITE_URL`. Server sebaiknya mengembalikan HTTP 404 untuk slug yang tidak ada. Pratinjau tautan per halaman di WhatsApp/Facebook butuh prerender/SSR (mis. backend menyisipkan meta per URL), belum dikerjakan.
+- Brand (8 Okt 2026): `GET /brands` mengirim semua brand aktif + `product_count` (produk aktif) + `categories: [{ slug, name }]` (kategori utama dari produk aktifnya, untuk filter di `/brand`, sejak 30 Okt 2026), tanpa paginasi (ratusan brand masih kecil). `DELETE /admin/brands/:id` (izin baru `brand.delete`, usulan: Super Admin + Admin Katalog): 422 bila brand masih aktif, 409 `{ message, product_count }` bila masih dipakai produk mana pun (aktif atau nonaktif) — penting karena FK `products.brand_id` memakai `ON DELETE SET NULL`, jadi tanpa cek ini produk diam-diam kehilangan brand. 204 bila berhasil; dicatat `brand.delete` dengan `before_data`.
 - Sistem (Fase 6): endpoint di "Detail kontrak sistem". Seed tabel `permissions` (32 izin dengan `menu_id`) dan `role_permissions` yang dipakai mock ada di `fase-6-sistem/src/services/mock/data/sistem.js` dan `data/akun.js` (`rolePermissions`). Tabel `users` belum punya kolom nama untuk admin (nama member ada di `member_profiles`): tambah `users.full_name` atau tabel profil admin. `activity_logs` belum punya kolom id data yang diubah, jadi `before_data` / `after_data` perlu memuat penanda (SKU, nama, kode member); usulan: tambah `entity_type` + `entity_id`. Pengiriman ke Qontak perlu worker/antrean yang mengisi `sync_logs` (termasuk `request_payload` / `response_payload`) dan `qontak_contacts.sync_status`. Admin belum punya halaman ganti password sendiri; sementara lewat "Reset password" (link email).
 - Membership (Fase 4): endpoint di "Detail kontrak membership admin". `users.last_login_at` perlu diisi saat login. Nomor nota sebaiknya disimpan dalam huruf besar, karena constraint `UNIQUE (type, reference_no)` di PostgreSQL membedakan huruf besar/kecil. Izin `point.adjust` dipakai untuk Penyesuaian (usulan: Super Admin saja).

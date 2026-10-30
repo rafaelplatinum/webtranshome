@@ -6,6 +6,7 @@ import PriceTag from '@/components/ui/PriceTag.vue'
 import StockBadge from '@/components/ui/StockBadge.vue'
 import WhatsAppButton from '@/components/layout/WhatsAppButton.vue'
 import { useWhatsApp } from '@/composables/useWhatsApp'
+import { labelTanyaProduk } from '@/utils/whatsapp'
 
 const props = defineProps({
   // Item dari GET /products: { sku, name, slug, price_general, unit_sale, stock_status, stock_qty_label, brand, primary_image_url }
@@ -15,7 +16,6 @@ const props = defineProps({
 const { productLink } = useWhatsApp()
 const tautan = computed(() => `/produk/${props.product.slug}`)
 const linkWhatsApp = computed(() => productLink(props.product))
-const habis = computed(() => props.product.stock_status === 'HABIS')
 </script>
 
 <template>
@@ -45,9 +45,9 @@ const habis = computed(() => props.product.stock_status === 'HABIS')
         {{ product.name }}
       </RouterLink>
       <span class="font-mono text-xs text-faint">SKU {{ product.sku }}</span>
-      <PriceTag class="mt-1" size="card" :price="product.price_general" :unit="product.unit_sale" />
+      <PriceTag class="mt-1" size="card" :price="product.price_general" :show="product.show_price !== false" :unit="product.unit_sale" />
       <StockBadge :status="product.stock_status" :keterangan="product.stock_qty_label ?? ''" />
-      <WhatsAppButton class="mt-auto" :href="linkWhatsApp" :label="habis ? 'Tanya ketersediaan' : 'Tanya via WhatsApp'" block wrap />
+      <WhatsAppButton class="mt-auto" :href="linkWhatsApp" :label="labelTanyaProduk(product)" block wrap />
     </div>
   </article>
 </template>

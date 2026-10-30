@@ -53,40 +53,6 @@
   --color-danger-foreground: #ffffff;
 }
 
-/*
- * Ilustrasi rumah 3D di hero Beranda (Fase 5, components/beranda/geometriRumah.js), dari sketsa "Landing3D".
- * Satu warna dasar per material; sisi depan/samping digelapkan dengan color-mix di komponen.
- * `static`: variabel selalu tersedia walau tidak dipakai sebagai class Tailwind.
- */
-@theme static {
-  --color-rumah-beton: #bdb6aa;
-  --color-rumah-pondasi: #a39c90;
-  --color-rumah-kolom: #a8a194;
-  --color-rumah-lantai: #efeae2;
-  --color-rumah-teras: #e4ddd2;
-  --color-rumah-nat: #c9bfb0;
-  --color-rumah-dinding: #f1e8da;
-  --color-rumah-dinding-dalam: #fbf7f0;
-  --color-rumah-lubang: #3b342c;
-  --color-rumah-kaca: #8db8d6;
-  --color-rumah-kaca-bingkai: #6b93b0;
-  --color-rumah-kayu: #8a5a38;
-  --color-rumah-porselen: #e2e8f0;
-  --color-rumah-air: #bfdbfe;
-  --color-rumah-kabinet: #a0714f;
-  --color-rumah-pipa: #3b82f6;
-  --color-rumah-pipa-panas: #f59e0b;
-  --color-rumah-panel: #64748b;
-  --color-rumah-indikator: #22c55e;
-  --color-rumah-lampu: #fde68a;
-  --color-rumah-gevel: #e9dfce;
-  --color-rumah-genteng: #ea580c;
-  --color-rumah-bubungan: #7c2d12;
-  --color-rumah-cerobong: #78716c;
-  --color-rumah-talang: #a8a29e;
-  --color-rumah-bayangan: #16222d;
-}
-
 /* Sembunyikan scrollbar (carousel); konten tetap bisa digeser dan punya tombol navigasi. */
 @utility scrollbar-none {
   scrollbar-width: none;

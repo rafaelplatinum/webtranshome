@@ -1,5 +1,6 @@
 <script setup>
 import { RouterLink, RouterView } from 'vue-router'
+import LogoTranshome from '@/components/layout/LogoTranshome.vue'
 </script>
 
 <!-- Layout halaman masuk, daftar, verifikasi, dan password: fokus ke satu form. -->
@@ -12,7 +13,7 @@ import { RouterLink, RouterView } from 'vue-router'
           class="rounded-md text-2xl font-extrabold tracking-tight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           aria-label="Transhome, ke beranda"
         >
-          Trans<span class="text-primary">home</span>
+          <LogoTranshome />
         </RouterLink>
         <RouterLink
           to="/"

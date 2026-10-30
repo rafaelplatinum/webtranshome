@@ -5,11 +5,26 @@ export function buatLinkWhatsApp(nomorWa, pesan) {
   return `https://wa.me/${normalisasiNomorHp(nomorWa)}?text=${encodeURIComponent(pesan)}`
 }
 
-/** "Tanya via WhatsApp" di produk; produk HABIS memakai pesan "Tanya ketersediaan". */
-export function pesanTanyaProduk({ sku, nama, url, habis = false }) {
+/**
+ * Harga produk tidak ditampilkan: admin mematikan "Tampilkan harga di website" (`show_price` false)
+ * atau produk memang belum diberi harga. Pelanggan melihat "Harga via WhatsApp".
+ */
+export const hargaDisembunyikan = (produk) => produk?.show_price === false || produk?.price_general == null || produk?.price_general === ''
+
+/** Label tombol WhatsApp produk: stok HABIS paling penting, lalu harga yang disembunyikan. */
+export function labelTanyaProduk(produk) {
+  if (produk?.stock_status === 'HABIS') return 'Tanya ketersediaan'
+  if (hargaDisembunyikan(produk)) return 'Tanya harga'
+  return 'Tanya via WhatsApp'
+}
+
+/** "Tanya via WhatsApp" di produk; HABIS → tanya ketersediaan; harga disembunyikan → tanya harga. */
+export function pesanTanyaProduk({ sku, nama, url, habis = false, tanyaHarga = false }) {
   const pembuka = habis
     ? 'Halo Transhome, apakah produk ini akan tersedia lagi?'
-    : 'Halo Transhome, saya ingin bertanya tentang produk ini:'
+    : tanyaHarga
+      ? 'Halo Transhome, saya ingin menanyakan harga produk ini:'
+      : 'Halo Transhome, saya ingin bertanya tentang produk ini:'
   return [pembuka, nama, `SKU: ${sku}`, url].join('\n')
 }
 
