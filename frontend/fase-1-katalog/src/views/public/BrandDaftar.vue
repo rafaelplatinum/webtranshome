@@ -86,14 +86,12 @@ useSeo({
   title: () => {
     if (status.value !== 'ready') return 'Brand partner'
     if (judulFilter.value) return judulFilter.value
-    const n = formatAngka(brand.value.length)
-    return halaman.value > 1 ? `${n} brand partner – halaman ${halaman.value}` : `${n} brand bahan bangunan & elektronik`
+    return halaman.value > 1 ? `Brand Partner – halaman ${halaman.value}` : 'Brand Partner bahan bangunan & elektronik'
   },
   description: () => {
     if (status.value !== 'ready') return 'Daftar brand bahan bangunan dan elektronik yang tersedia di Transhome Sleman.'
     const contoh = (adaFilter.value ? hasil.value : brand.value).slice(0, 5).map((b) => b.name).join(', ')
-    const jumlah = formatAngka(adaFilter.value ? hasil.value.length : brand.value.length)
-    return `${jumlah} brand partner Transhome Sleman${contoh ? `, antara lain ${contoh}` : ''}. Lihat produk tiap brand, cek harga dan stok, lalu tanya lewat WhatsApp.`
+    return `Brand partner Transhome Sleman${contoh ? `, antara lain ${contoh}` : ''}. Lihat produk tiap brand, cek harga dan stok, lalu tanya lewat WhatsApp.`
   },
   canonical: () => (adaFilter.value || halaman.value === 1 ? '/brand' : `/brand?page=${halaman.value}`),
   robots: () => (adaFilter.value ? 'noindex, follow' : null),
@@ -133,7 +131,7 @@ const kelasChip = (aktif) => [
   <div class="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:py-6">
     <Breadcrumb :items="[{ label: 'Beranda', to: '/' }, { label: 'Brand' }]" />
     <div class="mt-2 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
-      <h1 class="text-2xl font-extrabold sm:text-3xl">{{ status === 'ready' ? `${formatAngka(brand.length)} Brand Partner` : 'Brand Partner' }}</h1>
+      <h1 class="text-2xl font-extrabold sm:text-3xl">Brand Partner</h1>
       <RouterLink to="/" class="rounded-sm text-sm font-bold text-primary hover:text-primary-hover hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
         Kembali ke beranda
       </RouterLink>
