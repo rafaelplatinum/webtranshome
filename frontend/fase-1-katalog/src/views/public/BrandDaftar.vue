@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
-import { ArrowRight, Search, SearchX } from 'lucide-vue-next'
+import { ArrowRight, Search, SearchX, Star } from 'lucide-vue-next'
 import Breadcrumb from '@/components/ui/Breadcrumb.vue'
 import Button from '@/components/ui/Button.vue'
 import EmptyState from '@/components/ui/EmptyState.vue'
@@ -70,6 +70,15 @@ const rentang = computed(() => {
   const awal = (halaman.value - 1) * PER_HALAMAN + 1
   return `Menampilkan ${awal}–${awal + tampil.value.length - 1} dari ${formatAngka(hasil.value.length)} brand`
 })
+// Brand unggulan: 6 brand dengan produk aktif terbanyak. Belum ada penanda unggulan per brand di data/API,
+// jadi dihitung dari product_count. TODO: ganti ke brands.is_featured bila backend menyediakannya.
+const JUMLAH_UNGGULAN = 6
+const unggulan = computed(() =>
+  brand.value
+    .filter((b) => b.product_count > 0)
+    .sort((a, b) => b.product_count - a.product_count || a.name.localeCompare(b.name, 'id'))
+    .slice(0, JUMLAH_UNGGULAN),
+)
 const adaFilter = computed(() => Boolean(nilai.value.q || nilai.value.kategori || nilai.value.huruf))
 
 // SEO: halaman bersih (/brand, /brand?page=N) boleh diindeks; hasil cari/filter = noindex + canonical ke /brand
@@ -146,6 +155,31 @@ const kelasChip = (aktif) => [
     <EmptyState v-else-if="!brand.length" class="mt-6" title="Belum ada brand" description="Daftar brand sedang disiapkan. Sementara itu, kamu bisa menjelajah katalog." />
 
     <template v-else>
+      <section v-if="!adaFilter && unggulan.length" aria-labelledby="judul-brand-unggulan" class="mt-6">
+        <h2 id="judul-brand-unggulan" class="flex items-center gap-2 text-xl font-extrabold">
+          <Star class="size-5 text-warning" aria-hidden="true" />
+          Brand Unggulan
+        </h2>
+        <ul class="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+          <li v-for="b in unggulan" :key="b.id">
+            <RouterLink
+              :to="`/brand/${b.slug}`"
+              class="group flex h-full flex-col items-center gap-2 rounded-xl border-2 border-secondary bg-primary-soft p-3 text-center transition-colors duration-150 hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <span class="flex h-20 w-full items-center justify-center rounded-md bg-surface px-2">
+                <img v-if="b.logo_url" :src="b.logo_url" alt="" width="140" height="56" loading="lazy" class="max-h-14 w-auto object-contain" />
+                <span v-else class="text-xs font-bold tracking-wide text-faint uppercase" aria-hidden="true">Logo</span>
+              </span>
+              <span class="font-bold">{{ b.name }}</span>
+              <span class="text-xs text-muted">{{ formatAngka(b.product_count) }} produk</span>
+              <span class="mt-auto inline-flex items-center gap-1 text-sm font-bold text-primary group-hover:underline">
+                Lihat brand <ArrowRight class="size-4" aria-hidden="true" />
+              </span>
+            </RouterLink>
+          </li>
+        </ul>
+      </section>
+
       <form role="search" aria-label="Cari brand" class="mt-6 flex items-end gap-2" @submit.prevent="cari">
         <div class="min-w-0 flex-1">
           <Input v-model="teks" label="Cari brand" hide-label type="search" placeholder="Cari nama brand" autocomplete="off" enterkeyhint="search" hint="Contoh: Alfa Keramik, Nu Semen" />
