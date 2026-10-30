@@ -32,6 +32,7 @@ const baris = computed(() => {
 const KOLOM = [
   { key: 'nama', label: 'Brand', class: 'min-w-56' },
   { key: 'produk', label: 'Produk', align: 'right' },
+  { key: 'unggulan', label: 'Unggulan', align: 'center' },
   { key: 'aktif', label: 'Aktif', align: 'center' },
   { key: 'aksi', label: 'Aksi', align: 'right' },
 ]
@@ -71,7 +72,7 @@ async function hapus() {
 <template>
   <div class="flex flex-col gap-4">
     <div class="flex flex-wrap items-center justify-between gap-3">
-      <p class="text-sm text-muted">Brand untuk filter katalog dan halaman /brand. Brand juga bisa ditambah langsung dari form produk.</p>
+      <p class="text-sm text-muted">Brand untuk filter katalog dan halaman /brand. Brand yang diberi tanda Unggulan tampil di bagian Brand Unggulan (tanpa batas jumlah). Brand juga bisa ditambah langsung dari form produk.</p>
       <Button v-if="can('brand.create')" @click="m.bukaForm()">
         <template #icon><Plus class="size-4.5" aria-hidden="true" /></template>
         Tambah brand
@@ -116,6 +117,15 @@ async function hapus() {
           </div>
         </template>
         <template #cell-produk="{ row }"><span class="tabular-nums">{{ row.product_count }}</span></template>
+        <template #cell-unggulan="{ row }">
+          <Switch
+            :model-value="Boolean(row.is_featured)"
+            :label="`Brand unggulan: ${row.name}`"
+            hide-label
+            :disabled="!can('brand.update') || row.sibuk"
+            @update:model-value="(v) => m.ubahUnggulan(row, v)"
+          />
+        </template>
         <template #cell-aktif="{ row }">
           <Switch
             :model-value="row.is_active"

@@ -70,15 +70,8 @@ const rentang = computed(() => {
   const awal = (halaman.value - 1) * PER_HALAMAN + 1
   return `Menampilkan ${awal}–${awal + tampil.value.length - 1} dari ${formatAngka(hasil.value.length)} brand`
 })
-// Brand unggulan: 6 brand dengan produk aktif terbanyak. Belum ada penanda unggulan per brand di data/API,
-// jadi dihitung dari product_count. TODO: ganti ke brands.is_featured bila backend menyediakannya.
-const JUMLAH_UNGGULAN = 6
-const unggulan = computed(() =>
-  brand.value
-    .filter((b) => b.product_count > 0)
-    .sort((a, b) => b.product_count - a.product_count || a.name.localeCompare(b.name, 'id'))
-    .slice(0, JUMLAH_UNGGULAN),
-)
+// Brand unggulan: brand aktif yang ditandai admin (is_featured), tanpa batas jumlah, urut nama.
+const unggulan = computed(() => brand.value.filter((b) => b.is_featured))
 const adaFilter = computed(() => Boolean(nilai.value.q || nilai.value.kategori || nilai.value.huruf))
 
 // SEO: halaman bersih (/brand, /brand?page=N) boleh diindeks; hasil cari/filter = noindex + canonical ke /brand

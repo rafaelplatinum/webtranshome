@@ -350,6 +350,7 @@ function kolomMaster(jenis, body) {
   const m = MASTER[jenis]
   const kolom = { name: body.name.trim(), slug: body.slug, [m.gambar]: body[m.gambar] || null, is_active: body.is_active !== false, updated_at: sekarang() }
   if (jenis === 'categories') kolom.parent_id = kosong(body.parent_id) ? null : Number(body.parent_id)
+  if (jenis === 'brands' && 'is_featured' in body) kolom.is_featured = Boolean(body.is_featured)
   return kolom
 }
 
@@ -361,6 +362,7 @@ function buatMaster(jenis) {
     const salah = validasiMaster(jenis, body)
     if (salah) return salah
     const baris = { id: idBaru(m.tabel), ...kolomMaster(jenis, body), created_at: sekarang() }
+    if (jenis === 'brands') baris.is_featured ??= false
     if (m.urut) {
       const saudara = jenis === 'categories' ? m.tabel.filter((x) => x.parent_id === baris.parent_id) : m.tabel
       baris.sort_order = saudara.reduce((maks, x) => Math.max(maks, x.sort_order), 0) + 1
@@ -398,6 +400,7 @@ function patchMaster(jenis) {
     if (!baris) return tidakDitemukan(`${m.label} tidak ditemukan.`)
     const lama = { ...baris }
     if ('is_active' in body) baris.is_active = Boolean(body.is_active)
+    if (jenis === 'brands' && 'is_featured' in body) baris.is_featured = Boolean(body.is_featured)
     if (m.urut && 'sort_order' in body) baris.sort_order = Number(body.sort_order)
     baris.updated_at = sekarang()
     catat(u, `${m.izin}.update`, m.modul, perubahan(lama, baris, ['name']))

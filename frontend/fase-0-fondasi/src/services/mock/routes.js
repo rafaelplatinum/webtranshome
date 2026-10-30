@@ -232,7 +232,7 @@ function daftarMerek() {
   }
   const data = brands
     .filter((b) => b.is_active)
-    .map((b) => ({ id: b.id, name: b.name, slug: b.slug, logo_url: b.logo_url, product_count: produkAktif(b).length, categories: kategoriUtama(b) }))
+    .map((b) => ({ id: b.id, name: b.name, slug: b.slug, logo_url: b.logo_url, is_featured: b.is_featured, product_count: produkAktif(b).length, categories: kategoriUtama(b) }))
   return { data: { data } }
 }
 

@@ -48,6 +48,21 @@ export function useMasterData(jenis) {
     else konfirmasi.value = baris
   }
 
+  /** Brand unggulan (tanpa batas jumlah): langsung berubah, dikembalikan + toast bila gagal. */
+  async function ubahUnggulan(baris, nilai) {
+    baris.is_featured = nilai
+    baris.sibuk = true
+    try {
+      await patchMaster(jenis, baris.id, { is_featured: nilai })
+      ui.tampilkanToast({ pesan: nilai ? `${baris.name} jadi brand unggulan.` : `${baris.name} tidak lagi jadi brand unggulan.`, jenis: 'success' })
+    } catch (error) {
+      baris.is_featured = !nilai
+      ui.tampilkanToast({ pesan: pesanError(error), jenis: 'danger' })
+    } finally {
+      baris.sibuk = false
+    }
+  }
+
   async function nonaktifkan() {
     const baris = konfirmasi.value
     sedangNonaktif.value = true
@@ -96,5 +111,5 @@ export function useMasterData(jenis) {
     ui.tampilkanToast({ pesan: `${hasil.name} disimpan.`, jenis: 'success' })
   }
 
-  return { status, daftar, pesan, muat, konfirmasi, sedangNonaktif, ubahAktif, nonaktifkan, geser, formBuka, dipilih, bukaForm, tersimpan }
+  return { status, daftar, pesan, muat, konfirmasi, sedangNonaktif, ubahAktif, ubahUnggulan, nonaktifkan, geser, formBuka, dipilih, bukaForm, tersimpan }
 }

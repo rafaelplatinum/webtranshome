@@ -76,7 +76,7 @@ export const brands = [
   ...BRAND_TAMBAHAN,
   'Merek Lama',
 ].map((name, i) => ({
-  id: i + 1, name, slug: slugify(name), logo_url: null, is_active: name !== 'Merek Lama', created_at: dibuat, updated_at: dibuat,
+  id: i + 1, name, slug: slugify(name), logo_url: null, is_active: name !== 'Merek Lama', is_featured: i < 6, created_at: dibuat, updated_at: dibuat,
 }))
 
 const warnaRuangan = { Dapur: '#E7D7C1', 'Kamar mandi': '#D4E2EA', Fasad: '#D6D3CD', 'Ruang keluarga': '#E9DFCE', Teras: '#DCE3D2' }
