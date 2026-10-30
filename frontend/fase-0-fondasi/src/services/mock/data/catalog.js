@@ -157,13 +157,19 @@ export const products = semua.map(
     description: `${name}. Deskripsi lengkap diisi dari Master Barang.\nCocok untuk proyek rumah tinggal maupun renovasi.`,
     specifications,
     datasheet_pdf_url: i === 0 ? 'https://example.com/datasheet/keramik-lantai-abu-doff.pdf' : null,
-    price_general, unit_sale, min_order, stock_status, stock_qty_label, is_featured, is_active,
+    price_general, show_price: true, unit_sale, min_order, stock_status, stock_qty_label, is_featured, is_active,
     meta_title: i === 0 ? 'Keramik lantai abu doff 40×40 — harga & spesifikasi' : null,
     meta_description: i === 0 ? 'Keramik lantai abu doff 40×40 cm, isi 6 pcs per dus. Cek harga, stok, dan tanya langsung lewat WhatsApp.' : null,
     created_at: dibuat,
     updated_at: `2026-10-${String((i % 6) + 1).padStart(2, '0')}T${String(8 + (i % 10)).padStart(2, '0')}:00:00`,
   }),
 )
+
+// Harga tidak ditampilkan (products.show_price = false, 15 Okt 2026): pemanas air harganya tetap disimpan untuk
+// catatan admin; engsel pintu (stok habis) sama sekali belum diberi harga. Pelanggan melihat "Harga via WhatsApp".
+for (const [sku, harga] of [['ELK-PMA-15', '1450000.00'], ['HRD-ENG-04', null]]) {
+  Object.assign(products.find((p) => p.sku === sku), { show_price: false, price_general: harga })
+}
 
 // Produk 1–4: galeri 4 foto; produk 5–9: 1 foto; sisanya tanpa foto (menguji placeholder).
 const LABEL_FOTO = ['Foto utama', 'Detail tekstur', 'Terpasang di ruangan', 'Kemasan']

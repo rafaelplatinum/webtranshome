@@ -19,14 +19,23 @@ function gambarContoh(judul, keterangan, latar, { lebar = 1600, tinggi = 640 } =
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`
 }
 
-const banner = (id, title, latar, link_url, position, mulai, selesai, sort_order, is_active = true) => ({
-  id, title, image_url: gambarContoh('', 'Gambar banner promo', latar, position === 'HOME_SIDE' ? { lebar: 800, tinggi: 520 } : {}),
+const UKURAN_CONTOH = { HOME_SIDE: { lebar: 800, tinggi: 520 }, HOME_HERO: { lebar: 1920, tinggi: 800 } }
+
+// subtitle, video_url, cta_label, cta2_label, cta2_url hanya dipakai banner HOME_HERO (hero Beranda, 30 Okt 2026).
+const banner = (id, title, latar, link_url, position, mulai, selesai, sort_order, is_active = true, hero = {}) => ({
+  id, title, image_url: gambarContoh('', position === 'HOME_HERO' ? 'Foto / video hero' : 'Gambar banner promo', latar, UKURAN_CONTOH[position] ?? {}),
   link_url, position, start_at: `${mulai}T00:00:00`, end_at: selesai ? `${selesai}T23:59:59` : null, sort_order, is_active,
+  subtitle: hero.subtitle ?? null, video_url: hero.video_url ?? null, cta_label: hero.cta_label ?? null,
+  cta2_label: hero.cta2_label ?? null, cta2_url: hero.cta2_url ?? null,
   created_at: '2026-09-01T09:00:00', updated_at: '2026-09-01T09:00:00',
 })
 
-// position: HOME_SLIDER (slider utama Beranda) atau HOME_SIDE (kartu di samping slider).
+// position: HOME_HERO (hero paling atas Beranda: gambar atau video), HOME_SLIDER (slider utama),
+// HOME_SIDE (kartu di samping slider).
 export const banners = [
+  banner(8, 'Dari pondasi sampai atap, semua kebutuhan rumah ada di sini.', '#3A4A5A', '/katalog', 'HOME_HERO', tanggalRelatif(-30), null, 1, true, {
+    subtitle: 'Cari bahan untuk tiap tahap rumahmu, cek harga dan stok.', cta_label: 'Jelajahi katalog', cta2_label: 'Lihat promo', cta2_url: '/promo',
+  }),
   banner(1, 'Promo keramik lantai', '#E7D7C1', '/katalog/keramik-lantai', 'HOME_SLIDER', tanggalRelatif(-6), tanggalRelatif(3), 1),
   banner(2, 'Paket atap baja ringan', '#F3D9C4', '/katalog/atap', 'HOME_SLIDER', tanggalRelatif(-10), tanggalRelatif(30), 2),
   banner(3, 'Lampu LED hemat energi', '#FDF0C2', '/katalog/lampu', 'HOME_SIDE', tanggalRelatif(-3), tanggalRelatif(20), 1),

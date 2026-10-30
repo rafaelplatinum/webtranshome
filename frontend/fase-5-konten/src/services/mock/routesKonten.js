@@ -1,16 +1,15 @@
-// Rute API tiruan konten (Fase 5): banner, artikel/promo/event, bagian rumah di Beranda, dan pengaturan toko.
-// TODO: ganti ke API begitu endpoint /banners, /articles, /home/house-parts, /admin/banners, /admin/articles,
+// Rute API tiruan konten (Fase 5): banner (termasuk hero Beranda), artikel/promo/event, dan pengaturan toko.
+// TODO: ganti ke API begitu endpoint /banners, /articles, /admin/banners, /admin/articles,
 // dan /admin/settings tersedia di backend.
 import { normalisasiNomorHp } from '@/utils/format'
-import { categories } from '@/services/mock/data/catalog'
 import { publicSettings } from '@/services/mock/data/akun'
 import { articles, banners } from '@/services/mock/data/konten'
 import { idBaru, simpanDb } from '@/services/mock/db'
 import { catat, halaman } from '@/services/mock/routesAdmin'
 import { cekAdmin, ditolak, izinPengguna, namaPengguna, sekarang } from '@/services/mock/sesi'
-import { petaBagianRumah } from './data/beranda'
 
-const POSISI = ['HOME_SLIDER', 'HOME_SIDE']
+// HOME_HERO: hero paling atas Beranda (gambar atau video), pengganti ilustrasi rumah 3D (30 Okt 2026).
+const POSISI = ['HOME_HERO', 'HOME_SLIDER', 'HOME_SIDE']
 const TIPE = ['ARTIKEL', 'PROMO', 'EVENT', 'HALAMAN']
 const POLA_SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 const POLA_TANGGAL = /^\d{4}-\d{2}-\d{2}$/
@@ -38,7 +37,10 @@ function daftarBannerPublik({ query }) {
   const data = banners
     .filter((b) => statusBanner(b, kini) === 'TAYANG' && (!query.position || b.position === query.position))
     .sort(urutBanner)
-    .map(({ id, title, image_url, link_url, position, start_at, end_at }) => ({ id, title, image_url, link_url, position, start_at, end_at }))
+    .map(({ id, title, image_url, link_url, position, start_at, end_at, subtitle, video_url, cta_label, cta2_label, cta2_url }) => ({
+      id, title, image_url, link_url, position, start_at, end_at,
+      ...(position === 'HOME_HERO' ? { subtitle, video_url, cta_label, cta2_label, cta2_url } : {}),
+    }))
   return { data: { data } }
 }
 
@@ -69,11 +71,30 @@ function validasiBanner(body) {
   else if (!errors.start_date && !kosong(body.end_date) && body.end_date < body.start_date) errors.end_date = ['Tanggal selesai harus sama atau setelah tanggal mulai']
   const link = String(body.link_url ?? '').trim()
   if (link && !link.startsWith('/') && !link.startsWith('https://')) errors.link_url = ['Tautan harus diawali / (halaman Transhome) atau https://']
+  if (body.position === 'HOME_HERO') {
+    if (String(body.subtitle ?? '').length > 160) errors.subtitle = ['Subjudul maksimal 160 karakter']
+    if (String(body.cta_label ?? '').length > 30) errors.cta_label = ['Label tombol maksimal 30 karakter']
+    const video = String(body.video_url ?? '').trim()
+    if (video && !/^(https:\/\/|\/|data:video\/)/.test(video)) errors.video_url = ['Video tidak valid, unggah ulang']
+    // Tombol kedua tampil hanya bila label dan tautannya sama-sama diisi.
+    const label2 = String(body.cta2_label ?? '').trim()
+    const tautan2 = String(body.cta2_url ?? '').trim()
+    if (label2.length > 30) errors.cta2_label = ['Label tombol kedua maksimal 30 karakter']
+    else if (!label2 && tautan2) errors.cta2_label = ['Isi label tombol kedua, atau kosongkan tautannya']
+    if (label2 && !tautan2) errors.cta2_url = ['Isi tautan tombol kedua']
+    else if (tautan2 && !tautan2.startsWith('/') && !tautan2.startsWith('https://')) errors.cta2_url = ['Tautan harus diawali / (halaman Transhome) atau https://']
+  }
   return Object.keys(errors).length ? galatIsian(errors) : null
 }
 
 const kolomBanner = (body) => ({
   title: body.title.trim(), image_url: body.image_url, link_url: String(body.link_url ?? '').trim() || null, position: body.position,
+  // Kolom khusus hero; banner posisi lain selalu kosong.
+  subtitle: body.position === 'HOME_HERO' ? String(body.subtitle ?? '').trim() || null : null,
+  video_url: body.position === 'HOME_HERO' ? String(body.video_url ?? '').trim() || null : null,
+  cta_label: body.position === 'HOME_HERO' ? String(body.cta_label ?? '').trim() || null : null,
+  cta2_label: body.position === 'HOME_HERO' ? String(body.cta2_label ?? '').trim() || null : null,
+  cta2_url: body.position === 'HOME_HERO' ? String(body.cta2_url ?? '').trim() || null : null,
   start_at: `${body.start_date}T00:00:00`, end_at: kosong(body.end_date) ? null : `${body.end_date}T23:59:59`,
   is_active: body.is_active !== false, updated_at: sekarang(),
 })
@@ -237,16 +258,6 @@ function terbitkanArtikel({ headers, params, body }) {
   return ambilArtikelAdmin({ headers, params: { id: a.id } })
 }
 
-// ---------- Beranda ----------
-
-function bagianRumah() {
-  const data = petaBagianRumah.map(({ key, category_slug }) => {
-    const c = categories.find((x) => x.slug === category_slug && x.is_active)
-    return { key, category: c ? { slug: c.slug, name: c.name } : null }
-  })
-  return { data: { data } }
-}
-
 // ---------- pengaturan toko ----------
 
 function pengaturanAdmin({ headers }) {
@@ -287,7 +298,6 @@ export const ruteKonten = [
   ['get', '/banners', daftarBannerPublik],
   ['get', '/articles', daftarArtikelPublik],
   ['get', '/articles/:slug', detailArtikelPublik],
-  ['get', '/home/house-parts', bagianRumah],
   ['get', '/admin/banners', daftarBannerAdmin],
   ['post', '/admin/banners', buatBanner],
   ['get', '/admin/banners/:id', ambilBanner],

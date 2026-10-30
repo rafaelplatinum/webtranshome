@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import WhatsAppButton from './WhatsAppButton.vue'
+import LogoTranshome from '@/components/layout/LogoTranshome.vue'
 import { useWhatsApp } from '@/composables/useWhatsApp'
 import { useSettingsStore } from '@/stores/settings'
 
@@ -27,7 +28,7 @@ const kelasTautan =
   <footer class="bg-secondary text-sm text-on-dark">
     <div class="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:grid-cols-2 sm:px-6 lg:grid-cols-4">
       <div class="flex flex-col gap-2">
-        <p class="text-2xl font-extrabold tracking-tight text-secondary-foreground">Trans<span class="text-primary-on-dark">home</span></p>
+        <p class="text-2xl font-extrabold tracking-tight text-secondary-foreground"><LogoTranshome gelap /></p>
         <p>Supermarket bahan bangunan dan elektronik.</p>
       </div>
 

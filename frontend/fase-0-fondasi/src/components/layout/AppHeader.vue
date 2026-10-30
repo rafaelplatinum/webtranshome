@@ -6,6 +6,7 @@ import Button from '@/components/ui/Button.vue'
 import MegaMenu from './MegaMenu.vue'
 import SearchBox from './SearchBox.vue'
 import UserMenu from './UserMenu.vue'
+import LogoTranshome from '@/components/layout/LogoTranshome.vue'
 import { useWhatsApp } from '@/composables/useWhatsApp'
 import { useAuthStore } from '@/stores/auth'
 import { useSettingsStore } from '@/stores/settings'
@@ -86,7 +87,7 @@ const kelasTautanGelap =
           class="rounded-md text-2xl font-extrabold tracking-tight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           aria-label="Transhome, ke beranda"
         >
-          Trans<span class="text-primary">home</span>
+          <LogoTranshome />
         </RouterLink>
 
         <div class="ml-auto flex items-center gap-2 lg:order-last lg:ml-0">

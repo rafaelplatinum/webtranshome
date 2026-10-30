@@ -1,7 +1,7 @@
 import { computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useSettingsStore } from '@/stores/settings'
-import { buatLinkWhatsApp, pesanCariProduk, pesanJumlahBesar, pesanTanyaKonten, pesanTanyaProduk, pesanUmum } from '@/utils/whatsapp'
+import { buatLinkWhatsApp, hargaDisembunyikan, pesanCariProduk, pesanJumlahBesar, pesanTanyaKonten, pesanTanyaProduk, pesanUmum } from '@/utils/whatsapp'
 
 /**
  * Link WhatsApp ke CS Transhome. Nomor dari pengaturan toko (API).
@@ -22,6 +22,7 @@ export function useWhatsApp() {
       nama: produk.name,
       url: urlProduk(produk),
       habis: produk.stock_status === 'HABIS',
+      tanyaHarga: hargaDisembunyikan(produk),
     })
     return buatLinkWhatsApp(nomor.value, pesan)
   }
