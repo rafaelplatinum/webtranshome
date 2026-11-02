@@ -49,6 +49,21 @@ export function pesanTanyaKonten({ judul, url }) {
   return ['Halo Transhome, saya ingin bertanya tentang ini:', judul, url].join('\n')
 }
 
+/**
+ * Konsultasi jasa (KEPUTUSAN #20): nama jasa + tautan halamannya, produk asal bila dari halaman produk,
+ * lalu baris isian yang tinggal dilengkapi pelanggan. Bila sudah masuk, diawali nama dan member_code.
+ */
+export function pesanKonsultasiJasa({ jasa, url, produk = null, nama, memberCode } = {}) {
+  const sapaan = nama ? `Halo Transhome, saya ${nama}${memberCode ? ` (member ${memberCode})` : ''}.` : 'Halo Transhome,'
+  return [
+    `${sapaan} Saya ingin konsultasi ${jasa}.`,
+    url,
+    ...(produk ? [`Untuk produk: ${produk.sku} - ${produk.nama}`] : []),
+    'Lokasi pekerjaan: ',
+    'Kebutuhan singkat: ',
+  ].join('\n')
+}
+
 /** Pesan umum ke CS; bila sudah masuk, diawali nama dan member_code (FR-S). */
 export function pesanUmum({ nama, memberCode } = {}) {
   if (nama && memberCode) return `Halo Transhome, saya ${nama} (member ${memberCode}).`

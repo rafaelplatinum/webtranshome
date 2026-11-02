@@ -1,11 +1,12 @@
-// Rute API tiruan konten (Fase 5): banner (termasuk hero Beranda), artikel/promo/event, dan pengaturan toko.
+// Rute API tiruan konten (Fase 5): banner (termasuk hero Beranda), artikel/promo/event, jasa, dan pengaturan toko.
 // TODO: ganti ke API begitu endpoint /banners, /articles, /admin/banners, /admin/articles,
 // dan /admin/settings tersedia di backend.
 import { normalisasiNomorHp } from '@/utils/format'
 import { publicSettings } from '@/services/mock/data/akun'
-import { articles, banners } from '@/services/mock/data/konten'
+import { categories } from '@/services/mock/data/catalog'
+import { articles, banners, services } from '@/services/mock/data/konten'
 import { idBaru, simpanDb } from '@/services/mock/db'
-import { catat, halaman } from '@/services/mock/routesAdmin'
+import { catat, halaman, perubahan } from '@/services/mock/routesAdmin'
 import { cekAdmin, ditolak, izinPengguna, namaPengguna, sekarang } from '@/services/mock/sesi'
 
 // HOME_HERO: hero paling atas Beranda (gambar atau video), pengganti ilustrasi rumah 3D (30 Okt 2026).
@@ -258,6 +259,118 @@ function terbitkanArtikel({ headers, params, body }) {
   return ambilArtikelAdmin({ headers, params: { id: a.id } })
 }
 
+// ---------- jasa (KEPUTUSAN #20) ----------
+// Konsultasi jasa hanya lewat WhatsApp (KEPUTUSAN #12): API cukup menyediakan daftar jasa, tanpa formulir.
+
+const ringkasKategoriJasa = (ids) =>
+  ids.map((id) => categories.find((c) => c.id === id)).filter(Boolean).map(({ id, name, slug, parent_id }) => ({ id, name, slug, parent_id }))
+const itemJasaPublik = ({ id, name, slug, summary, image_url, service_area }) => ({ id, name, slug, summary, image_url, service_area })
+const urutJasa = (a, b) => a.sort_order - b.sort_order || a.id - b.id
+
+// ?category=<slug>: jasa yang terhubung ke kategori itu atau induknya (dipakai halaman detail produk). ?limit=n.
+function daftarJasaPublik({ query }) {
+  let data = services.filter((s) => s.is_active)
+  if (query.category) {
+    const c = categories.find((x) => x.slug === query.category)
+    if (!c) return { data: { data: [] } }
+    const ids = [c.id, c.parent_id].filter(Boolean)
+    data = data.filter((s) => s.category_ids.some((id) => ids.includes(id)))
+  }
+  data = [...data].sort(urutJasa)
+  if (Number(query.limit) > 0) data = data.slice(0, Number(query.limit))
+  return { data: { data: data.map(itemJasaPublik) } }
+}
+
+function detailJasaPublik({ params }) {
+  const s = services.find((x) => x.slug === params.slug && x.is_active)
+  if (!s) return tidakDitemukan('Jasa tidak ditemukan.')
+  const kategoriAktif = ringkasKategoriJasa(s.category_ids).filter((c) => categories.find((x) => x.id === c.id)?.is_active)
+  return { data: { data: { ...itemJasaPublik(s), description: s.description, categories: kategoriAktif.map(({ name, slug }) => ({ name, slug })) } } }
+}
+
+const bentukJasaAdmin = (s) => ({ ...s, categories: ringkasKategoriJasa(s.category_ids) })
+
+function daftarJasaAdmin({ headers }) {
+  const { gagal } = cekAdmin(headers, 'service.view')
+  if (gagal) return gagal
+  return { data: { data: [...services].sort(urutJasa).map(bentukJasaAdmin) } }
+}
+
+function ambilJasaAdmin({ headers, params }) {
+  const { gagal } = cekAdmin(headers, 'service.view')
+  if (gagal) return gagal
+  const s = services.find((x) => sama(x.id, params.id))
+  return s ? { data: { data: bentukJasaAdmin(s) } } : tidakDitemukan('Jasa tidak ditemukan.')
+}
+
+function validasiJasa(body, kecualiId = null) {
+  const errors = {}
+  const nama = String(body.name ?? '').trim()
+  if (!nama) errors.name = ['Nama jasa wajib diisi']
+  else if (nama.length > 100) errors.name = ['Nama jasa maksimal 100 karakter']
+  if (kosong(body.slug)) errors.slug = ['Slug wajib diisi']
+  else if (!POLA_SLUG.test(body.slug)) errors.slug = ['Slug hanya boleh huruf kecil, angka, dan tanda hubung']
+  const ringkas = String(body.summary ?? '').trim()
+  if (!ringkas) errors.summary = ['Ringkasan wajib diisi']
+  else if (ringkas.length > 160) errors.summary = ['Ringkasan maksimal 160 karakter']
+  if (String(body.service_area ?? '').trim().length > 100) errors.service_area = ['Area layanan maksimal 100 karakter']
+  if (!Array.isArray(body.category_ids ?? []) || (body.category_ids ?? []).some((id) => !categories.some((c) => c.id === Number(id)))) {
+    errors.category_ids = ['Kategori tidak valid']
+  }
+  if (Object.keys(errors).length) return galatIsian(errors)
+  if (services.some((s) => s.slug === body.slug && !sama(s.id, kecualiId))) {
+    return { status: 409, data: { message: 'Slug sudah dipakai jasa lain.', errors: { slug: ['Slug sudah dipakai jasa lain'] } } }
+  }
+  return null
+}
+
+const kolomJasa = (body) => ({
+  name: String(body.name).trim(), slug: body.slug, summary: String(body.summary).trim(),
+  description: String(body.description ?? '').trim(), image_url: body.image_url || null,
+  service_area: String(body.service_area ?? '').trim() || null,
+  category_ids: [...new Set((body.category_ids ?? []).map(Number))], is_active: body.is_active !== false, updated_at: sekarang(),
+})
+
+function buatJasa({ headers, body }) {
+  const { u, gagal } = cekAdmin(headers, 'service.create')
+  if (gagal) return gagal
+  const salah = validasiJasa(body)
+  if (salah) return salah
+  const s = { id: idBaru(services), ...kolomJasa(body), sort_order: services.reduce((m, x) => Math.max(m, x.sort_order), 0) + 1, created_at: sekarang() }
+  services.push(s)
+  catat(u, 'service.create', 'Jasa', { sesudah: { name: s.name, category_ids: s.category_ids } })
+  simpanDb()
+  return { status: 201, data: { data: bentukJasaAdmin(s) } }
+}
+
+function ubahJasa({ headers, params, body }) {
+  const { u, gagal } = cekAdmin(headers, 'service.update')
+  if (gagal) return gagal
+  const s = services.find((x) => sama(x.id, params.id))
+  if (!s) return tidakDitemukan('Jasa tidak ditemukan.')
+  const salah = validasiJasa(body, s.id)
+  if (salah) return salah
+  const lama = { ...s }
+  Object.assign(s, kolomJasa(body))
+  catat(u, 'service.update', 'Jasa', perubahan(lama, s, ['name']))
+  simpanDb()
+  return { data: { data: bentukJasaAdmin(s) } }
+}
+
+function patchJasa({ headers, params, body }) {
+  const { u, gagal } = cekAdmin(headers, 'service.update')
+  if (gagal) return gagal
+  const s = services.find((x) => sama(x.id, params.id))
+  if (!s) return tidakDitemukan('Jasa tidak ditemukan.')
+  const lama = { ...s }
+  if ('is_active' in body) s.is_active = Boolean(body.is_active)
+  if ('sort_order' in body) s.sort_order = Number(body.sort_order)
+  s.updated_at = sekarang()
+  catat(u, 'service.update', 'Jasa', perubahan(lama, s, ['name']))
+  simpanDb()
+  return { data: { data: bentukJasaAdmin(s) } }
+}
+
 // ---------- pengaturan toko ----------
 
 function pengaturanAdmin({ headers }) {
@@ -298,6 +411,8 @@ export const ruteKonten = [
   ['get', '/banners', daftarBannerPublik],
   ['get', '/articles', daftarArtikelPublik],
   ['get', '/articles/:slug', detailArtikelPublik],
+  ['get', '/services', daftarJasaPublik],
+  ['get', '/services/:slug', detailJasaPublik],
   ['get', '/admin/banners', daftarBannerAdmin],
   ['post', '/admin/banners', buatBanner],
   ['get', '/admin/banners/:id', ambilBanner],
@@ -308,6 +423,11 @@ export const ruteKonten = [
   ['get', '/admin/articles/:id', ambilArtikelAdmin],
   ['put', '/admin/articles/:id', ubahArtikel],
   ['patch', '/admin/articles/:id', terbitkanArtikel],
+  ['get', '/admin/services', daftarJasaAdmin],
+  ['post', '/admin/services', buatJasa],
+  ['get', '/admin/services/:id', ambilJasaAdmin],
+  ['put', '/admin/services/:id', ubahJasa],
+  ['patch', '/admin/services/:id', patchJasa],
   ['get', '/admin/settings', pengaturanAdmin],
   ['put', '/admin/settings', ubahPengaturan],
 ]

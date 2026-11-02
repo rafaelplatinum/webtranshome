@@ -473,7 +473,6 @@ Catatan implementasi:
 | Tombol | Aksi | Catatan |
 |---|---|---|
 | Hero: tombol utama (bawaan **Jelajahi katalog**) | → tautan banner, bawaan `/katalog` | Label & tautan dari banner `HOME_HERO` |
-| Hero: **Tanya via WhatsApp** | `generalLink()` | Selalu tampil |
 | Hero: tombol kedua (mis. **Lihat promo**) | → tautan kedua banner | Tampil bila admin mengisi label + tautan |
 | Hero: **Lihat selengkapnya** | Gulir ke seksi berikutnya + fokus pindah | Hero setinggi layar |
 | Hero: **Jeda video / Putar video** | Jeda/putar video latar | Hanya bila banner punya video; "kurangi animasi" → tidak berputar sendiri |
@@ -562,11 +561,16 @@ Diminta pemilik proyek setelah semua fase selesai. Semua tanpa library baru.
 |---|---|
 | Header publik menempel | `AppHeader` `sticky`. Mulai 1024 px seluruh header menempel; di bawahnya baris alamat ikut tergulir (yang menempel: logo, Masuk/Daftar, Kategori, cari). Tinggi bagian yang menempel → `scroll-padding-top` supaya lompatan gulir/anchor tidak tertutup |
 | Animasi situs publik | View Transitions (pindah halaman), `v-reveal` (scroll reveal + stagger), tombol ditekan `scale(0.97)`, modal/sheet dari arah logis. Panel admin tidak dianimasikan; semua mati saat "kurangi animasi". Rincian di `design-system/transhome/MASTER.md` |
-| Brand untuk jumlah besar | Halaman `/brand` (A–Z, cari, lompat huruf); "Brand pilihan" di Beranda berisi semua brand aktif, logo berjalan (jeda, berhenti saat disorot/difokus); filter Brand katalog punya kotak cari bila > 10 opsi; admin: cari brand, pilihan brand berupa combobox, hapus permanen brand nonaktif yang tidak dipakai produk (`brand.delete`) |
+| Brand untuk jumlah besar | Halaman `/brand` (A–Z, cari, lompat huruf); "Brand pilihan" di Beranda berisi semua brand aktif, logo berjalan (jeda, berhenti saat disorot/difokus; diganti susunan lingkaran 2 Nov 2026, KEPUTUSAN #19); filter Brand katalog punya kotak cari bila > 10 opsi; admin: cari brand, pilihan brand berupa combobox, hapus permanen brand nonaktif yang tidak dipakai produk (`brand.delete`) |
 
 | Harga boleh disembunyikan (15 Okt 2026) | Per produk switch "Tampilkan harga di website" di form produk dan di modal **Ubah harga** (tombol baru di daftar produk admin: harga, satuan, tampil/sembunyi, tanpa membuka form lengkap). Harga disembunyikan → "Harga via WhatsApp" + tombol "Tanya harga" di kartu, baris katalog, detail produk, dan bar bawah HP; pesan WhatsApp "saya ingin menanyakan harga produk ini". Tabel admin menandai "Disembunyikan" / "Belum ada harga". KEPUTUSAN #15 |
-| Hero banner + halaman Brand (30 Okt 2026) | Hero rumah 3D dihapus, diganti `HeroBanner` sesuai wireframe XLSX: gambar/video dari banner posisi baru **Hero Beranda** (`HOME_HERO`) + judul, subjudul; hero setinggi layar dengan tombol utama, Tanya via WhatsApp, tombol kedua opsional (admin), dan Lihat selengkapnya; video tanpa suara berulang, tombol Jeda/Putar, tidak berputar sendiri saat "kurangi animasi", tidak dimuat saat hemat data. Admin: kolom Subjudul, Video hero (`VideoField`), Label & Tautan tombol. Seksi Beranda lain tidak berubah. `/brand` mengikuti sheet "Brand": "N Brand Partner", Cari (tombol), filter kategori, A–Z, kartu 6/3/2 kolom, 24 per halaman, filter di URL. KEPUTUSAN #16 |
+| Hero banner + halaman Brand (30 Okt 2026) | Hero rumah 3D dihapus, diganti `HeroBanner` sesuai wireframe XLSX: gambar/video dari banner posisi baru **Hero Beranda** (`HOME_HERO`) + judul, subjudul; hero setinggi layar dengan tombol utama, tombol kedua opsional (admin), dan Lihat selengkapnya (tombol WhatsApp di hero dihapus 2 Nov 2026); video tanpa suara berulang, tombol Jeda/Putar, tidak berputar sendiri saat "kurangi animasi", tidak dimuat saat hemat data. Admin: kolom Subjudul, Video hero (`VideoField`), Label & Tautan tombol. Seksi Beranda lain tidak berubah. `/brand` mengikuti sheet "Brand": "N Brand Partner", Cari (tombol), filter kategori, A–Z, kartu 6/3/2 kolom, 24 per halaman, filter di URL. KEPUTUSAN #16 |
 | SEO halaman Brand (30 Okt 2026) | `useSeo` diperluas (canonical, robots, Open Graph, `image`, JSON-LD) tanpa library. `/brand` dan `/brand/:slug`: judul/deskripsi dinamis, BreadcrumbList + CollectionPage/ItemList/Brand, hasil cari/filter `noindex, follow` + canonical ke halaman bersih, brand tanpa produk `noindex`. Paginasi `/brand` dan katalog berupa `<a href>` (klik tetap tanpa muat ulang). Breadcrumb detail brand jadi Beranda › Brand › nama. `public/robots.txt`, og:site_name/og:locale di `index.html`, `VITE_SITE_URL`. KEPUTUSAN #17 |
+| Brand pilihan berbentuk lingkaran (2 Nov 2026) | Desain dari contoh pemilik: judul tengah "Siap untuk menjelajah lebih banyak Brand?" + "Telusuri N brand", 18 lingkaran logo brand (HP 10), brand berlogo dulu. Logo diatur di admin › Brand (petunjuk baru di kolom Logo brand). Logo berjalan + tombol Jeda dihapus. Tombol WhatsApp di hero juga dihapus. KEPUTUSAN #19 |
+| Media sosial di footer (2 Nov 2026) | Kolom pertama footer: "Ikuti kami" + tombol Instagram (instagram.com/transhome) dan TikTok (tiktok.com/@transhome_id), buka di tab baru. Alamat ditulis tetap di `AppFooter.vue`; bila nanti perlu diubah dari admin, tambahkan kunci `instagram_url` / `tiktok_url` di `site_settings` |
+| Artikel panduan isi rumah (2 Nov 2026) | Materi pemilik: artikel utama "5 Langkah Mudah Mengisi Rumah: Dari Lantai Granit, Kamar Mandi, hingga Sofa" + 5 artikel pilar (lantai, dinding, kamar mandi, lampu & elektronik, sofa). Menggantikan 4 artikel contoh lama; pilar sofa berstatus draf (contoh alur pratinjau → terbitkan). Isinya baru ada di data contoh (`data/konten.js`): setelah backend siap, Admin Konten perlu memasukkannya lewat admin › Artikel, atau backend men-seed tabel `articles` dari teks yang sama |
+| Fitur Jasa (2 Nov 2026) | Halaman publik `/jasa` (cara pesan 3 langkah + kartu jasa) dan `/jasa/:slug` (penjelasan, area, bahan terkait, kotak konsultasi menempel). Harga tidak ditampilkan: semua jasa bertuliskan "Harga pasti murah". Daftar contoh: pasang keramik & granit, pengecatan, perlengkapan kamar mandi, AC & elektronik, service & perbaikan, pintu & jendela, antar & rakit perabot. Konsultasi hanya lewat WhatsApp (`jasaLink`, pesan berisi nama jasa + tautan + produk asal + isian lokasi/kebutuhan). Menu "Jasa" di header, menu HP, footer; seksi Beranda "Butuh tukang? Pakai jasa Transhome" (3 teratas, setelah Inspirasi ruangan); kotak "Butuh pemasangan?" di ringkasan detail produk. Admin Konten + Super Admin: menu Konten › Jasa (daftar, urutan ↑ ↓, aktif dengan konfirmasi, tambah/ubah, kategori produk terkait). SEO: canonical, JSON-LD `Service` (tanpa `Offer`). Parser isi (`blokIsi`) kini memisah subjudul `##` yang langsung diikuti baris lain. KEPUTUSAN #20; kontrak di "Detail kontrak jasa" |
+| Perbaikan akses login admin (2 Nov 2026) | Bug: browser yang masih masuk sebagai member tidak bisa membuka login admin (`/admin` → "Tidak punya akses", `/admin/masuk` → `/akun`). Sekarang: bukan admin → diarahkan ke `/admin/masuk?redirect=…` dengan pemberitahuan akun member akan diganti; admin tanpa izin halaman → "Tidak punya akses" dengan tombol **Masuk dengan akun lain** (keluar lalu ke login yang sesuai, `?dari=`) dan **Kembali ke dashboard**. Akun admin tetap hanya dibuat Super Admin (tidak ada pendaftaran admin sendiri) |
 
 Hasil uji: header 33/33, animasi 22/22, brand 41/41, harga 34/34, hero banner + `/brand` + SEO 64/64, uji asap SEO semua halaman 23/23, video hero 2,87 MB tersimpan & tampil setelah muat ulang (Chrome DevTools Protocol); regresi browser Fase 0–6 tetap lulus (harga: lihat catatan uji di bawah).
 
@@ -601,6 +605,8 @@ Untuk fase berikutnya, ganti nomor fasenya.
 | GET / PATCH | `/admin/members` · `/admin/members/:id` · `/admin/members/search` | Fase 4 |
 | GET / POST | `/admin/points` · `/admin/points/check-reference` | Fase 4 |
 | CRUD | `/admin/banners` · `/admin/articles` · PUT `/admin/settings` | Fase 5 |
+| GET | `/services` · `/services/:slug` | Jasa (2 Nov 2026) |
+| CRUD | `/admin/services` (tanpa hapus; nonaktifkan lewat PATCH) | Jasa (2 Nov 2026) |
 | GET / POST / PUT / PATCH | `/admin/users` · `/admin/users/:id/roles` · `/admin/users/:id/reset-password` · `/admin/roles` · `/admin/permissions` · `/admin/roles/:id/permissions` · `/admin/activity-logs` (+ `/options`) | Fase 6 |
 | GET / POST | `/admin/qontak/contacts` · `/:id` · `/:id/retry` · `/:id/logs` · `/admin/qontak/retry-failed` | Fase 2, 6 |
 
@@ -713,6 +719,48 @@ Waktu `start_at`, `end_at`, `published_at` = TIMESTAMP WIB tanpa zona, sama deng
 
 Dicatat di `activity_logs`: `banner.create`, `banner.update`, `article.create`, `article.update`, `article.publish`, `setting.update` (nilai sebelum/sesudah di `before_data` / `after_data`).
 
+### Detail kontrak jasa (dipakai mock sejak 2 Nov 2026, KEPUTUSAN #20)
+Fitur Jasa di frontend sudah jadi dengan data contoh (`fase-5-konten/src/services/mock/routesKonten.js`). Supaya backend bisa menyesuaikan:
+
+| Endpoint | Isi |
+|---|---|
+| `GET /services?category=&limit=` | Publik. Hanya jasa aktif, urut `sort_order` lalu `id`: `[{ id, name, slug, summary, image_url, service_area }]`. `category` = slug kategori produk; kembalikan jasa yang terhubung ke kategori itu **atau induknya** (dipakai kotak "Butuh pemasangan?" di detail produk dengan `limit=2`; Beranda memakai `limit=3`). Slug tidak dikenal → `[]` |
+| `GET /services/:slug` | Publik. Item di atas + `description` (teks berformat sama dengan artikel: baris kosong = paragraf, `## ` subjudul, `- ` daftar) + `categories: [{ name, slug }]` (hanya kategori aktif). Jasa nonaktif / tidak ada → 404 |
+| `GET /admin/services` | Semua jasa (termasuk nonaktif), urut `sort_order`: kolom tabel + `category_ids` + `categories: [{ id, name, slug, parent_id }]`. Izin `service.view` |
+| `GET /admin/services/:id` | Satu jasa, bentuk sama. 404 bila tidak ada. Izin `service.view` |
+| `POST /admin/services`, `PUT /admin/services/:id` | `{ name, slug, summary, description?, image_url?, service_area?, category_ids: number[], is_active }`. 422 per kolom: `name` (wajib, ≤ 100), `slug` (wajib, pola `^[a-z0-9]+(?:-[a-z0-9]+)*$`), `summary` (wajib, ≤ 160), `service_area` (≤ 100), `category_ids` (id kategori yang ada). 409 `{ errors: { slug } }` bila slug dipakai jasa lain. Jasa baru masuk urutan terakhir. Izin `service.create` / `service.update` |
+| `PATCH /admin/services/:id` | `{ is_active }` atau `{ sort_order }`. Izin `service.update`. Tidak ada DELETE: jasa dinonaktifkan |
+| `POST /admin/uploads` (`jenis=gambar`) | Dipakai untuk `image_url` (sama seperti gambar banner/artikel) |
+
+Harga jasa tidak disimpan maupun ditampilkan (keputusan pemilik 2 Nov 2026): frontend selalu menulis "Harga pasti murah" (`utils/jasa.js`), biaya dibahas lewat WhatsApp.
+
+Dicatat di `activity_logs` dengan `module = 'Jasa'`: `service.create` (after_data: name, category_ids) dan `service.update` (kolom yang berubah + `name` sebagai penanda), termasuk PATCH aktif/urutan.
+
+Izin baru (menu Konten › Jasa, `menu_id` usulan 34, `route` `/admin/jasa`, `sort_order` 3 di grup Konten; "Pengaturan toko" bergeser ke 4): `service.view`, `service.create`, `service.update`. Role: **Admin Konten** dan **Super Admin**. Total izin jadi 36.
+
+Usulan tabel (juga ditulis di `docs/transhome_postgres.sql`, bagian "USULAN: jasa"):
+```sql
+CREATE TABLE services (
+    id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    slug VARCHAR(255) NOT NULL UNIQUE,
+    summary VARCHAR(160) NOT NULL,
+    description TEXT NULL,
+    image_url VARCHAR(255) NULL,
+    service_area VARCHAR(100) NULL,
+    sort_order INT NOT NULL DEFAULT 0,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE service_categories (
+    service_id BIGINT NOT NULL REFERENCES services(id) ON DELETE CASCADE,
+    category_id BIGINT NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
+    PRIMARY KEY (service_id, category_id)
+);
+```
+Konsultasi jasa tidak membuat data di backend (hanya tautan WhatsApp ke nomor `site_settings.wa_number`, masuk Mekari Qontak seperti chat lain). Bila nanti perlu laporan "berapa orang klik konsultasi jasa", itu kebutuhan baru (mis. endpoint pencatat klik), belum dibuat.
+
 ### Detail kontrak sistem (dipakai mock Fase 6)
 | Endpoint | Isi |
 |---|---|
@@ -750,6 +798,7 @@ Format error yang disarankan agar helper error form bisa memetakan ke field:
 - Harga (15 Okt 2026): migration `products.show_price BOOLEAN NOT NULL DEFAULT TRUE` dan `products.price_general` boleh NULL. Validasi server: harga wajib bila `show_price` true; bila false harga boleh kosong. API publik (`/products`, `/products/:slug`) **tidak mengirim harga** produk dengan `show_price` false (`price_general: null`, `show_price: false`) supaya harga tidak bocor; produk itu tidak ikut filter `min`/`max` dan `facets.price`, dan diletakkan di akhir `sort=harga_terendah|harga_tertinggi`. `PATCH /admin/products/:id` menerima `{ price_general, unit_sale, show_price }` (sebagian boleh) untuk ubah cepat harga, izin `product.update`, dicatat `product.update` dengan harga lama/baru.
 - Hero banner (30 Okt 2026): kolom baru `banners.subtitle VARCHAR(160) NULL`, `banners.video_url VARCHAR(255) NULL`, `banners.cta_label VARCHAR(30) NULL`, `banners.cta2_label VARCHAR(30) NULL`, `banners.cta2_url VARCHAR(255) NULL`; `position` (VARCHAR) menerima `HOME_HERO`. `POST /admin/uploads` menerima `jenis=video` (MP4/WebM, usulan ≤ 20 MB) dan perlu penyimpanan file yang bisa melayani video (HTTP range request). `GET /home/house-parts` tidak dipakai lagi.
 - SEO (30 Okt 2026, KEPUTUSAN #17): `GET /sitemap.xml` dari backend (Beranda, `/katalog/*`, `/produk/*`, `/brand`, `/brand/*` yang punya produk, `/ruangan/*`, `/artikel/*`, `/promo`, `/info-toko`; `lastmod` dari `updated_at`), lalu aktifkan baris `Sitemap:` di `public/robots.txt` dengan domain produksi dan isi `VITE_SITE_URL`. Server sebaiknya mengembalikan HTTP 404 untuk slug yang tidak ada. Pratinjau tautan per halaman di WhatsApp/Facebook butuh prerender/SSR (mis. backend menyisipkan meta per URL), belum dikerjakan.
+- Jasa (2 Nov 2026, KEPUTUSAN #20): tabel `services` + `service_categories`, endpoint publik & admin, 3 izin baru `service.*` dan menu Konten › Jasa, log `service.create/update`. Rincian lengkap di "Detail kontrak jasa" di atas. Sitemap juga perlu memuat `/jasa` dan `/jasa/:slug` yang aktif.
 - Brand (8 Okt 2026): `GET /brands` mengirim semua brand aktif + `product_count` (produk aktif) + `categories: [{ slug, name }]` (kategori utama dari produk aktifnya, untuk filter di `/brand`, sejak 30 Okt 2026), tanpa paginasi (ratusan brand masih kecil). `DELETE /admin/brands/:id` (izin baru `brand.delete`, usulan: Super Admin + Admin Katalog): 422 bila brand masih aktif, 409 `{ message, product_count }` bila masih dipakai produk mana pun (aktif atau nonaktif) — penting karena FK `products.brand_id` memakai `ON DELETE SET NULL`, jadi tanpa cek ini produk diam-diam kehilangan brand. 204 bila berhasil; dicatat `brand.delete` dengan `before_data`.
 - Sistem (Fase 6): endpoint di "Detail kontrak sistem". Seed tabel `permissions` (32 izin dengan `menu_id`) dan `role_permissions` yang dipakai mock ada di `fase-6-sistem/src/services/mock/data/sistem.js` dan `data/akun.js` (`rolePermissions`). Tabel `users` belum punya kolom nama untuk admin (nama member ada di `member_profiles`): tambah `users.full_name` atau tabel profil admin. `activity_logs` belum punya kolom id data yang diubah, jadi `before_data` / `after_data` perlu memuat penanda (SKU, nama, kode member); usulan: tambah `entity_type` + `entity_id`. Pengiriman ke Qontak perlu worker/antrean yang mengisi `sync_logs` (termasuk `request_payload` / `response_payload`) dan `qontak_contacts.sync_status`. Admin belum punya halaman ganti password sendiri; sementara lewat "Reset password" (link email).
 - Membership (Fase 4): endpoint di "Detail kontrak membership admin". `users.last_login_at` perlu diisi saat login. Nomor nota sebaiknya disimpan dalam huruf besar, karena constraint `UNIQUE (type, reference_no)` di PostgreSQL membedakan huruf besar/kecil. Izin `point.adjust` dipakai untuk Penyesuaian (usulan: Super Admin saja).

@@ -71,12 +71,27 @@ const BRAND_TAMBAHAN = [
   'Iota Kunci', 'Kapa Kaca', 'Lambda Granit', 'Mu Engsel', 'Nu Semen', 'Ksi Plafon', 'Omikron Pintu', 'Pi Perkakas',
   'Rho Elektrik', 'Sigma Kran', 'Tau Bata', 'Upsilon Lantai', 'Fi Pompa', 'Khi Lem', 'Psi Panel', 'Omega Tangga',
 ]
+// Logo contoh berupa SVG persegi (tanda + nama), BUKAN logo merek asli. 10 brand pertama saja, supaya tampilan
+// berlogo dan tanpa logo (nama brand) sama-sama bisa dicoba di "Brand pilihan" Beranda dan /brand.
+const WARNA_LOGO = ['#C2410C', '#1D4ED8', '#15803D', '#7C3AED', '#B91C1C', '#0F766E', '#B45309', '#1C2B3A', '#BE185D', '#4D7C0F']
+function logoContoh(nama, i) {
+  const w = WARNA_LOGO[i % WARNA_LOGO.length]
+  const huruf = nama.split(' ').map((k) => k[0]).join('').slice(0, 2).toUpperCase()
+  const svg =
+    `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">` +
+    `<rect x="58" y="28" width="84" height="84" rx="${i % 2 ? 42 : 18}" fill="${w}"/>` +
+    `<text x="100" y="84" text-anchor="middle" font-family="sans-serif" font-size="38" font-weight="800" fill="#fff">${huruf}</text>` +
+    `<text x="100" y="152" text-anchor="middle" font-family="sans-serif" font-size="24" font-weight="800" fill="${w}">${nama.toUpperCase()}</text>` +
+    `</svg>`
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`
+}
+
 export const brands = [
   ...['Merek A', 'Merek B', 'Merek C', 'Merek D', 'Merek E', 'Merek F'],
   ...BRAND_TAMBAHAN,
   'Merek Lama',
 ].map((name, i) => ({
-  id: i + 1, name, slug: slugify(name), logo_url: null, is_active: name !== 'Merek Lama', created_at: dibuat, updated_at: dibuat,
+  id: i + 1, name, slug: slugify(name), logo_url: i < 10 ? logoContoh(name, i) : null, is_active: name !== 'Merek Lama', created_at: dibuat, updated_at: dibuat,
 }))
 
 const warnaRuangan = { Dapur: '#E7D7C1', 'Kamar mandi': '#D4E2EA', Fasad: '#D6D3CD', 'Ruang keluarga': '#E9DFCE', Teras: '#DCE3D2' }

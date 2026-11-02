@@ -1,6 +1,6 @@
 import http from '@/services/http'
 
-// Konten publik (Fase 5): banner Beranda (termasuk hero), dan artikel/promo/event.
+// Konten publik (Fase 5): banner Beranda (termasuk hero), artikel/promo/event, dan jasa.
 
 /**
  * Banner yang sedang tayang di satu posisi: HOME_HERO (hero paling atas; + subtitle, video_url, cta_label),
@@ -23,5 +23,20 @@ export async function listArticles(params = {}, { signal } = {}) {
 /** Detail artikel. Draf hanya bisa dibuka dengan token pratinjau (?preview=); selain itu 404. */
 export async function getArticle(slug, preview = null, { signal } = {}) {
   const { data } = await http.get(`/articles/${encodeURIComponent(slug)}`, { params: preview ? { preview } : {}, signal })
+  return data.data
+}
+
+/**
+ * Jasa aktif, urut sort_order (KEPUTUSAN #20). Parameter: category (slug kategori produk; jasa yang terhubung ke
+ * kategori itu atau induknya), limit. Item { id, name, slug, summary, image_url, service_area }.
+ */
+export async function listServices(params = {}) {
+  const { data } = await http.get('/services', { params })
+  return data.data
+}
+
+/** Detail jasa: item di atas + description dan categories [{ name, slug }]. Jasa nonaktif → 404. */
+export async function getService(slug) {
+  const { data } = await http.get(`/services/${encodeURIComponent(slug)}`)
   return data.data
 }

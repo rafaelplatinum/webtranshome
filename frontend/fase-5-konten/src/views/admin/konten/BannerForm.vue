@@ -159,7 +159,7 @@ onMounted(async () => {
                 hint="Wajib bila label diisi. Diawali / atau https://."
               />
             </div>
-            <p class="text-sm text-muted">Tombol “Tanya via WhatsApp” dan “Lihat selengkapnya” selalu tampil di hero.</p>
+            <p class="text-sm text-muted">Tombol “Lihat selengkapnya” selalu tampil di hero.</p>
           </template>
           <Input
             v-else

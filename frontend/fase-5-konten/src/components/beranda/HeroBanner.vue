@@ -2,15 +2,14 @@
 import { computed, nextTick, ref, watch } from 'vue'
 import { ArrowRight, ChevronDown, Pause, Play } from 'lucide-vue-next'
 import Button from '@/components/ui/Button.vue'
-import WhatsAppButton from '@/components/layout/WhatsAppButton.vue'
 import { useMuat } from '@/composables/useMuat'
-import { useWhatsApp } from '@/composables/useWhatsApp'
 import { listBanners } from '@/services/kontenService'
 import { perilakuGulir } from '@/utils/gerak'
 
 // Hero banner Beranda (wireframe 01, blok A11:L18) = landing page: setinggi layar di bawah header, media selebar
 // layar (gambar atau video) + judul di kiri, tombol di kanan bawah. Isi dari banner posisi HOME_HERO di admin;
-// tanpa banner tayang → teks bawaan tanpa media. Tombol WhatsApp dan "Lihat selengkapnya" selalu ada.
+// tanpa banner tayang → teks bawaan tanpa media. "Lihat selengkapnya" selalu ada. Tanpa tombol WhatsApp di hero
+// (keputusan pemilik 2 Nov 2026); WhatsApp tetap di header dan tombol melayang.
 const BAWAAN = {
   title: 'Dari pondasi sampai atap, semua kebutuhan rumah ada di sini.',
   subtitle: 'Cari bahan untuk tiap tahap rumahmu, cek harga dan stok.',
@@ -31,7 +30,6 @@ const hero = computed(() => {
 // Tautan diawali / → RouterLink; https:// → tautan biasa.
 const tujuan = (url) => (url.startsWith('/') ? { to: url } : { href: url })
 const tombolKedua = computed(() => (hero.value.cta2_label && hero.value.cta2_url ? hero.value : null))
-const { generalLink } = useWhatsApp()
 
 // Video berjalan otomatis tanpa suara. Tidak diputar otomatis bila pengguna meminta animasi dikurangi,
 // dan tidak dimuat sama sekali bila mode hemat data aktif; gambar tetap tampil sebagai cadangan.
@@ -118,13 +116,12 @@ function gulirKeBawah() {
           <component :is="berjalan ? Pause : Play" class="size-4" aria-hidden="true" />
           {{ berjalan ? 'Jeda video' : 'Putar video' }}
         </button>
-        <!-- CTA kanan bawah (wireframe): tombol utama, WhatsApp, lalu tombol kedua bila diisi admin. Di HP bertumpuk penuh. -->
+        <!-- CTA kanan bawah (wireframe): tombol utama, lalu tombol kedua bila diisi admin. Di HP bertumpuk penuh. -->
         <div v-if="muat.status.value !== 'loading'" class="flex flex-col gap-3 sm:ml-auto sm:flex-row sm:flex-wrap sm:justify-end" data-hero-tombol>
           <Button size="lg" v-bind="tujuan(hero.link_url)">
             {{ hero.cta_label }}
             <ArrowRight class="size-5" aria-hidden="true" />
           </Button>
-          <WhatsAppButton :href="generalLink()" size="lg" />
           <Button v-if="tombolKedua" variant="outline" size="lg" v-bind="tujuan(tombolKedua.cta2_url)">{{ tombolKedua.cta2_label }}</Button>
         </div>
       </div>

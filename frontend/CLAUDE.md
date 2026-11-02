@@ -61,12 +61,12 @@ src/
 ## 3. Peta Halaman
 ```
 Publik : /  /katalog  /katalog/:kategori  /produk/:slug  /brand  /brand/:slug  /ruangan  /ruangan/:slug
-         /artikel  /artikel/:slug  /promo  /info-toko  /cari?q=
+         /artikel  /artikel/:slug  /promo  /info-toko  /cari?q=  /jasa  /jasa/:slug
 Auth   : /masuk  /daftar  /verifikasi  /lupa-password  /reset-password
 Member : /akun  /akun/poin  /akun/profil  /akun/keamanan
 Admin  : /admin/masuk  /admin  /admin/produk  /admin/produk/baru  /admin/produk/:id
          /admin/kategori  /admin/brand  /admin/ruangan  /admin/member  /admin/member/:id
-         /admin/poin/input  /admin/banner  /admin/artikel  /admin/pengaturan
+         /admin/poin/input  /admin/banner  /admin/artikel  /admin/jasa  /admin/jasa/baru  /admin/jasa/:id  /admin/pengaturan
          /admin/pengguna  /admin/role  /admin/log-aktivitas  /admin/sync-qontak
 Sistem : /tidak-punya-akses  halaman 404   ·   Dev: /dev/components (hanya development)
 ```
