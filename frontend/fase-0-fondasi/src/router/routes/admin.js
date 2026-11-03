@@ -3,6 +3,7 @@ import AdminLayout from '@/layouts/AdminLayout.vue'
 const ProdukForm = () => import('@/views/admin/katalog/ProdukForm.vue')
 const BannerForm = () => import('@/views/admin/konten/BannerForm.vue')
 const ArtikelForm = () => import('@/views/admin/konten/ArtikelForm.vue')
+const JasaForm = () => import('@/views/admin/konten/JasaForm.vue')
 
 // Area admin: role admin, dicek per permission (CLAUDE.md §4). /admin/masuk ada di routes/auth.js.
 // `grup` tampil kecil di atas judul header (mis. Katalog › Produk).
@@ -80,6 +81,14 @@ export default [
       },
       { path: 'artikel/baru', name: 'admin-artikel-baru', component: ArtikelForm, meta: { title: 'Tulis artikel', grup: 'Konten', permission: 'article.create' } },
       { path: 'artikel/:id(\\d+)', name: 'admin-artikel-ubah', component: ArtikelForm, meta: { title: 'Ubah artikel', grup: 'Konten', permission: 'article.update' } },
+      {
+        path: 'jasa',
+        name: 'admin-jasa',
+        component: () => import('@/views/admin/konten/JasaDaftar.vue'),
+        meta: { title: 'Jasa', grup: 'Konten', permission: 'service.view' },
+      },
+      { path: 'jasa/baru', name: 'admin-jasa-baru', component: JasaForm, meta: { title: 'Tambah jasa', grup: 'Konten', permission: 'service.create' } },
+      { path: 'jasa/:id(\\d+)', name: 'admin-jasa-ubah', component: JasaForm, meta: { title: 'Ubah jasa', grup: 'Konten', permission: 'service.update' } },
       {
         path: 'pengaturan',
         name: 'admin-pengaturan',

@@ -8,6 +8,7 @@ import CopyButton from '@/components/ui/CopyButton.vue'
 import PriceTag from '@/components/ui/PriceTag.vue'
 import StockBadge from '@/components/ui/StockBadge.vue'
 import WhatsAppButton from '@/components/layout/WhatsAppButton.vue'
+import JasaTerkait from '@/components/jasa/JasaTerkait.vue'
 import { useWhatsApp } from '@/composables/useWhatsApp'
 import { hargaDisembunyikan, labelTanyaProduk } from '@/utils/whatsapp'
 import { useUiStore } from '@/stores/ui'
@@ -115,6 +116,9 @@ async function bagikan() {
       </div>
       <WhatsAppButton :href="bulkLink(produk)" label="Chat tim proyek" />
     </div>
+
+    <!-- Jasa pemasangan dari kategori produk ini (KEPUTUSAN #20); tidak tampil bila tidak ada. -->
+    <JasaTerkait :produk="produk" />
 
     <div v-if="produk.rooms?.length" class="flex flex-wrap items-center gap-2">
       <span class="text-sm font-semibold">Cocok untuk:</span>

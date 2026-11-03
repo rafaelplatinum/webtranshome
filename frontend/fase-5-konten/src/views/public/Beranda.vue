@@ -4,6 +4,7 @@ import BannerPromo from '@/components/beranda/BannerPromo.vue'
 import BrandPilihan from '@/components/beranda/BrandPilihan.vue'
 import HeroBanner from '@/components/beranda/HeroBanner.vue'
 import InspirasiRuangan from '@/components/beranda/InspirasiRuangan.vue'
+import JasaBeranda from '@/components/beranda/JasaBeranda.vue'
 import KategoriTahap from '@/components/beranda/KategoriTahap.vue'
 import Keunggulan from '@/components/beranda/Keunggulan.vue'
 import ProdukUnggulan from '@/components/beranda/ProdukUnggulan.vue'
@@ -28,6 +29,8 @@ useSeo({
       <ProdukUnggulan v-reveal />
       <PromoEvent v-reveal />
       <InspirasiRuangan v-reveal />
+      <!-- Jasa (KEPUTUSAN #20, 2 Nov 2026): setelah inspirasi ruangan, sebelum brand. -->
+      <JasaBeranda v-reveal />
       <BrandPilihan v-reveal />
       <Keunggulan v-reveal />
       <AjakanMember v-reveal />

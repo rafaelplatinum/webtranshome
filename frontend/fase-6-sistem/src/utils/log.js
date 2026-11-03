@@ -17,6 +17,8 @@ const AKSI = {
   'banner.create': 'Membuat banner',
   'banner.update': 'Mengubah banner',
   'article.create': 'Menulis artikel',
+  'service.create': 'Menambah jasa',
+  'service.update': 'Mengubah jasa',
   'article.update': 'Mengubah artikel',
   'article.publish': 'Menerbitkan / membatalkan terbit artikel',
   'setting.update': 'Mengubah pengaturan toko',
@@ -39,7 +41,8 @@ const KOLOM = {
   image_cover: 'Cover', sort_order: 'Urutan', member_code: 'Kode member', member: 'Member', type: 'Jenis', points: 'Poin',
   reference_no: 'Nomor nota', purchase_amount: 'Total belanja', note: 'Catatan', start_at: 'Mulai tayang', end_at: 'Selesai tayang',
   position: 'Posisi', link_url: 'Tautan', subtitle: 'Subjudul', video_url: 'Video', cta_label: 'Label tombol',
-  cta2_label: 'Label tombol kedua', cta2_url: 'Tautan tombol kedua', status: 'Status', published_at: 'Terbit', wa_number: 'Nomor WhatsApp', address: 'Alamat',
+  cta2_label: 'Label tombol kedua', cta2_url: 'Tautan tombol kedua', summary: 'Ringkasan',
+  service_area: 'Area layanan', category_ids: 'Kategori produk terkait', status: 'Status', published_at: 'Terbit', wa_number: 'Nomor WhatsApp', address: 'Alamat',
   opening_hours: 'Jam buka', maps_url: 'Link Google Maps', point_ratio_rupiah: 'Rasio poin', sync_status: 'Status sync', count: 'Jumlah kontak',
 }
 

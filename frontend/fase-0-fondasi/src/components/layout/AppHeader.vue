@@ -14,6 +14,7 @@ import { useSettingsStore } from '@/stores/settings'
 const NAVIGASI = [
   { label: 'Ruangan', to: '/ruangan' },
   { label: 'Brand', to: '/brand' },
+  { label: 'Jasa', to: '/jasa' },
   { label: 'Promo', to: '/promo' },
   { label: 'Artikel', to: '/artikel' },
 ]
