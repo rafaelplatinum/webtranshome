@@ -61,7 +61,7 @@ export async function setArticleStatus(id, status) {
   return data.data
 }
 
-/** { wa_number, address, opening_hours, maps_url, point_ratio_rupiah }. */
+/** Pengaturan admin: { address, opening_hours, maps_url, point_ratio_rupiah, home_featured_brand_ids }. */
 export async function getAdminSettings() {
   const { data } = await http.get('/admin/settings')
   return data.data
