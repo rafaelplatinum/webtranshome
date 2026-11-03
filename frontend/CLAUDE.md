@@ -156,5 +156,5 @@ Menunggu backend (laporkan, jangan dikerjakan di frontend):
 - Endpoint REST sesuai lampiran rencana build. Sementara pakai mock.
 
 ## 13. Git
-- Kerja di branch baru (`feat/...`, `fix/...`). JANGAN commit langsung ke `main`. Merge ke `main` hanya atas instruksi pemilik project.
+- Sejak 3 Nov 2026 (keputusan pemilik project): kerja **langsung di `main`**, tanpa branch fitur + PR. Frontend dan backend sama-sama push ke `main`, jadi **selalu `git pull origin main` sebelum mengubah** dan sebelum push. Commit/push hanya atas permintaan pemilik project. Jangan mengubah folder `backend/` dari sisi frontend.
 - Commit kecil dan deskriptif (Conventional Commits: `feat:`, `fix:`, `refactor:`, `style:`).
