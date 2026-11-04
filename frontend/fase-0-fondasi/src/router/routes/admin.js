@@ -42,6 +42,12 @@ export default [
         meta: { title: 'Brand', grup: 'Katalog', permission: 'brand.view' },
       },
       {
+        path: 'brand-beranda',
+        name: 'admin-brand-beranda',
+        component: () => import('@/views/admin/katalog/BrandBeranda.vue'),
+        meta: { title: 'Brand di Beranda', grup: 'Katalog', permission: 'brand.view' },
+      },
+      {
         path: 'ruangan',
         name: 'admin-ruangan',
         component: () => import('@/views/admin/katalog/Ruangan.vue'),
@@ -94,6 +100,12 @@ export default [
         name: 'admin-pengaturan',
         component: () => import('@/views/admin/konten/Pengaturan.vue'),
         meta: { title: 'Pengaturan toko', grup: 'Konten', permission: 'setting.update' },
+      },
+      {
+        path: 'template-whatsapp',
+        name: 'admin-template-whatsapp',
+        component: () => import('@/views/admin/konten/TemplateWhatsApp.vue'),
+        meta: { title: 'Template WhatsApp', grup: 'Konten', permission: 'setting.update' },
       },
       {
         path: 'pengguna',

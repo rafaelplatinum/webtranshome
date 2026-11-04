@@ -5,6 +5,7 @@ import { ImageOff } from 'lucide-vue-next'
 import PriceTag from '@/components/ui/PriceTag.vue'
 import StockBadge from '@/components/ui/StockBadge.vue'
 import WhatsAppButton from '@/components/layout/WhatsAppButton.vue'
+import TombolKeranjang from '@/components/keranjang/TombolKeranjang.vue'
 import { useWhatsApp } from '@/composables/useWhatsApp'
 import { labelTanyaProduk } from '@/utils/whatsapp'
 
@@ -19,7 +20,7 @@ const linkWhatsApp = computed(() => productLink(props.product))
 </script>
 
 <template>
-  <article class="flex flex-col overflow-hidden rounded-xl border border-border bg-surface transition-colors duration-150 hover:border-border-strong">
+  <article class="relative flex flex-col overflow-hidden rounded-xl border border-border bg-surface transition-colors duration-150 hover:border-border-strong">
     <RouterLink :to="tautan" class="block aspect-square bg-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset" tabindex="-1" aria-hidden="true">
       <img
         v-if="product.primary_image_url"
@@ -48,6 +49,11 @@ const linkWhatsApp = computed(() => productLink(props.product))
       <PriceTag class="mt-1" size="card" :price="product.price_general" :show="product.show_price !== false" :unit="product.unit_sale" />
       <StockBadge :status="product.stock_status" :keterangan="product.stock_qty_label ?? ''" />
       <WhatsAppButton class="mt-auto" :href="linkWhatsApp" :label="labelTanyaProduk(product)" block wrap />
+    </div>
+
+    <!-- Keranjang (KEPUTUSAN #23): tombol bulat di pojok foto; di DOM setelah tombol WhatsApp supaya urutan Tab tetap nama → WA → keranjang. -->
+    <div class="absolute top-2 right-2">
+      <TombolKeranjang ikon :produk="product" />
     </div>
   </article>
 </template>

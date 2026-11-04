@@ -90,6 +90,13 @@ export default [
         meta: { title: 'Detail produk', barAksiHp: true },
       },
       {
+        // Keranjang belanja (KEPUTUSAN #23): dikirim lewat WhatsApp, tanpa checkout. Bar kirim sendiri di HP.
+        path: 'keranjang',
+        name: 'keranjang',
+        component: () => import('@/views/public/Keranjang.vue'),
+        meta: { title: 'Keranjang belanja', barAksiHp: true },
+      },
+      {
         path: 'brand',
         name: 'brand-daftar',
         component: () => import('@/views/public/BrandDaftar.vue'),

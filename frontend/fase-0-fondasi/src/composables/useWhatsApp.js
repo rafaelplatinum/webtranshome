@@ -1,12 +1,11 @@
 import { computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useSettingsStore } from '@/stores/settings'
-import {
-  buatLinkWhatsApp, hargaDisembunyikan, pesanCariProduk, pesanJumlahBesar, pesanKonsultasiJasa, pesanTanyaKonten, pesanTanyaProduk, pesanUmum,
-} from '@/utils/whatsapp'
+import { buatLinkWhatsApp, pesanCariProduk, pesanJumlahBesar, pesanKonsultasiJasa, pesanTanyaKonten, pesanUmum } from '@/utils/whatsapp'
+import { pesanKeranjang, pesanProduk, teksPelanggan } from '@/utils/templateWhatsApp'
 
 /**
- * Link WhatsApp ke CS Transhome. Nomor dari pengaturan toko (API).
+ * Link WhatsApp ke CS Transhome. Nomor dan template pesan dari pengaturan toko (API).
  * Setiap fungsi mengembalikan null selama nomor belum tersedia; tombol menampilkan state nonaktif.
  */
 export function useWhatsApp() {
@@ -17,16 +16,27 @@ export function useWhatsApp() {
   const nomor = computed(() => settings.waNumber)
   const urlProduk = (produk) => new URL(`/produk/${produk.slug}`, window.location.origin).href
 
+  /** "Tanya via WhatsApp" satu produk: template admin "Pesan per produk". */
   function productLink(produk) {
     if (!nomor.value || !produk) return null
-    const pesan = pesanTanyaProduk({
-      sku: produk.sku,
-      nama: produk.name,
-      url: urlProduk(produk),
-      habis: produk.stock_status === 'HABIS',
-      tanyaHarga: hargaDisembunyikan(produk),
-    })
+    const pesan = pesanProduk(produk, { template: settings.templateWa.produk, link: urlProduk(produk), pelanggan: teksPelanggan(auth.user) })
     return buatLinkWhatsApp(nomor.value, pesan)
+  }
+
+  /** Isi pesan keranjang (juga untuk pratinjau di /keranjang). items: [{ produk, jumlah }] yang masih dijual. */
+  function pesanDariKeranjang(items) {
+    return pesanKeranjang(items, {
+      template: settings.templateWa.keranjang,
+      templateBaris: settings.templateWa.baris,
+      linkProduk: urlProduk,
+      pelanggan: teksPelanggan(auth.user),
+    })
+  }
+
+  /** "Pesan via WhatsApp" di /keranjang: semua produk keranjang dalam satu pesan. */
+  function keranjangLink(items) {
+    if (!nomor.value || !items?.length) return null
+    return buatLinkWhatsApp(nomor.value, pesanDariKeranjang(items))
   }
 
   function bulkLink(produk) {
@@ -67,5 +77,8 @@ export function useWhatsApp() {
     return buatLinkWhatsApp(nomor.value, pesan)
   }
 
-  return { tersedia: computed(() => Boolean(nomor.value)), productLink, bulkLink, generalLink, searchLink, kontenLink, jasaLink }
+  return {
+    tersedia: computed(() => Boolean(nomor.value)),
+    productLink, keranjangLink, pesanDariKeranjang, bulkLink, generalLink, searchLink, kontenLink, jasaLink,
+  }
 }

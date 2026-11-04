@@ -5,6 +5,7 @@ import { ImageOff } from 'lucide-vue-next'
 import PriceTag from '@/components/ui/PriceTag.vue'
 import StockBadge from '@/components/ui/StockBadge.vue'
 import WhatsAppButton from '@/components/layout/WhatsAppButton.vue'
+import TombolKeranjang from '@/components/keranjang/TombolKeranjang.vue'
 import { useWhatsApp } from '@/composables/useWhatsApp'
 import { labelTanyaProduk } from '@/utils/whatsapp'
 
@@ -35,7 +36,10 @@ const linkWhatsApp = computed(() => productLink(props.product))
     <div class="flex flex-col items-start gap-2 sm:items-end">
       <PriceTag :price="product.price_general" :show="product.show_price !== false" :unit="product.unit_sale" />
       <StockBadge class="sm:self-end" :status="product.stock_status" :keterangan="product.stock_qty_label ?? ''" />
-      <WhatsAppButton size="sm" :href="linkWhatsApp" :label="labelTanyaProduk(product)" />
+      <div class="flex flex-wrap gap-2 sm:justify-end">
+        <TombolKeranjang :produk="product" variant="outline" size="sm" />
+        <WhatsAppButton size="sm" :href="linkWhatsApp" :label="labelTanyaProduk(product)" />
+      </div>
     </div>
   </article>
 </template>

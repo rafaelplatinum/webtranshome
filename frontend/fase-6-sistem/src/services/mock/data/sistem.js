@@ -39,7 +39,7 @@ const DAFTAR = [
   [34, 'service.view', 'view', 'Melihat daftar jasa'],
   [34, 'service.create', 'create', 'Menambah jasa'],
   [34, 'service.update', 'update', 'Mengubah, mengurutkan, dan menonaktifkan jasa'],
-  [33, 'setting.update', 'update', 'Mengubah nomor WhatsApp, alamat, jam buka, dan peta'],
+  [33, 'setting.update', 'update', 'Mengubah nomor WhatsApp, template pesan WhatsApp, alamat, jam buka, dan peta'],
   [33, 'setting.point_ratio', 'point_ratio', 'Mengubah rasio poin'],
   [41, 'user.view', 'view', 'Melihat pengguna admin'],
   [41, 'user.create', 'create', 'Menambah admin'],

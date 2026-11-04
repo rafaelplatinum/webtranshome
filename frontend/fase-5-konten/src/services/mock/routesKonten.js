@@ -1,7 +1,8 @@
-// Rute API tiruan konten (Fase 5): banner (termasuk hero Beranda), artikel/promo/event, jasa, dan pengaturan toko.
-// TODO: ganti ke API begitu endpoint /banners, /articles, /admin/banners, /admin/articles,
-// dan /admin/settings tersedia di backend.
+// Rute API tiruan konten (Fase 5): banner (termasuk hero Beranda), artikel/promo/event, jasa, pengaturan toko,
+// dan template pesan WhatsApp. TODO: ganti ke API begitu endpoint /banners, /articles, /admin/banners,
+// /admin/articles, /admin/settings, dan /admin/settings/whatsapp-templates tersedia di backend.
 import { normalisasiNomorHp } from '@/utils/format'
+import { cekTemplate } from '@/utils/templateWhatsApp'
 import { publicSettings } from '@/services/mock/data/akun'
 import { categories } from '@/services/mock/data/catalog'
 import { articles, banners, services } from '@/services/mock/data/konten'
@@ -396,14 +397,43 @@ function ubahPengaturan({ headers, body }) {
     errors.point_ratio_rupiah = ['Rasio poin minimal Rp 1.000 per poin']
   }
   if (Object.keys(errors).length) return galatIsian(errors)
-  const sebelum = { ...publicSettings }
+  const sebelum = ambil(publicSettings, KUNCI_TOKO)
   Object.assign(publicSettings, {
     wa_number: wa, address: body.address.trim(), opening_hours: body.opening_hours.trim(), maps_url: peta || null,
     ...(ubahRasio && { point_ratio_rupiah: Number(body.point_ratio_rupiah) }),
   })
-  catat(u, 'setting.update', 'Pengaturan toko', { sebelum, sesudah: { ...publicSettings } })
+  catat(u, 'setting.update', 'Pengaturan toko', { sebelum, sesudah: ambil(publicSettings, KUNCI_TOKO) })
   simpanDb()
   return { data: { data: { ...publicSettings } } }
+}
+
+// ---------- template pesan WhatsApp (KEPUTUSAN #23) ----------
+// Kunci site_settings → jenis template di utils/templateWhatsApp.js (validasi yang sama dipakai halaman admin).
+const KUNCI_TOKO = ['wa_number', 'address', 'opening_hours', 'maps_url', 'point_ratio_rupiah']
+const KUNCI_TEMPLATE = { wa_template_product: 'produk', wa_template_cart: 'keranjang', wa_template_cart_item: 'baris' }
+const ambil = (objek, kunci) => Object.fromEntries(kunci.map((k) => [k, objek[k] ?? null]))
+
+function templateWaAdmin({ headers }) {
+  const { gagal } = cekAdmin(headers, 'setting.update')
+  if (gagal) return gagal
+  return { data: { data: ambil(publicSettings, Object.keys(KUNCI_TEMPLATE)) } }
+}
+
+function ubahTemplateWa({ headers, body }) {
+  const { u, gagal } = cekAdmin(headers, 'setting.update')
+  if (gagal) return gagal
+  const errors = {}
+  for (const [kunci, jenis] of Object.entries(KUNCI_TEMPLATE)) {
+    const galat = cekTemplate(jenis, body?.[kunci])
+    if (galat) errors[kunci] = [galat]
+  }
+  if (Object.keys(errors).length) return galatIsian(errors)
+  const sebelum = ambil(publicSettings, Object.keys(KUNCI_TEMPLATE))
+  for (const kunci of Object.keys(KUNCI_TEMPLATE)) publicSettings[kunci] = String(body[kunci]).replace(/\r\n?/g, '\n').trim()
+  const sesudah = ambil(publicSettings, Object.keys(KUNCI_TEMPLATE))
+  catat(u, 'setting.update', 'Template WhatsApp', perubahan(sebelum, sesudah))
+  simpanDb()
+  return { data: { data: sesudah } }
 }
 
 // Urutan penting: path tetap sebelum path ber-parameter.
@@ -428,6 +458,8 @@ export const ruteKonten = [
   ['get', '/admin/services/:id', ambilJasaAdmin],
   ['put', '/admin/services/:id', ubahJasa],
   ['patch', '/admin/services/:id', patchJasa],
+  ['get', '/admin/settings/whatsapp-templates', templateWaAdmin],
+  ['put', '/admin/settings/whatsapp-templates', ubahTemplateWa],
   ['get', '/admin/settings', pengaturanAdmin],
   ['put', '/admin/settings', ubahPengaturan],
 ]

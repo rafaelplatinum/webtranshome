@@ -133,6 +133,11 @@ function daftarProduk({ query }) {
     dasar = dasar.filter((p) => ids.includes(p.category_id))
   }
   if (query.exclude) dasar = dasar.filter((p) => String(p.id) !== String(query.exclude))
+  // ids=1,2,3: keranjang memperbarui harga & stok produknya (KEPUTUSAN #23); yang nonaktif tidak ikut kembali.
+  if (query.ids) {
+    const ids = String(query.ids).split(',').map((x) => x.trim())
+    dasar = dasar.filter((p) => ids.includes(String(p.id)))
+  }
   if (query.featured === '1' || query.featured === 1) dasar = dasar.filter((p) => p.is_featured)
   const tanpaHarga = dasar
   // Filter harga: produk yang harganya disembunyikan tidak ikut (harganya tidak diketahui pelanggan).
@@ -232,7 +237,10 @@ function daftarMerek() {
   }
   const data = brands
     .filter((b) => b.is_active)
-    .map((b) => ({ id: b.id, name: b.name, slug: b.slug, logo_url: b.logo_url, product_count: produkAktif(b).length, categories: kategoriUtama(b) }))
+    .map((b) => ({
+      id: b.id, name: b.name, slug: b.slug, logo_url: b.logo_url, show_on_home: Boolean(b.show_on_home), home_order: b.home_order ?? null,
+      product_count: produkAktif(b).length, categories: kategoriUtama(b),
+    }))
   return { data: { data } }
 }
 

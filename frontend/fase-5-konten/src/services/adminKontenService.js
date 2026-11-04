@@ -73,6 +73,18 @@ export async function updateSettings(payload) {
   return data.data
 }
 
+/** Template pesan WhatsApp (KEPUTUSAN #23): { wa_template_product, wa_template_cart, wa_template_cart_item }. Izin setting.update. */
+export async function getWaTemplates() {
+  const { data } = await http.get('/admin/settings/whatsapp-templates')
+  return data.data
+}
+
+/** Simpan ketiga template sekaligus. 422 `errors.<kunci>` bila ada kode tak dikenal / kode wajib hilang. */
+export async function updateWaTemplates(payload) {
+  const { data } = await http.put('/admin/settings/whatsapp-templates', payload, TANPA_TOAST)
+  return data.data
+}
+
 /** Semua jasa (termasuk nonaktif) + categories [{ id, name, slug, parent_id }]. Izin service.view. */
 export async function listAdminServices() {
   const { data } = await http.get('/admin/services')

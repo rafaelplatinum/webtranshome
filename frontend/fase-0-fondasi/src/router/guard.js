@@ -1,6 +1,8 @@
 import { useAuthStore } from '@/stores/auth'
 
-const DESKRIPSI_DEFAULT = document.querySelector('meta[name="description"]')?.getAttribute('content') ?? ''
+// Teks tetap (sama dengan index.html), bukan dibaca dari <meta>: HTML mentah kini bisa berisi deskripsi halaman tertentu
+// (SEO statis di vite.config.js), yang tidak boleh terbawa ke halaman lain.
+const DESKRIPSI_DEFAULT = 'Katalog bahan bangunan dan elektronik Transhome di Sleman, Yogyakarta, serta program membership Trans Family.'
 
 /** Hanya terima redirect ke path internal, supaya ?redirect= tidak bisa membawa keluar situs. */
 function redirectAman(nilai) {
@@ -59,6 +61,9 @@ export function pasangGuard(router) {
   router.afterEach((to, from) => {
     // Perubahan query saja (filter katalog) tidak mengganti judul yang sudah diatur useSeo di halaman.
     if (from.matched.length && to.path === from.path) return
+    // Tag SEO statis dari HTML mentah (vite.config.js) hanya berlaku untuk halaman yang pertama dibuka. Setelah pindah
+    // halaman, sisa yang tidak diambil alih useSeo dibuang supaya canonical/JSON-LD halaman lama tidak terbawa.
+    if (from.matched.length) document.head.querySelectorAll('[data-seo="statis"]').forEach((el) => el.remove())
     document.title = to.meta.title ? `${to.meta.title} | Transhome` : 'Transhome'
     document.querySelector('meta[name="description"]')?.setAttribute('content', to.meta.description ?? DESKRIPSI_DEFAULT)
   })

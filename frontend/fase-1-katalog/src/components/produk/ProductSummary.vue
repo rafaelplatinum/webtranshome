@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import { BadgeCheck, FileDown, Share2, ShieldCheck } from 'lucide-vue-next'
 import Badge from '@/components/ui/Badge.vue'
@@ -9,10 +9,14 @@ import PriceTag from '@/components/ui/PriceTag.vue'
 import StockBadge from '@/components/ui/StockBadge.vue'
 import WhatsAppButton from '@/components/layout/WhatsAppButton.vue'
 import JasaTerkait from '@/components/jasa/JasaTerkait.vue'
+import PengaturJumlah from '@/components/keranjang/PengaturJumlah.vue'
+import TombolKeranjang from '@/components/keranjang/TombolKeranjang.vue'
 import { useWhatsApp } from '@/composables/useWhatsApp'
 import { hargaDisembunyikan, labelTanyaProduk } from '@/utils/whatsapp'
+import { MAKS_JUMLAH, jumlahMinimal, useKeranjangStore } from '@/stores/keranjang'
 import { useUiStore } from '@/stores/ui'
 import { salinTeks } from '@/utils/clipboard'
+import { formatAngka } from '@/utils/format'
 
 const props = defineProps({
   // GET /products/:slug
@@ -22,10 +26,22 @@ const props = defineProps({
 })
 
 const ui = useUiStore()
+const keranjang = useKeranjangStore()
 const { productLink, bulkLink } = useWhatsApp()
 const teksSku = ref(null)
 
 const habis = computed(() => props.produk.stock_status === 'HABIS')
+
+// Keranjang (KEPUTUSAN #23): jumlah dimulai dari minimal pembelian; produk lain dibuka → kembali ke minimal.
+const minimal = computed(() => jumlahMinimal(props.produk))
+const jumlah = ref(minimal.value)
+watch(
+  () => props.produk.id,
+  () => {
+    jumlah.value = minimal.value
+  },
+)
+const diKeranjang = computed(() => keranjang.cari(props.produk.id))
 const garansi = computed(() => props.produk.specifications?.garansi || null)
 const sni = computed(() => {
   const nilai = String(props.produk.specifications?.sni ?? '').trim()
@@ -83,6 +99,22 @@ async function bagikan() {
       <StockBadge :status="produk.stock_status" :keterangan="produk.stock_qty_label ?? ''" />
       <Badge v-if="garansi" variant="info"><ShieldCheck class="size-3.5" aria-hidden="true" />Garansi {{ garansi }}</Badge>
       <Badge v-if="sni" variant="success"><BadgeCheck class="size-3.5" aria-hidden="true" />SNI</Badge>
+    </div>
+
+    <div v-if="!habis" class="flex flex-col gap-2" data-blok-keranjang>
+      <div class="flex flex-wrap items-end gap-3">
+        <PengaturJumlah v-model="jumlah" :min="minimal" :max="MAKS_JUMLAH" :satuan="produk.unit_sale" />
+        <TombolKeranjang class="min-w-52 flex-1" :produk="produk" :jumlah="jumlah" />
+      </div>
+      <p v-if="diKeranjang" class="text-sm text-muted" data-info-keranjang>
+        Sudah ada {{ formatAngka(diKeranjang.jumlah) }} {{ produk.unit_sale }} di keranjang.
+        <RouterLink
+          to="/keranjang"
+          class="rounded-sm font-semibold text-primary underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          Lihat keranjang
+        </RouterLink>
+      </p>
     </div>
 
     <div class="flex flex-col gap-2">

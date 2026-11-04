@@ -1,5 +1,6 @@
 // Data contoh akun, poin, dan pengaturan toko. Kolom mengikuti docs/transhome_postgres.sql. TODO: ganti ke API.
 // Akun contoh HANYA untuk mode mock (VITE_USE_MOCK=true). Semua password: rahasia123.
+import { TEMPLATE_BAWAAN } from '@/utils/templateWhatsApp'
 
 export const MOCK_PASSWORD = 'rahasia123'
 
@@ -130,10 +131,14 @@ export const tokenVerifikasi = []
 export const tokenReset = []
 
 // site_settings yang boleh dibaca publik. Nomor WhatsApp di sini nomor contoh, bukan nomor toko.
+// Template pesan WhatsApp (KEPUTUSAN #23) diubah di admin › Konten › Template WhatsApp; isi awal = bawaan.
 export const publicSettings = {
   wa_number: '6280000000000',
   address: 'Jl. Raya Solo–Yogyakarta Km 11, Berbah, Sleman',
   opening_hours: 'Senin–Sabtu, 08.00–17.00',
   maps_url: 'https://www.google.com/maps/search/?api=1&query=Transhome+Berbah+Sleman',
   point_ratio_rupiah: 1000000,
+  wa_template_product: TEMPLATE_BAWAAN.produk,
+  wa_template_cart: TEMPLATE_BAWAAN.keranjang,
+  wa_template_cart_item: TEMPLATE_BAWAAN.baris,
 }

@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
-import { MapPin } from 'lucide-vue-next'
+import { MapPin, ShoppingCart } from 'lucide-vue-next'
 import Button from '@/components/ui/Button.vue'
 import MegaMenu from './MegaMenu.vue'
 import SearchBox from './SearchBox.vue'
@@ -9,6 +9,7 @@ import UserMenu from './UserMenu.vue'
 import LogoTranshome from '@/components/layout/LogoTranshome.vue'
 import { useWhatsApp } from '@/composables/useWhatsApp'
 import { useAuthStore } from '@/stores/auth'
+import { useKeranjangStore } from '@/stores/keranjang'
 import { useSettingsStore } from '@/stores/settings'
 
 const NAVIGASI = [
@@ -22,10 +23,13 @@ const NAVIGASI = [
 const route = useRoute()
 const auth = useAuthStore()
 const settings = useSettingsStore()
+const keranjang = useKeranjangStore()
 const { generalLink } = useWhatsApp()
 
 const linkWhatsApp = computed(() => generalLink())
 const linkMasuk = computed(() => ({ path: '/masuk', query: { redirect: route.fullPath } }))
+// Keranjang (KEPUTUSAN #23): angka = banyaknya produk berbeda.
+const labelKeranjang = computed(() => (keranjang.jumlahProduk ? `Keranjang belanja, ${keranjang.jumlahProduk} produk` : 'Keranjang belanja, masih kosong'))
 
 // Header menempel di atas saat halaman digulir. Di bawah 1024 px baris alamat ikut tergulir hilang
 // (top negatif setinggi baris itu) supaya header yang menempel tidak memakan seperempat layar HP.
@@ -92,6 +96,23 @@ const kelasTautanGelap =
         </RouterLink>
 
         <div class="ml-auto flex items-center gap-2 lg:order-last lg:ml-0">
+          <RouterLink
+            to="/keranjang"
+            class="relative inline-flex size-11 shrink-0 items-center justify-center rounded-md text-foreground transition-colors duration-150 hover:bg-subtle hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            active-class="text-primary"
+            :aria-label="labelKeranjang"
+            data-ikon-keranjang
+          >
+            <ShoppingCart class="size-6" aria-hidden="true" />
+            <span
+              v-if="keranjang.jumlahProduk"
+              class="absolute top-0.5 right-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-xs font-bold text-primary-foreground tabular-nums ring-2 ring-surface"
+              aria-hidden="true"
+              data-angka-keranjang
+            >
+              {{ keranjang.jumlahProduk > 99 ? '99+' : keranjang.jumlahProduk }}
+            </span>
+          </RouterLink>
           <UserMenu v-if="auth.isLoggedIn" />
           <template v-else>
             <Button variant="outline" size="sm" class="sm:h-11" :to="linkMasuk">Masuk</Button>

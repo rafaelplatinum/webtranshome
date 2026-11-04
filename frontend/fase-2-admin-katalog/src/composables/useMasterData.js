@@ -43,6 +43,22 @@ export function useMasterData(jenis) {
     }
   }
 
+  /** Brand: centang/lepas "Tampil di lingkaran Beranda" langsung dari tabel. Gagal (mis. penuh) → dikembalikan. */
+  async function ubahBeranda(baris, nilai) {
+    baris.show_on_home = nilai
+    baris.sibuk = true
+    try {
+      await patchMaster(jenis, baris.id, { show_on_home: nilai })
+      ui.tampilkanToast({ pesan: nilai ? `${baris.name} tampil di lingkaran Beranda.` : `${baris.name} dilepas dari lingkaran Beranda.`, jenis: 'success' })
+    } catch (error) {
+      baris.show_on_home = !nilai
+      const galat = error?.response?.data?.errors?.show_on_home?.[0]
+      ui.tampilkanToast({ pesan: galat ?? pesanError(error), jenis: 'danger' })
+    } finally {
+      baris.sibuk = false
+    }
+  }
+
   function ubahAktif(baris, nilai) {
     if (nilai) aktifkan(baris)
     else konfirmasi.value = baris
@@ -96,5 +112,5 @@ export function useMasterData(jenis) {
     ui.tampilkanToast({ pesan: `${hasil.name} disimpan.`, jenis: 'success' })
   }
 
-  return { status, daftar, pesan, muat, konfirmasi, sedangNonaktif, ubahAktif, nonaktifkan, geser, formBuka, dipilih, bukaForm, tersimpan }
+  return { status, daftar, pesan, muat, konfirmasi, sedangNonaktif, ubahAktif, ubahBeranda, nonaktifkan, geser, formBuka, dipilih, bukaForm, tersimpan }
 }

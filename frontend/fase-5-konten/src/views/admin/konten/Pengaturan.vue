@@ -1,5 +1,6 @@
 <script setup>
 import { computed, nextTick, onMounted, reactive, ref } from 'vue'
+import { RouterLink } from 'vue-router'
 import { TriangleAlert } from 'lucide-vue-next'
 import Button from '@/components/ui/Button.vue'
 import ConfirmModal from '@/components/ui/ConfirmModal.vue'
@@ -134,6 +135,10 @@ async function simpan() {
     <div class="flex max-w-3xl flex-col gap-6">
       <FormSection judul="WhatsApp toko" deskripsi="Semua tombol WhatsApp di website mengarah ke nomor ini.">
         <Input v-model="form.wa_number" label="Nomor WhatsApp" required type="tel" inputmode="tel" autocomplete="off" :error="errors.wa_number ?? ''" :hint="petunjukWa" />
+        <p class="text-sm text-muted">
+          Isi pesan otomatis per produk dan dari keranjang belanja diatur di
+          <RouterLink to="/admin/template-whatsapp" class="rounded-sm font-semibold text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Template WhatsApp</RouterLink>.
+        </p>
       </FormSection>
 
       <FormSection judul="Lokasi dan jam buka" deskripsi="Tampil di header, footer, dan halaman Info toko.">

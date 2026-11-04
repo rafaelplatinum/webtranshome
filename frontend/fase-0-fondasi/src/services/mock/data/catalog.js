@@ -91,7 +91,9 @@ export const brands = [
   ...BRAND_TAMBAHAN,
   'Merek Lama',
 ].map((name, i) => ({
-  id: i + 1, name, slug: slugify(name), logo_url: i < 10 ? logoContoh(name, i) : null, is_active: name !== 'Merek Lama', created_at: dibuat, updated_at: dibuat,
+  id: i + 1, name, slug: slugify(name), logo_url: i < 10 ? logoContoh(name, i) : null,
+  // Lingkaran "Brand pilihan" Beranda (KEPUTUSAN #21): contoh 12 brand pertama dicentang, urutan tampil = home_order.
+  show_on_home: i < 12, home_order: i < 12 ? i + 1 : null, is_active: name !== 'Merek Lama', created_at: dibuat, updated_at: dibuat,
 }))
 
 const warnaRuangan = { Dapur: '#E7D7C1', 'Kamar mandi': '#D4E2EA', Fasad: '#D6D3CD', 'Ruang keluarga': '#E9DFCE', Teras: '#DCE3D2' }
