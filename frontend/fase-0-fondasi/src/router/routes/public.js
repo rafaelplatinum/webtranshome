@@ -76,6 +76,12 @@ export default [
         meta: { title: 'Katalog' },
       },
       {
+        path: 'keranjang',
+        name: 'keranjang',
+        component: () => import('@/views/public/Keranjang.vue'),
+        meta: { title: 'Keranjang belanja' },
+      },
+      {
         path: 'cari',
         name: 'cari',
         component: () => import('@/views/public/Cari.vue'),
