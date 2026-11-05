@@ -14,6 +14,9 @@ import (
 	passwordbcrypt "webtranshome/internal/modules/identityaccess/infrastructure/password/bcrypt"
 	authpostgres "webtranshome/internal/modules/identityaccess/infrastructure/postgres"
 	jwtissuer "webtranshome/internal/modules/identityaccess/infrastructure/token/jwtissuer"
+	mediaassets "webtranshome/internal/modules/media/application/assets"
+	mediaassetspg "webtranshome/internal/modules/media/infrastructure/postgres"
+	mediastorage "webtranshome/internal/modules/media/infrastructure/storage"
 
 	"github.com/zeromicro/go-zero/core/stores/postgres"
 	"github.com/zeromicro/go-zero/rest"
@@ -44,6 +47,7 @@ type ServiceContext struct {
 	CreateProduct            *catalogcommand.CreateProduct
 	UpdateProduct            *catalogcommand.UpdateProduct
 	ReplaceProductRooms      *catalogcommand.ReplaceProductRooms
+	ImageAssets              *mediaassets.Service
 	Authenticate             rest.Middleware
 	RequirePermission        func(string) rest.Middleware
 }
@@ -93,6 +97,8 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	createProduct := catalogcommand.NewCreateProduct(productRepository, productRepository)
 	updateProduct := catalogcommand.NewUpdateProduct(productRepository, productRepository)
 	replaceProductRooms := catalogcommand.NewReplaceProductRooms(productRepository, roomRepository, productRepository)
+	imageAssetRepository := mediaassetspg.NewAssetRepository(conn)
+	imageAssets := mediaassets.New(imageAssetRepository, mediastorage.NewLocal(c.ImageStorage.Directory, c.ImageStorage.MaxBytes))
 
 	return &ServiceContext{
 		Config:                   c,
@@ -119,6 +125,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		CreateProduct:            createProduct,
 		UpdateProduct:            updateProduct,
 		ReplaceProductRooms:      replaceProductRooms,
+		ImageAssets:              imageAssets,
 		Authenticate:             middleware.Authenticate(tokenVerifier, userRepository),
 		RequirePermission: func(code string) rest.Middleware {
 			return middleware.RequirePermission(checkPermission, code)

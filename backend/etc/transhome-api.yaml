@@ -21,3 +21,7 @@ PasswordReset:
   WhatsAppGatewayToken: ${WHATSAPP_GATEWAY_TOKEN}
   EmailGatewayURL: ${EMAIL_GATEWAY_URL}
   EmailGatewayToken: ${EMAIL_GATEWAY_TOKEN}
+
+ImageStorage:
+  Directory: ./uploads
+  MaxBytes: 2097152

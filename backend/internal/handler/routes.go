@@ -32,6 +32,9 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 		},
 		rest.WithPrefix("/api/v1"),
 	)
+	server.AddRoutes([]rest.Route{
+		{Method: http.MethodGet, Path: "/media/:filename", Handler: ImageAssetFileHandler(serverCtx)},
+	})
 	server.AddRoutes(
 		rest.WithMiddlewares(
 			[]rest.Middleware{serverCtx.Authenticate},
@@ -109,6 +112,18 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				{Method: http.MethodGet, Path: "/admin/users", Handler: SearchAccessControlUsersHandler(serverCtx)},
 				{Method: http.MethodGet, Path: "/admin/users/:userId/roles", Handler: UserRolesHandler(serverCtx)},
 				{Method: http.MethodPut, Path: "/admin/users/:userId/roles", Handler: ReplaceUserRolesHandler(serverCtx)},
+			}...,
+		),
+		rest.WithPrefix("/api/v1"),
+	)
+	server.AddRoutes(
+		rest.WithMiddlewares(
+			[]rest.Middleware{serverCtx.Authenticate, serverCtx.RequirePermission("image.manage")},
+			[]rest.Route{
+				{Method: http.MethodGet, Path: "/admin/image-assets", Handler: ListImageAssetsHandler(serverCtx)},
+				{Method: http.MethodPost, Path: "/admin/image-assets", Handler: CreateImageAssetHandler(serverCtx)},
+				{Method: http.MethodPatch, Path: "/admin/image-assets/:id", Handler: UpdateImageAssetHandler(serverCtx)},
+				{Method: http.MethodDelete, Path: "/admin/image-assets/:id", Handler: DeleteImageAssetHandler(serverCtx)},
 			}...,
 		),
 		rest.WithPrefix("/api/v1"),

@@ -21,4 +21,9 @@ type Config struct {
 		EmailGatewayURL      string
 		EmailGatewayToken    string
 	}
+
+	ImageStorage struct {
+		Directory string
+		MaxBytes  int64
+	}
 }
