@@ -5,10 +5,10 @@ import Breadcrumb from '@/components/ui/Breadcrumb.vue'
 import EmptyState from '@/components/ui/EmptyState.vue'
 import ErrorState from '@/components/ui/ErrorState.vue'
 import Skeleton from '@/components/ui/Skeleton.vue'
-import WhatsAppButton from '@/components/layout/WhatsAppButton.vue'
 import RoomCarousel from '@/components/katalog/RoomCarousel.vue'
 import { useSeo } from '@/composables/useSeo'
 import { useWhatsApp } from '@/composables/useWhatsApp'
+import PageContactCta from '@/components/public/PageContactCta.vue'
 import { listRooms } from '@/services/catalogService'
 import { pesanError } from '@/services/errors'
 
@@ -37,37 +37,26 @@ useSeo({
 </script>
 
 <template>
-  <div class="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:py-6">
-    <Breadcrumb :items="[{ label: 'Beranda', to: '/' }, { label: 'Ruangan' }]" />
-    <h1 class="mt-2 text-2xl font-extrabold sm:text-3xl">Belanja per ruangan</h1>
-    <p class="mt-2 max-w-2xl text-muted">Pilih ruangan yang sedang kamu bangun atau renovasi. Kami kumpulkan produk yang cocok untuk tiap ruangan.</p>
-
-    <div v-if="status === 'loading'" class="mt-6 flex flex-col gap-3" aria-busy="true">
-      <span class="sr-only">Memuat ruangan…</span>
-      <Skeleton class="h-6 w-40" />
-      <div class="grid auto-cols-[minmax(14rem,1fr)] grid-flow-col gap-4 overflow-hidden">
-        <Skeleton v-for="n in 5" :key="n" class="aspect-4/3 rounded-xl" />
+  <div class="flex flex-col gap-12 sm:gap-16">
+    <section class="bg-th-navy py-10 text-white sm:py-14 lg:py-16">
+      <div class="th-container flex flex-col gap-5">
+        <Breadcrumb variant="light" :items="[{ label: 'Beranda', to: '/' }, { label: 'Ruangan' }]" />
+        <span class="th-eyebrow text-orange-200">Belanja per ruangan</span>
+        <h1 class="max-w-4xl text-4xl leading-[1.08] font-extrabold tracking-tight sm:text-5xl lg:text-[56px]">Pilih ruangan untuk mulai merencanakan.</h1>
+        <p class="max-w-2xl text-base leading-relaxed text-white/80 sm:text-lg">Pilih ruangan yang sedang kamu bangun atau renovasi. Kami kumpulkan produk yang cocok untuk tiap ruangan.</p>
+        <p v-if="status === 'ready'" class="font-semibold text-th-yellow">{{ ruangan.length }} pilihan ruangan</p>
       </div>
+    </section>
+
+    <div class="th-container flex flex-col gap-8">
+      <div v-if="status === 'loading'" class="flex flex-col gap-4" aria-busy="true">
+        <span class="sr-only">Memuat ruangan…</span><Skeleton class="h-9 w-52" /><div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4"><Skeleton v-for="n in 4" :key="n" class="aspect-4/3 rounded-[20px]" /></div>
+      </div>
+      <ErrorState v-else-if="status === 'error'" :message="pesan" @retry="muat" />
+      <EmptyState v-else-if="ruangan.length === 0" title="Belum ada ruangan" description="Daftar ruangan sedang disiapkan. Sementara itu, kamu bisa menjelajah katalog."><template #icon><LayoutDashboard class="size-10" aria-hidden="true" /></template></EmptyState>
+      <RoomCarousel v-else :ruangan="ruangan"><template #judul><h2 class="text-2xl font-extrabold tracking-tight sm:text-3xl">Pilih ruangan</h2></template></RoomCarousel>
     </div>
 
-    <ErrorState v-else-if="status === 'error'" class="mt-6" :message="pesan" @retry="muat" />
-
-    <EmptyState v-else-if="ruangan.length === 0" class="mt-6" title="Belum ada ruangan" description="Daftar ruangan sedang disiapkan. Sementara itu, kamu bisa menjelajah katalog.">
-      <template #icon><LayoutDashboard class="size-10" aria-hidden="true" /></template>
-    </EmptyState>
-
-    <RoomCarousel v-else class="mt-6" :ruangan="ruangan">
-      <template #judul>
-        <h2 class="text-lg font-bold">Pilih ruangan</h2>
-      </template>
-    </RoomCarousel>
-
-    <div v-if="status === 'ready'" class="mt-10 flex flex-col items-start gap-3 rounded-xl border border-border bg-surface p-5 sm:flex-row sm:items-center sm:justify-between">
-      <div class="flex flex-col gap-1">
-        <p class="font-bold">Bingung memilih bahan untuk ruanganmu?</p>
-        <p class="text-sm text-muted">Ceritakan kebutuhanmu, tim kami bantu carikan produknya.</p>
-      </div>
-      <WhatsAppButton class="shrink-0" :href="generalLink()" label="Tanya via WhatsApp" />
-    </div>
+    <PageContactCta v-if="status === 'ready'" heading="Bingung memilih bahan untuk ruanganmu?" description="Ceritakan kebutuhanmu, tim kami bantu carikan produknya." button-label="Tanya via WhatsApp" :context="generalLink()" />
   </div>
 </template>

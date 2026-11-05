@@ -126,7 +126,7 @@ useSeo({
       <div class="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] lg:hidden">
         <div class="mx-auto flex max-w-7xl items-center gap-3">
           <PriceTag class="min-w-0 flex-1" size="sm" :price="produk.price_general" :show="produk.show_price !== false" :unit="produk.unit_sale" />
-          <WhatsAppButton class="shrink-0" :href="productLink(produk)" :label="labelTanyaProduk(produk)" />
+          <WhatsAppButton class="shrink-0" :context="productLink(produk)" :label="labelTanyaProduk(produk)" />
         </div>
       </div>
     </template>

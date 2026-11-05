@@ -85,7 +85,7 @@ useSeo({
         <img v-if="ruangan?.image_cover" :src="ruangan.image_cover" alt="" width="128" height="80" class="size-full object-cover" />
       </div>
       <div class="flex min-w-0 flex-col gap-1">
-        <h1 class="text-2xl font-extrabold sm:text-3xl">
+        <h1 class="text-3xl font-extrabold tracking-tight sm:text-4xl">
           <template v-if="ruangan">{{ ruangan.name }}</template>
           <Skeleton v-else class="inline-block h-8 w-40 align-middle" />
         </h1>

@@ -89,7 +89,7 @@ const kelasTautan = 'rounded-sm text-sm font-bold text-primary transition-colors
         <strong>Poin belum masuk?</strong>
         <span class="text-sm text-primary-hover">Kirim foto nota ke CS, kami cek manual.</span>
       </div>
-      <WhatsAppButton :href="generalLink()" label="Chat WhatsApp CS" />
+      <WhatsAppButton :context="generalLink()" label="Chat WhatsApp CS" />
     </section>
   </div>
 </template>

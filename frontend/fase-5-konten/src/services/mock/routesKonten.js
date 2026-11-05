@@ -9,7 +9,7 @@ import { catat, halaman, perubahan } from '@/services/mock/routesAdmin'
 import { cekAdmin, ditolak, izinPengguna, namaPengguna, sekarang } from '@/services/mock/sesi'
 
 // HOME_HERO: hero paling atas Beranda (gambar atau video), pengganti ilustrasi rumah 3D (30 Okt 2026).
-const POSISI = ['HOME_HERO', 'HOME_SLIDER', 'HOME_SIDE']
+const POSISI = ['HOME_HERO', 'ABOUT_HERO', 'HOME_SLIDER', 'HOME_SIDE']
 const TIPE = ['ARTIKEL', 'PROMO', 'EVENT', 'HALAMAN']
 const POLA_SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 const POLA_TANGGAL = /^\d{4}-\d{2}-\d{2}$/

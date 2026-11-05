@@ -34,10 +34,11 @@ const hero = computed(() => form.position === 'HOME_HERO')
 // Perkiraan status dari isian, supaya admin tahu sebelum menyimpan apakah banner akan tampil.
 const perkiraan = computed(() => perkiraanStatus(form))
 const keteranganStatus = computed(() => {
+  const lokasi = form.position === 'ABOUT_HERO' ? 'halaman Tentang Kami' : 'Beranda'
   if (perkiraan.value === 'TERJADWAL') return `Mulai tampil ${formatTanggal(form.start_date)}.`
   if (perkiraan.value === 'BERAKHIR') return 'Periodenya sudah lewat, jadi banner tidak tampil. Ubah tanggal selesai untuk memperpanjang.'
-  if (perkiraan.value === 'NONAKTIF') return 'Tidak tampil di Beranda karena "Aktif" dimatikan.'
-  return form.end_date ? `Tampil di Beranda sampai ${formatTanggal(form.end_date)}.` : 'Tampil di Beranda tanpa batas waktu.'
+  if (perkiraan.value === 'NONAKTIF') return `Tidak tampil di ${lokasi} karena "Aktif" dimatikan.`
+  return form.end_date ? `Tampil di ${lokasi} sampai ${formatTanggal(form.end_date)}.` : `Tampil di ${lokasi} tanpa batas waktu.`
 })
 
 async function fokusGalatPertama() {
@@ -105,12 +106,12 @@ onMounted(async () => {
             maxlength="100"
             autocomplete="off"
             :error="errors.title ?? ''"
-            :hint="hero ? 'Judul besar hero di bagian paling atas Beranda.' : 'Tampil di atas gambar di Beranda.'"
+            :hint="hero ? 'Judul besar hero di bagian paling atas Beranda.' : form.position === 'ABOUT_HERO' ? 'Judul banner foto pada halaman Tentang Kami.' : 'Tampil di atas gambar di Beranda.'"
           />
           <Input v-if="hero" v-model="form.subtitle" label="Subjudul" maxlength="160" autocomplete="off" :error="errors.subtitle ?? ''" hint="Opsional, satu kalimat di bawah judul." />
           <GambarField
             v-model="form.image_url"
-            :label="hero ? 'Gambar hero' : 'Gambar banner'"
+            :label="hero ? 'Gambar hero' : form.position === 'ABOUT_HERO' ? 'Foto hero Tentang Kami' : 'Gambar banner'"
             required
             :rasio="posisi.rasio"
             lebar="w-64"
@@ -118,6 +119,8 @@ onMounted(async () => {
             :hint="
               hero
                 ? `JPG, PNG, atau WebP, maksimal 2 MB. Ukuran disarankan ${posisi.ukuran}. Tampil bila video belum dimuat, dijeda karena “kurangi animasi”, atau tidak ada video.`
+                : form.position === 'ABOUT_HERO'
+                  ? `JPG, PNG, atau WebP, maksimal 2 MB. Foto menjadi latar penuh hero Tentang Kami. Ukuran disarankan ${posisi.ukuran}.`
                 : `JPG, PNG, atau WebP, maksimal 2 MB. Ukuran disarankan ${posisi.ukuran}.`
             "
           />
@@ -189,7 +192,7 @@ onMounted(async () => {
       </div>
 
       <div class="flex flex-col gap-6 xl:sticky xl:top-24">
-        <FormSection judul="Tampil di Beranda">
+        <FormSection judul="Penempatan banner">
           <Select v-model="form.position" label="Posisi" :options="OPSI_POSISI" :error="errors.position ?? ''" />
           <Switch v-model="form.is_active" label="Aktif" />
           <div class="flex flex-col gap-1.5 rounded-md bg-background px-3 py-3 text-sm" aria-live="polite" data-perkiraan-status>

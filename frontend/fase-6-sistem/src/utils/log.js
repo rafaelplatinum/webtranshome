@@ -56,7 +56,7 @@ const LABEL_NILAI = {
   stock_status: { TERSEDIA: 'Tersedia', SISA_STOK: 'Sisa stok', PRE_ORDER: 'Pre-order', HABIS: 'Habis' },
   status: { DRAFT: 'Draf', PUBLISHED: 'Terbit' },
   type: { EARN: 'Poin belanja', REDEEM: 'Tukar poin', ADJUST: 'Penyesuaian', ARTIKEL: 'Artikel', PROMO: 'Promo', EVENT: 'Event', HALAMAN: 'Halaman' },
-  position: { HOME_SLIDER: 'Slider Beranda', HOME_SIDE: 'Samping slider' },
+  position: { HOME_HERO: 'Hero Beranda', ABOUT_HERO: 'Hero Tentang Kami', HOME_SLIDER: 'Slider Beranda', HOME_SIDE: 'Samping slider' },
 }
 const WAKTU = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/
 

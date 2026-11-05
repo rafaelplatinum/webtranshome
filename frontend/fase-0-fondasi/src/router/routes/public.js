@@ -70,6 +70,12 @@ export default [
         meta: { title: 'Info toko' },
       },
       {
+        path: 'membership',
+        name: 'membership',
+        component: () => import('@/views/public/Membership.vue'),
+        meta: { title: 'Trans Family' },
+      },
+      {
         path: 'katalog/:kategori?',
         name: 'katalog',
         component: () => import('@/views/public/Katalog.vue'),

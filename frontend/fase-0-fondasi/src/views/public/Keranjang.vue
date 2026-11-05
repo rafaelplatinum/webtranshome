@@ -8,23 +8,15 @@ import PriceTag from '@/components/ui/PriceTag.vue'
 import StockBadge from '@/components/ui/StockBadge.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useCartStore } from '@/stores/cart'
-import { useSettingsStore } from '@/stores/settings'
-import { buatLinkWhatsApp } from '@/utils/whatsapp'
+import WhatsAppButton from '@/components/layout/WhatsAppButton.vue'
 
 const cart = useCartStore()
 const auth = useAuthStore()
-const settings = useSettingsStore()
-const pesan = computed(() => {
-  const daftar = cart.items.map((item, index) => `${index + 1}. ${item.name} SKU: ${item.sku} ${new URL(`/produk/${item.slug}`, window.location.origin).href}${item.quantity > 1 ? ` (jumlah: ${item.quantity})` : ''}`)
-  return [
-    'Halo Transhome, saya ingin bertanya tentang produk ini:',
-    ...daftar,
-    '',
-    `Nama : ${auth.user?.full_name || '[Nama customer]'}`,
-    `Nomor telepon : ${auth.user?.phone_number || '[Nomor telepon]'}`,
-  ].join('\n')
-})
-const linkChat = computed(() => settings.waNumber && cart.items.length ? buatLinkWhatsApp(settings.waNumber, pesan.value) : null)
+const konteksKeranjang = computed(() => ({
+  topic: 'Minta penawaran/harga',
+  product: cart.items.map((item) => `${item.name} · SKU ${item.sku} · jumlah ${item.quantity}`).join('; '),
+  message: `Saya ingin menanyakan produk di keranjang ini:\n${cart.items.map((item, index) => `${index + 1}. ${item.name} SKU: ${item.sku} (jumlah: ${item.quantity})`).join('\n')}`,
+}))
 </script>
 
 <template>
@@ -65,7 +57,7 @@ const linkChat = computed(() => settings.waNumber && cart.items.length ? buatLin
         <p v-if="auth.user" class="mt-1 text-sm text-muted">Nama dan nomor telepon diambil dari profil akun Anda.</p>
         <p v-else class="mt-1 text-sm text-muted">Masuk agar nama dan nomor telepon dari akun terisi otomatis.</p>
         <p v-if="!auth.user" class="mt-3 text-sm">Nama dan telepon akan ditampilkan sebagai isian di pesan WhatsApp.</p>
-        <Button v-if="auth.user" class="mt-4" :disabled="!linkChat" :href="linkChat" target="_blank" rel="noopener">Lanjut ke WhatsApp</Button>
+        <WhatsAppButton v-if="auth.user" class="mt-4" :context="konteksKeranjang" label="Lanjut ke WhatsApp" />
         <Button v-else class="mt-4" to="/masuk">Masuk untuk lanjut</Button>
       </div>
     </template>

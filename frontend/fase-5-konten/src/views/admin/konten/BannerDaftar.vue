@@ -32,14 +32,15 @@ const KOLOM = [
 
 const pesanNonaktif = computed(() => {
   const b = d.konfirmasi.value
-  return b ? `Banner “${b.title}” tidak tampil lagi di Beranda. Data tetap tersimpan dan bisa diaktifkan lagi kapan saja.` : ''
+  const lokasi = b?.position === 'ABOUT_HERO' ? 'halaman Tentang Kami' : 'Beranda'
+  return b ? `Banner “${b.title}” tidak tampil lagi di ${lokasi}. Data tetap tersimpan dan bisa diaktifkan lagi kapan saja.` : ''
 })
 </script>
 
 <template>
   <div class="flex flex-col gap-6">
     <div class="flex flex-wrap items-center justify-between gap-3">
-      <p class="text-sm text-muted">Banner tampil di Beranda selama periodenya. Urutan berlaku di dalam posisi yang sama.</p>
+      <p class="text-sm text-muted">Banner tampil di halaman yang dipilih selama periodenya. Urutan berlaku di dalam posisi yang sama.</p>
       <Button v-if="can('banner.create')" to="/admin/banner/baru">
         <template #icon><Plus class="size-4.5" aria-hidden="true" /></template>
         Buat banner
@@ -53,7 +54,7 @@ const pesanNonaktif = computed(() => {
       <Skeleton v-for="n in 5" :key="n" class="h-14" />
     </div>
     <ErrorState v-else-if="d.status.value === 'error'" :message="d.pesan.value" @retry="d.muat" />
-    <EmptyState v-else-if="!d.daftar.value.length" title="Belum ada banner" description="Buat banner promo untuk slider di Beranda.">
+    <EmptyState v-else-if="!d.daftar.value.length" title="Belum ada banner" description="Tambahkan banner untuk halaman website Transhome.">
       <template #icon><Images class="size-10" aria-hidden="true" /></template>
       <template v-if="can('banner.create')" #actions><Button to="/admin/banner/baru">Buat banner</Button></template>
     </EmptyState>
@@ -70,6 +71,7 @@ const pesanNonaktif = computed(() => {
           {{ info.label }} <span class="font-normal text-muted">({{ d.perPosisi.value[posisi].length }})</span>
         </h2>
         <p v-if="posisi === 'HOME_HERO'" class="-mt-2 text-sm text-muted">Paling atas Beranda: gambar atau video. Bila ada beberapa yang tayang, urutan pertama yang tampil.</p>
+        <p v-if="posisi === 'ABOUT_HERO'" class="-mt-2 text-sm text-muted">Foto latar penuh hero pada halaman Tentang Kami. Bila ada beberapa yang tayang, urutan pertama yang tampil.</p>
         <p v-if="!d.perPosisi.value[posisi].length" class="rounded-xl border border-dashed border-border-strong bg-surface px-4 py-6 text-center text-sm text-muted">
           Belum ada banner di posisi ini.
         </p>

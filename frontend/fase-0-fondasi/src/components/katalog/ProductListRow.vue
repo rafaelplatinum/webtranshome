@@ -14,7 +14,6 @@ const props = defineProps({
 
 const { productLink } = useWhatsApp()
 const tautan = computed(() => `/produk/${props.product.slug}`)
-const linkWhatsApp = computed(() => productLink(props.product))
 </script>
 
 <template>
@@ -35,7 +34,7 @@ const linkWhatsApp = computed(() => productLink(props.product))
     <div class="flex flex-col items-start gap-2 sm:items-end">
       <PriceTag :price="product.price_general" :show="product.show_price !== false" :unit="product.unit_sale" />
       <StockBadge class="sm:self-end" :status="product.stock_status" :keterangan="product.stock_qty_label ?? ''" />
-      <WhatsAppButton size="sm" :href="linkWhatsApp" :label="labelTanyaProduk(product)" />
+      <WhatsAppButton size="sm" variant="whatsapp-outline" :context="productLink(product)" :label="labelTanyaProduk(product)" />
     </div>
   </article>
 </template>

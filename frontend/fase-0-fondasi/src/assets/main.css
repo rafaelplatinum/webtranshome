@@ -51,6 +51,19 @@
   --color-danger-soft: #fee2e2;
   --color-danger-ink: #7f1d1d;
   --color-danger-foreground: #ffffff;
+
+  /* Tokens layout editorial untuk halaman publik, tetap terpisah dari token lama. */
+  --color-th-navy: #1b2a3b;
+  --color-th-cream: #faf8f3;
+  --color-th-orange: #c2410c;
+  --color-th-yellow: #facc15;
+  --color-th-wa: #15803d;
+  --color-th-muted: #5b6675;
+  --color-th-border: #e8e3d8;
+  --color-th-blue: #d5dee6;
+  --color-th-peach: #f6d9c6;
+  --color-th-sand: #e9dfcb;
+  --color-th-sage: #d6e3d4;
 }
 
 /* Sembunyikan scrollbar (carousel); konten tetap bisa digeser dan punya tombol navigasi. */
@@ -97,6 +110,37 @@
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
       scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  .th-container {
+    width: min(calc(100% - 2rem), 1200px);
+    margin-inline: auto;
+  }
+
+  .th-eyebrow {
+    color: var(--color-th-orange);
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    line-height: 1.4;
+    text-transform: uppercase;
+  }
+
+  .th-card {
+    border: 1px solid var(--color-th-border);
+    border-radius: 20px;
+    background: var(--color-surface);
+    transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+  }
+
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .th-card:hover {
+      transform: translateY(-4px);
+      border-color: #d6cdbd;
+      box-shadow: 0 12px 28px rgb(27 42 59 / 10%);
     }
   }
 }

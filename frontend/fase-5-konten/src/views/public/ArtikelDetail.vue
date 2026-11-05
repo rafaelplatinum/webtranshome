@@ -136,7 +136,7 @@ useSeo({
             <h2 id="judul-tanya-konten" class="text-lg font-bold">{{ ajakan.judul }}</h2>
             <p class="text-muted">{{ ajakan.isi }}</p>
           </div>
-          <WhatsAppButton class="self-start sm:self-auto" :href="kontenLink(artikel)" />
+          <WhatsAppButton class="self-start sm:self-auto" :context="kontenLink(artikel)" />
         </aside>
       </article>
       <ArtikelLainnya v-if="!halamanTetap" :key="artikel.id" class="mt-12" :artikel="artikel" />

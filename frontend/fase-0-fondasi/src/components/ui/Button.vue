@@ -7,7 +7,7 @@ const props = defineProps({
   variant: {
     type: String,
     default: 'primary',
-    validator: (v) => ['primary', 'secondary', 'outline', 'ghost', 'whatsapp', 'danger'].includes(v),
+    validator: (v) => ['primary', 'secondary', 'outline', 'ghost', 'whatsapp', 'whatsapp-outline', 'danger'].includes(v),
   },
   size: { type: String, default: 'md', validator: (v) => ['sm', 'md', 'lg'].includes(v) },
   type: { type: String, default: 'button' },
@@ -27,6 +27,7 @@ const VARIAN = {
   outline: 'border border-border-strong bg-surface text-foreground hover:border-foreground',
   ghost: 'text-foreground hover:bg-subtle',
   whatsapp: 'bg-whatsapp text-whatsapp-foreground hover:bg-whatsapp-hover',
+  'whatsapp-outline': 'border border-whatsapp bg-surface text-whatsapp hover:bg-success-soft',
   danger: 'bg-danger text-danger-foreground hover:bg-danger-ink',
 }
 

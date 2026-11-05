@@ -15,6 +15,7 @@ import { listBrands } from '@/services/catalogService'
 import { pesanError } from '@/services/errors'
 import { formatAngka } from '@/utils/format'
 import { perilakuGulir } from '@/utils/gerak'
+import WhatsAppButton from '@/components/layout/WhatsAppButton.vue'
 
 // /brand mengikuti wireframe 02 (docs/wireframe-low-fidelity-transhome.xlsx, sheet "Brand"): judul + jumlah,
 // cari dengan tombol Cari, filter kategori, A–Z, kartu 6/3/2 kolom, 24 per halaman. Filter tersimpan di URL.
@@ -124,101 +125,72 @@ async function gantiHalaman(n) {
 }
 
 const kelasChip = (aktif) => [
-  'inline-flex min-h-11 cursor-pointer items-center rounded-full border px-4 text-sm font-semibold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:min-h-9',
-  aktif ? 'border-secondary bg-secondary text-secondary-foreground' : 'border-border-strong bg-surface hover:border-foreground',
+  'inline-flex min-h-11 cursor-pointer items-center rounded-full border px-4 text-sm font-semibold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:min-h-10',
+  aktif ? 'border-th-navy bg-th-navy text-white' : 'border-th-border bg-white hover:border-th-navy',
 ]
 </script>
 
 <template>
-  <div class="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:py-6">
-    <Breadcrumb :items="[{ label: 'Beranda', to: '/' }, { label: 'Brand' }]" />
-    <div class="mt-2 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
-      <h1 class="text-2xl font-extrabold sm:text-3xl">{{ status === 'ready' ? `${formatAngka(brand.length)} Brand Partner` : 'Brand Partner' }}</h1>
-      <RouterLink to="/" class="rounded-sm text-sm font-bold text-primary hover:text-primary-hover hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-        Kembali ke beranda
-      </RouterLink>
-    </div>
-    <p class="mt-2 max-w-2xl text-muted">Temukan brand bahan bangunan dan elektronik. Pilih kartu untuk melihat produknya.</p>
+  <div class="flex flex-col gap-10 sm:gap-14">
+    <section class="bg-th-navy py-10 text-white sm:py-14 lg:py-16">
+      <div class="th-container flex flex-col gap-5">
+        <Breadcrumb variant="light" :items="[{ label: 'Beranda', to: '/' }, { label: 'Brand' }]" />
+        <span class="th-eyebrow text-orange-200">Brand partner</span>
+        <h1 class="max-w-4xl text-4xl leading-[1.08] font-extrabold tracking-tight sm:text-5xl lg:text-[56px]">{{ status === 'ready' ? `${formatAngka(brand.length)} brand bahan bangunan dan elektronik pilihan.` : 'Brand bahan bangunan dan elektronik pilihan.' }}</h1>
+        <p class="max-w-2xl text-base leading-relaxed text-white/80 sm:text-lg">Pilih kartu brand untuk melihat produknya.</p>
+        <form role="search" aria-label="Cari brand" class="mt-2 flex w-full max-w-3xl items-start gap-3" @submit.prevent="cari">
+          <div class="min-w-0 flex-1"><Input v-model="teks" label="Cari brand" hide-label type="search" placeholder="Cari nama brand, misalnya Alfa Keramik" autocomplete="off" enterkeyhint="search" /></div>
+          <Button type="submit" class="shrink-0"><template #icon><Search class="size-4.5" aria-hidden="true" /></template>Cari</Button>
+        </form>
+      </div>
+    </section>
 
-    <div v-if="status === 'loading'" class="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6" aria-busy="true">
-      <span class="sr-only">Memuat brand…</span>
-      <Skeleton v-for="n in 12" :key="n" class="h-36 rounded-xl" />
-    </div>
-    <ErrorState v-else-if="status === 'error'" class="mt-6" :message="pesan" @retry="muat" />
-    <EmptyState v-else-if="!brand.length" class="mt-6" title="Belum ada brand" description="Daftar brand sedang disiapkan. Sementara itu, kamu bisa menjelajah katalog." />
+    <div class="th-container flex flex-col gap-5">
+      <div v-if="status === 'loading'" class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4" aria-busy="true">
+        <span class="sr-only">Memuat brand…</span><Skeleton v-for="n in 8" :key="n" class="h-56 rounded-[20px]" />
+      </div>
+      <ErrorState v-else-if="status === 'error'" :message="pesan" @retry="muat" />
+      <EmptyState v-else-if="!brand.length" title="Belum ada brand" description="Daftar brand sedang disiapkan. Sementara itu, kamu bisa menjelajah katalog." />
 
-    <template v-else>
-      <form role="search" aria-label="Cari brand" class="mt-6 flex items-end gap-2" @submit.prevent="cari">
-        <div class="min-w-0 flex-1">
-          <Input v-model="teks" label="Cari brand" hide-label type="search" placeholder="Cari nama brand" autocomplete="off" enterkeyhint="search" hint="Contoh: Alfa Keramik, Nu Semen" />
-        </div>
-        <Button type="submit" class="mb-6.5">
-          <template #icon><Search class="size-4.5" aria-hidden="true" /></template>
-          Cari
-        </Button>
-      </form>
-
-      <div class="mt-4 flex flex-col gap-3 rounded-xl bg-primary-soft p-3 sm:p-4">
+      <template v-else>
         <div role="group" aria-label="Filter kategori brand" class="flex flex-wrap items-center gap-2">
-          <span class="text-sm font-bold">Filter:</span>
+          <span class="mr-1 font-bold">Kategori</span>
           <button type="button" :class="kelasChip(!nilai.kategori)" :aria-pressed="!nilai.kategori ? 'true' : 'false'" @click="terapkan({ kategori: null })">Semua</button>
-          <button
-            v-for="k in kategori"
-            :key="k.slug"
-            type="button"
-            :class="kelasChip(nilai.kategori === k.slug)"
-            :aria-pressed="nilai.kategori === k.slug ? 'true' : 'false'"
-            @click="terapkan({ kategori: nilai.kategori === k.slug ? null : k.slug })"
-          >
-            {{ k.name }}
-          </button>
+          <button v-for="k in kategori" :key="k.slug" type="button" :class="kelasChip(nilai.kategori === k.slug)" :aria-pressed="nilai.kategori === k.slug ? 'true' : 'false'" @click="terapkan({ kategori: nilai.kategori === k.slug ? null : k.slug })">{{ k.name }}</button>
         </div>
-      </div>
-      <div class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-border bg-surface px-3 py-2">
-        <div role="group" aria-label="Huruf awal brand" class="flex flex-wrap gap-0.5">
-          <button
-            v-for="h in HURUF"
-            :key="h"
-            type="button"
-            :disabled="!hurufAda.has(h) && nilai.huruf !== h"
-            :aria-pressed="nilai.huruf === h ? 'true' : 'false'"
-            :aria-label="h === '#' ? 'Brand berawalan angka atau simbol' : `Brand berawalan ${h}`"
-            class="inline-flex size-11 items-center md:size-9 justify-center rounded-md text-sm font-bold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:font-normal disabled:text-faint"
-            :class="nilai.huruf === h ? 'bg-secondary text-secondary-foreground' : 'enabled:hover:bg-subtle enabled:hover:text-primary'"
-            @click="terapkan({ huruf: nilai.huruf === h ? null : h })"
-          >
-            {{ h }}
-          </button>
+        <div class="flex flex-col gap-3 rounded-2xl border border-th-border bg-white p-4">
+          <div role="group" aria-label="Huruf awal brand" class="flex flex-wrap gap-1">
+            <button v-for="h in HURUF" :key="h" type="button" :disabled="!hurufAda.has(h) && nilai.huruf !== h" :aria-pressed="nilai.huruf === h ? 'true' : 'false'" :aria-label="h === '#' ? 'Brand berawalan angka atau simbol' : `Brand berawalan ${h}`" class="grid size-10 place-items-center rounded-lg text-sm font-bold transition-colors disabled:cursor-not-allowed disabled:text-faint" :class="nilai.huruf === h ? 'bg-th-navy text-white' : 'hover:bg-th-cream'" @click="terapkan({ huruf: nilai.huruf === h ? null : h })">{{ h }}</button>
+          </div>
+          <p class="text-sm font-semibold text-th-muted">{{ formatAngka(perKategori.length) }} brand</p>
         </div>
-        <span class="text-sm font-semibold text-muted">• {{ formatAngka(perKategori.length) }} brand</span>
-      </div>
 
-      <section ref="atasDaftar" aria-label="Daftar brand" class="mt-6 scroll-mt-24">
-        <p class="text-sm font-semibold text-muted" aria-live="polite">{{ rentang }}</p>
-        <EmptyState v-if="!hasil.length" class="mt-3" title="Brand tidak ditemukan" description="Coba kata lain, kategori lain, atau hapus filter.">
-          <template #icon><SearchX class="size-10" aria-hidden="true" /></template>
-          <template v-if="adaFilter" #actions><Button variant="outline" @click="reset()">Hapus filter</Button></template>
-        </EmptyState>
-        <ul v-else class="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-          <li v-for="(b, i) in tampil" :key="b.id" v-reveal="i % 6">
-            <RouterLink
-              :to="`/brand/${b.slug}`"
-              class="group flex h-full flex-col items-center gap-2 rounded-xl border border-border bg-surface p-3 text-center transition-colors duration-150 hover:border-border-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              <span class="flex h-16 w-full items-center justify-center rounded-md bg-subtle px-2">
-                <img v-if="b.logo_url" :src="b.logo_url" alt="" width="120" height="48" loading="lazy" class="max-h-12 w-auto object-contain" />
-                <span v-else class="text-xs font-bold tracking-wide text-faint uppercase" aria-hidden="true">Logo</span>
-              </span>
-              <span class="font-bold">{{ b.name }}</span>
-              <span class="text-xs text-muted">{{ b.product_count ? `${formatAngka(b.product_count)} produk` : 'Belum ada produk' }}</span>
-              <span class="mt-auto inline-flex items-center gap-1 text-sm font-bold text-primary group-hover:underline">
-                Lihat brand <ArrowRight class="size-4" aria-hidden="true" />
-              </span>
-            </RouterLink>
-          </li>
-        </ul>
-        <PaginationBar v-if="totalHalaman > 1" class="mt-6" :page="halaman" :total-pages="totalHalaman" :tautan="tautanHalaman" @update:page="gantiHalaman" />
-      </section>
-    </template>
+        <section ref="atasDaftar" aria-label="Daftar brand" class="scroll-mt-24">
+          <div class="mb-4 flex flex-wrap items-center justify-between gap-3"><p class="text-sm font-semibold text-th-muted" aria-live="polite">{{ rentang }}</p><RouterLink to="/" class="font-bold text-th-orange hover:underline">Kembali ke beranda</RouterLink></div>
+          <EmptyState v-if="!hasil.length" title="Brand tidak ditemukan" description="Coba kata lain, kategori lain, atau hapus filter."><template #icon><SearchX class="size-10" aria-hidden="true" /></template><template v-if="adaFilter" #actions><Button variant="outline" @click="reset()">Hapus filter</Button></template></EmptyState>
+          <ul v-else class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 lg:gap-6">
+            <li v-for="(b, i) in tampil" :key="b.id" v-reveal="i % 4">
+              <RouterLink :to="`/brand/${b.slug}`" class="th-card group flex h-full min-h-56 flex-col items-center gap-3 p-5 text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:p-6">
+                <span class="grid size-[88px] shrink-0 place-items-center overflow-hidden rounded-full bg-th-sage p-3 transition-transform duration-200 group-hover:scale-105">
+                  <img v-if="b.logo_url" :src="b.logo_url" :alt="`Logo ${b.name}`" width="120" height="80" loading="lazy" class="max-h-full max-w-full object-contain" />
+                  <span v-else class="text-2xl font-extrabold text-th-navy" aria-hidden="true">{{ b.name.trim().split(/\s+/).map((bagian) => bagian[0]).join('').slice(0, 2).toUpperCase() }}</span>
+                </span>
+                <strong class="text-base leading-snug">{{ b.name }}</strong>
+                <span class="text-sm text-th-muted">{{ b.product_count ? `${formatAngka(b.product_count)} produk` : 'Belum ada produk' }}</span>
+                <span class="mt-auto inline-flex items-center gap-1 font-bold text-th-orange group-hover:underline">Lihat brand <ArrowRight class="size-4" aria-hidden="true" /></span>
+              </RouterLink>
+            </li>
+          </ul>
+          <PaginationBar v-if="totalHalaman > 1" class="mt-6" :page="halaman" :total-pages="totalHalaman" :tautan="tautanHalaman" @update:page="gantiHalaman" />
+        </section>
+      </template>
+    </div>
+
+    <section class="bg-th-yellow py-10 sm:py-14">
+      <div class="th-container flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+        <div><h2 class="text-2xl leading-tight font-extrabold tracking-tight sm:text-3xl">Cari brand yang belum ada?</h2><p class="mt-2 text-base text-th-navy/80">Tanyakan ke tim kami, kami bantu carikan.</p></div>
+        <WhatsAppButton class="shrink-0" size="lg" variant="secondary" :context="{ topic: 'Tanya produk', message: 'Saya mencari brand yang belum ada di daftar.' }" label="Chat via WhatsApp" />
+      </div>
+    </section>
   </div>
 </template>
