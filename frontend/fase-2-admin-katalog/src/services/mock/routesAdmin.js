@@ -1,7 +1,7 @@
 // Rute API tiruan panel admin (Fase 2). Bentuk mengikuti lampiran docs/FRONTEND_BUILD_PLAN.md.
 // TODO: ganti ke API begitu endpoint /admin/* tersedia di backend.
 import { brands, categories, productImages, productRooms, products, rooms } from '@/services/mock/data/catalog'
-import { activityLogs, menus, qontakContacts, syncLogs } from './data/admin'
+import { activityLogs, imageAssets, menus, qontakContacts, syncLogs } from './data/admin'
 import { pointTransactions, users } from '@/services/mock/data/akun'
 import { banners } from '@/services/mock/data/konten'
 import { idBaru, simpanDb } from './db'
@@ -450,6 +450,88 @@ async function unggah({ headers, body }) {
   return { status: 201, data: { data: { url, name: file.name, size: file.size, type: file.type } } }
 }
 
+// ---------- pengelolaan aset gambar (mode mock lokal) ----------
+
+const SLOT_GAMBAR = new Set([
+  'home.hero', 'home.promo_banner', 'home.side_banner', 'category.tile', 'product.main', 'product.gallery',
+  'brand.logo', 'room.cover', 'service.cover', 'article.cover', 'promo.cover', 'event.cover',
+  'store.front', 'store.map', 'site.logo', 'site.favicon', 'site.og_image',
+])
+
+function daftarAsetGambar({ headers, query }) {
+  const { gagal } = cekAdmin(headers, 'image.manage')
+  if (gagal) return gagal
+  const data = [...imageAssets]
+    .filter((asset) => !query.slot_key || asset.slot_key === query.slot_key)
+    .sort((a, b) => a.slot_key.localeCompare(b.slot_key) || a.sort_order - b.sort_order || a.id - b.id)
+  return { data: { data } }
+}
+
+async function buatAsetGambar({ headers, body }) {
+  const { u, gagal } = cekAdmin(headers, 'image.manage')
+  if (gagal) return gagal
+  const file = body?.get?.('file')
+  const slotKey = String(body?.get?.('slot_key') ?? '')
+  const altText = String(body?.get?.('alt_text') ?? '').trim()
+  if (!SLOT_GAMBAR.has(slotKey)) return galatIsian({ slot_key: ['Slot gambar tidak dikenal'] })
+  if (!file || !['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 2 * 1024 * 1024) {
+    return galatIsian({ file: ['Pilih gambar JPG, PNG, atau WebP maksimal 2 MB'] })
+  }
+  if (!altText || altText.length > 255) return galatIsian({ alt_text: ['Teks alternatif wajib diisi (maksimal 255 karakter)'] })
+  const imageUrl = await new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result)
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+  const sortOrder = imageAssets.filter((asset) => asset.slot_key === slotKey).reduce((max, asset) => Math.max(max, asset.sort_order), 0) + 1
+  const now = sekarang()
+  const asset = {
+    id: idBaru(imageAssets), slot_key: slotKey, owner_type: null, owner_id: null,
+    file_path: imageUrl, image_url: imageUrl, alt_text: altText, sort_order: sortOrder, is_active: true,
+    mime: file.type, size: file.size, width: null, height: null, is_dummy: false,
+    created_by: u.id, created_at: now, updated_at: now,
+  }
+  imageAssets.push(asset)
+  catat(u, 'image.create', 'Pengelolaan gambar', { sesudah: { slot_key: slotKey, alt_text: altText, size: file.size } })
+  simpanDb()
+  return { status: 201, data: { data: asset } }
+}
+
+function ubahAsetGambar({ headers, params, body }) {
+  const { u, gagal } = cekAdmin(headers, 'image.manage')
+  if (gagal) return gagal
+  const asset = imageAssets.find((item) => sama(item.id, params.id))
+  if (!asset) return tidakDitemukan('Gambar tidak ditemukan.')
+  const sebelum = { alt_text: asset.alt_text, sort_order: asset.sort_order, is_active: asset.is_active }
+  if (body.alt_text !== undefined) {
+    const alt = String(body.alt_text).trim()
+    if (!alt || alt.length > 255) return galatIsian({ alt_text: ['Teks alternatif wajib diisi (maksimal 255 karakter)'] })
+    asset.alt_text = alt
+  }
+  if (body.sort_order !== undefined) {
+    const order = Number(body.sort_order)
+    if (!Number.isInteger(order) || order < 1) return galatIsian({ sort_order: ['Urutan harus bilangan bulat positif'] })
+    asset.sort_order = order
+  }
+  if (body.is_active !== undefined) asset.is_active = Boolean(body.is_active)
+  asset.updated_at = sekarang()
+  catat(u, 'image.update', 'Pengelolaan gambar', { sebelum, sesudah: { alt_text: asset.alt_text, sort_order: asset.sort_order, is_active: asset.is_active } })
+  simpanDb()
+  return { data: { data: asset } }
+}
+
+function hapusAsetGambar({ headers, params }) {
+  const { u, gagal } = cekAdmin(headers, 'image.manage')
+  if (gagal) return gagal
+  const index = imageAssets.findIndex((item) => sama(item.id, params.id))
+  if (index < 0) return tidakDitemukan('Gambar tidak ditemukan.')
+  const [asset] = imageAssets.splice(index, 1)
+  catat(u, 'image.delete', 'Pengelolaan gambar', { sebelum: { slot_key: asset.slot_key, alt_text: asset.alt_text } })
+  simpanDb()
+  return { data: { message: 'Gambar dihapus.' } }
+}
+
 // ---------- sync Qontak ----------
 
 export function bentukKontak(c) {
@@ -497,6 +579,10 @@ export const ruteAdmin = [
   ]),
   ['delete', '/admin/brands/:id', hapusBrand],
   ['post', '/admin/uploads', unggah],
+  ['get', '/admin/image-assets', daftarAsetGambar],
+  ['post', '/admin/image-assets', buatAsetGambar],
+  ['patch', '/admin/image-assets/:id', ubahAsetGambar],
+  ['delete', '/admin/image-assets/:id', hapusAsetGambar],
   ['post', '/admin/qontak/contacts/:id/retry', ulangSync],
   ['get', '/admin/qontak/contacts/:id', detailKontak],
 ]

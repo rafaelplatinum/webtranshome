@@ -76,7 +76,7 @@ const izinKonten = [
 
 // Usulan pemetaan role → izin (lampiran docs/FRONTEND_BUILD_PLAN.md). Backend yang menentukan versi final.
 export const rolePermissions = {
-  SUPER_ADMIN: [...izinKatalog, 'brand.delete', ...izinMembership, 'point.adjust', ...izinKonten, 'setting.point_ratio', 'user.view', 'user.create', 'user.update', 'role.view', 'role.update', 'log.view'],
+  SUPER_ADMIN: [...izinKatalog, 'brand.delete', ...izinMembership, 'point.adjust', ...izinKonten, 'image.manage', 'setting.point_ratio', 'user.view', 'user.create', 'user.update', 'role.view', 'role.update', 'log.view'],
   ADMIN_KATALOG: [...izinKatalog, 'brand.delete'],
   ADMIN_MEMBERSHIP: izinMembership,
   ADMIN_KONTEN: izinKonten,

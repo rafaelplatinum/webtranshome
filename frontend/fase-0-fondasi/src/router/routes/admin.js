@@ -71,6 +71,12 @@ export default [
         component: () => import('@/views/admin/konten/BannerDaftar.vue'),
         meta: { title: 'Banner', grup: 'Konten', permission: 'banner.view' },
       },
+      {
+        path: 'pengelolaan-gambar',
+        name: 'admin-pengelolaan-gambar',
+        component: () => import('@/views/admin/konten/PengelolaanGambar.vue'),
+        meta: { title: 'Pengelolaan gambar', grup: 'Konten', permission: 'image.manage' },
+      },
       { path: 'banner/baru', name: 'admin-banner-baru', component: BannerForm, meta: { title: 'Buat banner', grup: 'Konten', permission: 'banner.create' } },
       { path: 'banner/:id(\\d+)', name: 'admin-banner-ubah', component: BannerForm, meta: { title: 'Ubah banner', grup: 'Konten', permission: 'banner.update' } },
       {

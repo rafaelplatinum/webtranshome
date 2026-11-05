@@ -30,6 +30,7 @@ const DAFTAR = [
   [22, 'point.create', 'create', 'Mencatat poin belanja dan penukaran poin'],
   [22, 'point.adjust', 'adjust', 'Penyesuaian poin (tambah atau kurangi manual)'],
   [31, 'banner.view', 'view', 'Melihat banner'],
+  [35, 'image.manage', 'manage', 'Mengelola gambar dan teks alternatif'],
   [31, 'banner.create', 'create', 'Membuat banner'],
   [31, 'banner.update', 'update', 'Mengubah, mengurutkan, dan menonaktifkan banner'],
   [32, 'article.view', 'view', 'Melihat artikel dan promo'],
