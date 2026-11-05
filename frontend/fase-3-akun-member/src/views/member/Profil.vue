@@ -4,6 +4,7 @@ import { BadgeCheck, Plus } from 'lucide-vue-next'
 import Button from '@/components/ui/Button.vue'
 import Input from '@/components/ui/Input.vue'
 import { errorField, pesanError } from '@/services/errors'
+import { requestPhoneVerification, verifyPhoneVerification } from '@/services/authService'
 import { updateProfile } from '@/services/memberService'
 import { useAuthStore } from '@/stores/auth'
 import { useUiStore } from '@/stores/ui'
@@ -21,6 +22,12 @@ const errors = ref({})
 const galat = ref('')
 const menyimpan = ref(false)
 const formEl = ref(null)
+const kodeOtp = ref('')
+const otpTerkirim = ref(false)
+const mengirimOtp = ref(false)
+const memverifikasiOtp = ref(false)
+const galatOtp = ref('')
+const suksesOtp = ref('')
 
 async function ubah({ fokusHp = false } = {}) {
   form.full_name = auth.user?.full_name ?? ''
@@ -72,6 +79,32 @@ async function simpan() {
     menyimpan.value = false
   }
 }
+
+async function mintaKodeHp() {
+  mengirimOtp.value = true
+  galatOtp.value = ''
+  suksesOtp.value = ''
+  try {
+    await requestPhoneVerification()
+    otpTerkirim.value = true
+    suksesOtp.value = 'Kode verifikasi dikirim ke nomor WhatsApp kamu.'
+  } catch (error) { galatOtp.value = pesanError(error) }
+  finally { mengirimOtp.value = false }
+}
+
+async function verifikasiHp() {
+  if (!/^\d{6}$/.test(kodeOtp.value)) { galatOtp.value = 'Masukkan kode 6 digit.'; return }
+  memverifikasiOtp.value = true
+  galatOtp.value = ''
+  try {
+    await verifyPhoneVerification(kodeOtp.value)
+    auth.perbaruiUser({ ...auth.user, phone_verified: true })
+    otpTerkirim.value = false
+    suksesOtp.value = 'Nomor WhatsApp berhasil diverifikasi.'
+    kodeOtp.value = ''
+  } catch (error) { galatOtp.value = pesanError(error) }
+  finally { memverifikasiOtp.value = false }
+}
 </script>
 
 <template>
@@ -100,7 +133,12 @@ async function simpan() {
         </div>
         <div class="flex flex-col gap-0.5">
           <dt class="text-xs font-semibold text-muted">Nomor HP (opsional)</dt>
-          <dd v-if="auth.user?.phone_number" class="tabular-nums" data-nomor-hp>{{ formatNomorHp(auth.user.phone_number) }}</dd>
+          <dd v-if="auth.user?.phone_number" class="flex flex-wrap items-center gap-2 tabular-nums" data-nomor-hp>
+            <span>{{ formatNomorHp(auth.user.phone_number) }}</span>
+            <span v-if="auth.user?.phone_verified || auth.user?.phone_verified_at" class="inline-flex items-center gap-1 rounded bg-success-soft px-2 py-0.5 text-xs font-semibold text-success-ink"><BadgeCheck class="size-3.5" aria-hidden="true" />Terverifikasi</span>
+            <span v-else class="rounded bg-warning-soft px-2 py-0.5 text-xs font-semibold text-warning-ink">Belum terverifikasi</span>
+            <Button v-if="!auth.user?.phone_verified && !auth.user?.phone_verified_at" size="sm" variant="outline" :loading="mengirimOtp" @click="mintaKodeHp">Verifikasi WhatsApp</Button>
+          </dd>
           <dd v-else>
             <button
               type="button"
@@ -121,6 +159,14 @@ async function simpan() {
           <dd class="font-mono font-semibold">{{ auth.user?.member_code }}</dd>
         </div>
       </dl>
+
+      <form v-if="otpTerkirim" class="flex flex-col gap-3 rounded-lg border border-border bg-subtle p-4" @submit.prevent="verifikasiHp">
+        <p class="text-sm font-semibold">Masukkan kode verifikasi WhatsApp</p>
+        <Input v-model="kodeOtp" label="Kode 6 digit" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" />
+        <p v-if="galatOtp" role="alert" class="text-sm font-medium text-danger-ink">{{ galatOtp }}</p>
+        <Button type="submit" class="self-start" :loading="memverifikasiOtp">Verifikasi nomor</Button>
+      </form>
+      <p v-if="suksesOtp" role="status" class="text-sm font-semibold text-success-ink">{{ suksesOtp }}</p>
 
       <form v-else ref="formEl" class="flex flex-col gap-4" novalidate @submit.prevent="simpan">
         <p v-if="galat" role="alert" class="rounded-md bg-danger-soft px-3 py-2.5 text-sm font-semibold text-danger-ink">{{ galat }}</p>

@@ -31,13 +31,16 @@ func (s *passwordVerifierStub) Verify(hash, password string) error {
 }
 
 type tokenIssuerStub struct {
-	token  string
-	userID int64
-	err    error
+	token         string
+	userID        int64
+	version       int64
+	issuedVersion int64
+	err           error
 }
 
-func (s *tokenIssuerStub) Issue(_ context.Context, userID int64) (string, error) {
+func (s *tokenIssuerStub) Issue(_ context.Context, userID int64, version int64) (string, error) {
 	s.userID = userID
+	s.issuedVersion = version
 	return s.token, s.err
 }
 
@@ -71,8 +74,8 @@ func TestLoginExecuteIssuesTokenForActiveStaffUser(t *testing.T) {
 	if verifier.hash != "stored-hash" || verifier.password != "submitted-password" {
 		t.Fatal("password verifier did not receive the stored hash and submitted password")
 	}
-	if issuer.userID != 42 {
-		t.Fatalf("token issuer userID = %d, want 42", issuer.userID)
+	if issuer.userID != 42 || issuer.issuedVersion != 0 {
+		t.Fatalf("token issuer userID/version = %d/%d, want 42/0", issuer.userID, issuer.issuedVersion)
 	}
 }
 

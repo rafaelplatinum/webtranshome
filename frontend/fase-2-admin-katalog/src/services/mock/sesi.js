@@ -16,6 +16,7 @@ export function profilPengguna(u) {
     tier: u.profile?.tier ?? null, communication_consent: u.profile?.communication_consent ?? false,
     member_since: u.profile?.created_at ?? null,
     email_verified: Boolean(u.email_verified_at),
+    phone_verified: Boolean(u.phone_verified_at),
     // Akun yang dibuat lewat Google belum punya password sampai member membuatnya di /akun/keamanan.
     has_password: u.password_hash !== null,
     google_connected: Boolean(u.google_id),

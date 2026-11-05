@@ -45,14 +45,28 @@ export async function verifyEmail(token) {
   return data.data
 }
 
-/** Minta link reset password. Jawaban selalu sama, terdaftar atau tidak. */
-export async function forgotPassword(email) {
-  await http.post('/auth/forgot-password', { email }, TANPA_TOAST)
+/** Minta OTP reset password melalui WhatsApp atau email. Jawaban selalu sama. */
+export async function requestPasswordOTP({ channel, destination }) {
+	await http.post('/auth/password/forgot', { channel, destination }, TANPA_TOAST)
 }
 
-/** 422 `code: TOKEN_TIDAK_VALID` bila link salah, sudah dipakai, atau kedaluwarsa. */
+export async function verifyPasswordOTP({ channel, destination, code }) {
+	const { data } = await http.post('/auth/password/verify-otp', { channel, destination, code }, TANPA_TOAST)
+	return data.data
+}
+
+/** Token reset hanya dikirim di body, tidak pernah diletakkan di URL. */
 export async function resetPassword({ token, password }) {
-  await http.post('/auth/reset-password', { token, password }, TANPA_TOAST)
+	await http.post('/auth/password/reset', { token, password }, TANPA_TOAST)
+}
+
+export async function requestPhoneVerification() {
+	await http.post('/member/phone/request-otp', null, TANPA_TOAST)
+}
+
+export async function verifyPhoneVerification(code) {
+	const { data } = await http.post('/member/phone/verify', { code }, TANPA_TOAST)
+	return data
 }
 
 /**

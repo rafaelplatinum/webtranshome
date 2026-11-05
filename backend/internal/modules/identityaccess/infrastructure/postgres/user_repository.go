@@ -56,14 +56,25 @@ func (r *UserRepository) FindForAuthentication(ctx context.Context, email string
 	); err != nil {
 		return user.User{}, err
 	}
+	var authVersion int64
+	if err := r.connection.QueryRowCtx(ctx, &authVersion, `SELECT auth_version FROM crm_schema.users WHERE id = $1`, record.Id); err != nil {
+		return user.User{}, err
+	}
 
 	return user.User{
 		ID:           record.Id,
+		AuthVersion:  authVersion,
 		Email:        record.Email,
 		PasswordHash: passwordHash,
 		IsActive:     record.IsActive,
 		HasStaffRole: hasStaffRole,
 	}, nil
+}
+
+func (r *UserRepository) AuthVersion(ctx context.Context, userID int64) (int64, error) {
+	var version int64
+	err := r.connection.QueryRowCtx(ctx, &version, `SELECT auth_version FROM crm_schema.users WHERE id = $1 AND is_active = TRUE`, userID)
+	return version, err
 }
 
 var _ user.Repository = (*UserRepository)(nil)

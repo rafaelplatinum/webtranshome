@@ -128,6 +128,8 @@ export const pointTransactions = [
 export const emailKeluar = []
 export const tokenVerifikasi = []
 export const tokenReset = []
+// Hanya tersedia di server mock lokal untuk membantu QA menguji OTP tanpa gateway sungguhan.
+export const otpKeluar = []
 
 // site_settings yang boleh dibaca publik. Nomor WhatsApp di sini nomor contoh, bukan nomor toko.
 export const publicSettings = {

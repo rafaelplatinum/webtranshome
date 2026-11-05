@@ -8,7 +8,9 @@ import (
 	catalogquery "webtranshome/internal/modules/catalog/application/query"
 	catalogpostgres "webtranshome/internal/modules/catalog/infrastructure/postgres"
 	"webtranshome/internal/modules/identityaccess/application/command"
+	"webtranshome/internal/modules/identityaccess/application/passwordreset"
 	"webtranshome/internal/modules/identityaccess/application/query"
+	"webtranshome/internal/modules/identityaccess/infrastructure/notification"
 	passwordbcrypt "webtranshome/internal/modules/identityaccess/infrastructure/password/bcrypt"
 	authpostgres "webtranshome/internal/modules/identityaccess/infrastructure/postgres"
 	jwtissuer "webtranshome/internal/modules/identityaccess/infrastructure/token/jwtissuer"
@@ -21,6 +23,7 @@ type ServiceContext struct {
 	Config                   config.Config
 	UserModel                model.UsersModel
 	LoginAdmin               *command.Login
+	PasswordReset            *passwordreset.Service
 	AccessControlQueries     *query.AccessControl
 	ReplaceAccessAssignments *command.ReplaceAccessAssignments
 	ManageRoles              *command.ManageRoles
@@ -58,6 +61,10 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		jwtissuer.NewIssuer(c.Auth.AccessSecret, c.Auth.AccessExpire),
 	)
 	checkPermission := query.NewCheckPermission(permissionRepository)
+	resetRepository := authpostgres.NewPasswordResetRepository(conn)
+	whatsappSender := configuredSender(c.PasswordReset.WhatsAppGatewayURL, c.PasswordReset.WhatsAppGatewayToken, "whatsapp", c.Mode == "dev")
+	emailSender := configuredSender(c.PasswordReset.EmailGatewayURL, c.PasswordReset.EmailGatewayToken, "email", c.Mode == "dev")
+	resetService := passwordreset.New(resetRepository, c.PasswordReset.HMACSecret, whatsappSender, emailSender)
 	tokenVerifier := jwtissuer.NewVerifier(c.Auth.AccessSecret)
 	accessControlQueries := query.NewAccessControl(
 		accessControlRepository,
@@ -91,6 +98,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		Config:                   c,
 		UserModel:                userModel,
 		LoginAdmin:               loginAdmin,
+		PasswordReset:            resetService,
 		AccessControlQueries:     accessControlQueries,
 		ReplaceAccessAssignments: replaceAccessAssignments,
 		ManageRoles:              manageRoles,
@@ -111,9 +119,19 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		CreateProduct:            createProduct,
 		UpdateProduct:            updateProduct,
 		ReplaceProductRooms:      replaceProductRooms,
-		Authenticate:             middleware.Authenticate(tokenVerifier),
+		Authenticate:             middleware.Authenticate(tokenVerifier, userRepository),
 		RequirePermission: func(code string) rest.Middleware {
 			return middleware.RequirePermission(checkPermission, code)
 		},
 	}
+}
+
+func configuredSender(endpoint, token, channel string, development bool) notification.Sender {
+	if endpoint != "" {
+		return notification.NewGatewaySender(endpoint, token)
+	}
+	if development {
+		return notification.RedactedDevelopmentSender{Channel: channel}
+	}
+	return nil
 }

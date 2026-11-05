@@ -6,19 +6,21 @@ import Button from '@/components/ui/Button.vue'
 import EmptyState from '@/components/ui/EmptyState.vue'
 import ErrorState from '@/components/ui/ErrorState.vue'
 import Skeleton from '@/components/ui/Skeleton.vue'
-import { getMockEmails } from '@/services/devService'
+import { getMockEmails, getMockOtps } from '@/services/devService'
 import { pesanError } from '@/services/errors'
 import { formatWaktuRelatif } from '@/utils/format'
 
 // Email yang "dikirim" mode mock: link verifikasi dan reset password bisa dibuka dari sini.
 const status = ref('loading')
 const email = ref([])
+const otp = ref([])
 const pesan = ref('')
 
 async function muat() {
   status.value = 'loading'
   try {
     email.value = await getMockEmails()
+    otp.value = await getMockOtps()
     status.value = 'ready'
   } catch (error) {
     pesan.value = pesanError(error)
@@ -35,7 +37,7 @@ onMounted(muat)
       <div class="flex flex-col gap-1">
         <p class="text-sm font-semibold text-muted">Mode mock</p>
         <h1 class="text-2xl font-extrabold">Kotak email tiruan</h1>
-        <p class="text-sm text-muted">Email verifikasi dan reset password tidak benar-benar dikirim. Buka link-nya dari sini.</p>
+        <p class="text-sm text-muted">Pesan mock hanya tersedia untuk pengujian lokal. Buka link email atau kode OTP dari sini.</p>
       </div>
       <Button variant="outline" size="sm" @click="muat">
         <template #icon><RefreshCw class="size-4" aria-hidden="true" /></template>
@@ -59,6 +61,15 @@ onMounted(muat)
         <Button size="sm" :to="m.link">{{ m.jenis === 'verifikasi' ? 'Verifikasi email' : 'Atur ulang password' }}</Button>
       </li>
     </ul>
+    <section v-if="otp.length" class="flex flex-col gap-3 rounded-xl border border-border bg-surface p-4" aria-labelledby="judul-otp">
+      <div><h2 id="judul-otp" class="font-bold">Kode OTP lokal</h2><p class="text-sm text-muted">Kode ini hanya ditampilkan di mode mock untuk pengujian.</p></div>
+      <ul class="flex flex-col gap-2">
+        <li v-for="m in otp" :key="m.id" class="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-subtle p-3 text-sm">
+          <span>{{ m.channel === 'whatsapp' ? 'WhatsApp' : 'Email' }} · {{ m.to }}</span>
+          <span class="font-mono text-lg font-bold tracking-[0.25em]">{{ m.code }}</span>
+        </li>
+      </ul>
+    </section>
     <RouterLink to="/dev/components" class="self-start rounded-sm text-sm font-semibold text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
       Kembali ke galeri komponen
     </RouterLink>

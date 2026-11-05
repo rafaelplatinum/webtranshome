@@ -9,6 +9,12 @@ export async function updateProfile(payload) {
   return data.data.user
 }
 
+/** Ganti nomor WhatsApp member; pergantian selalu menghapus status verifikasi lama. */
+export async function changePhoneNumber(phone_number) {
+	const { data } = await http.put('/member/phone', { phone_number }, TANPA_TOAST)
+	return data
+}
+
 /** Persetujuan info promo & poin (communication_consent) → user terbaru. */
 export async function updateConsent(setuju) {
   const { data } = await http.patch('/me/consent', { communication_consent: setuju }, TANPA_TOAST)

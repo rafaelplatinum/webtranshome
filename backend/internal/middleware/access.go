@@ -28,6 +28,10 @@ type PermissionChecker interface {
 	Execute(ctx context.Context, userID int64, permissionCode string) (bool, error)
 }
 
+type AuthVersionReader interface {
+	AuthVersion(context.Context, int64) (int64, error)
+}
+
 type principalContextKey struct{}
 
 func UserIDFromContext(ctx context.Context) (int64, bool) {
@@ -35,7 +39,7 @@ func UserIDFromContext(ctx context.Context) (int64, bool) {
 	return userID, ok && userID > 0
 }
 
-func Authenticate(verifier port.TokenVerifier) rest.Middleware {
+func Authenticate(verifier port.TokenVerifier, versions AuthVersionReader) rest.Middleware {
 	return func(next http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 			token, ok := bearerToken(r.Header.Get("Authorization"))
@@ -44,7 +48,7 @@ func Authenticate(verifier port.TokenVerifier) rest.Middleware {
 				return
 			}
 
-			userID, err := verifier.Verify(r.Context(), token)
+			verified, err := verifier.Verify(r.Context(), token)
 			if err != nil {
 				if errors.Is(err, port.ErrInvalidAccessToken) {
 					writeAccessError(r, w, http.StatusUnauthorized, authenticationRequiredCode, authenticationRequiredMessage)
@@ -55,12 +59,22 @@ func Authenticate(verifier port.TokenVerifier) rest.Middleware {
 				writeAccessError(r, w, http.StatusInternalServerError, internalErrorCode, internalErrorMessage)
 				return
 			}
-			if userID <= 0 {
+			if verified.UserID <= 0 {
+				writeAccessError(r, w, http.StatusUnauthorized, authenticationRequiredCode, authenticationRequiredMessage)
+				return
+			}
+			currentVersion, err := versions.AuthVersion(r.Context(), verified.UserID)
+			if err != nil {
+				logx.WithContext(r.Context()).Error(err)
+				writeAccessError(r, w, http.StatusInternalServerError, internalErrorCode, internalErrorMessage)
+				return
+			}
+			if currentVersion != verified.AuthVersion {
 				writeAccessError(r, w, http.StatusUnauthorized, authenticationRequiredCode, authenticationRequiredMessage)
 				return
 			}
 
-			ctx := context.WithValue(r.Context(), principalContextKey{}, userID)
+			ctx := context.WithValue(r.Context(), principalContextKey{}, verified.UserID)
 			next(w, r.WithContext(ctx))
 		}
 	}

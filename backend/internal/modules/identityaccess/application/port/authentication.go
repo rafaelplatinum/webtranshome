@@ -16,9 +16,14 @@ type PasswordVerifier interface {
 }
 
 type TokenIssuer interface {
-	Issue(ctx context.Context, userID int64) (string, error)
+	Issue(ctx context.Context, userID int64, authVersion int64) (string, error)
+}
+
+type VerifiedToken struct {
+	UserID      int64
+	AuthVersion int64
 }
 
 type TokenVerifier interface {
-	Verify(ctx context.Context, token string) (int64, error)
+	Verify(ctx context.Context, token string) (VerifiedToken, error)
 }

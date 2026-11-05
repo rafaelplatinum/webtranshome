@@ -20,6 +20,9 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Path:    "/auth/login",
 				Handler: LoginHandler(serverCtx),
 			},
+			{Method: http.MethodPost, Path: "/auth/password/forgot", Handler: ForgotPasswordOTPHandler(serverCtx)},
+			{Method: http.MethodPost, Path: "/auth/password/verify-otp", Handler: VerifyPasswordOTPHandler(serverCtx)},
+			{Method: http.MethodPost, Path: "/auth/password/reset", Handler: ResetPasswordOTPHandler(serverCtx)},
 			{
 				// Cek status server dan koneksi database
 				Method:  http.MethodGet,
@@ -30,13 +33,14 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 		rest.WithPrefix("/api/v1"),
 	)
 	server.AddRoutes(
-		rest.WithMiddleware(
-			serverCtx.Authenticate,
-			rest.Route{
-				Method:  http.MethodGet,
-				Path:    "/auth/me/access",
-				Handler: CurrentUserAccessHandler(serverCtx),
-			},
+		rest.WithMiddlewares(
+			[]rest.Middleware{serverCtx.Authenticate},
+			[]rest.Route{
+				{Method: http.MethodGet, Path: "/auth/me/access", Handler: CurrentUserAccessHandler(serverCtx)},
+				{Method: http.MethodPost, Path: "/member/phone/request-otp", Handler: RequestPhoneOTPHandler(serverCtx)},
+				{Method: http.MethodPost, Path: "/member/phone/verify", Handler: VerifyPhoneOTPHandler(serverCtx)},
+				{Method: http.MethodPut, Path: "/member/phone", Handler: ChangePhoneHandler(serverCtx)},
+			}...,
 		),
 		rest.WithPrefix("/api/v1"),
 	)

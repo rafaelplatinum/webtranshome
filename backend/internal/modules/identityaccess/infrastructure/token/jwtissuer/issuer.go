@@ -23,17 +23,18 @@ func NewIssuer(secret string, expireSecs int64) *Issuer {
 	}
 }
 
-func (i *Issuer) Issue(_ context.Context, userID int64) (string, error) {
+func (i *Issuer) Issue(_ context.Context, userID int64, authVersion int64) (string, error) {
 	if i.secret == "" || i.expireSecs <= 0 || i.expireSecs > math.MaxInt64/int64(time.Second) {
 		return "", port.ErrInvalidTokenConfiguration
 	}
 
 	now := time.Now()
 	claims := struct {
-		UserID int64 `json:"userId"`
+		UserID      int64 `json:"userId"`
+		AuthVersion int64 `json:"authVersion"`
 		jwt.RegisteredClaims
 	}{
-		UserID: userID,
+		UserID: userID, AuthVersion: authVersion,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Subject:   strconv.FormatInt(userID, 10),
 			IssuedAt:  jwt.NewNumericDate(now),

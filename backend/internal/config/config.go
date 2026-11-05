@@ -13,4 +13,12 @@ type Config struct {
 		AccessSecret string
 		AccessExpire int64
 	}
+
+	PasswordReset struct {
+		HMACSecret           string
+		WhatsAppGatewayURL   string
+		WhatsAppGatewayToken string
+		EmailGatewayURL      string
+		EmailGatewayToken    string
+	}
 }
