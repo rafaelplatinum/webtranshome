@@ -10,6 +10,7 @@ import Switch from '@/components/ui/Switch.vue'
 import Table from '@/components/ui/Table.vue'
 import TombolUrut from '@/components/admin/TombolUrut.vue'
 import StatusBanner from '@/components/admin/konten/StatusBanner.vue'
+import BrandPilihanAdmin from '@/components/admin/konten/BrandPilihanAdmin.vue'
 import { useDaftarBanner } from '@/composables/useDaftarBanner'
 import { usePermission } from '@/composables/usePermission'
 import { ingatDaftar } from '@/composables/useTujuanKembali'
@@ -44,6 +45,8 @@ const pesanNonaktif = computed(() => {
         Buat banner
       </Button>
     </div>
+
+    <BrandPilihanAdmin v-if="can('setting.update')" />
 
     <div v-if="d.status.value === 'loading'" class="flex flex-col gap-3 rounded-xl border border-border bg-surface p-4" aria-busy="true">
       <span class="sr-only">Memuat banner…</span>

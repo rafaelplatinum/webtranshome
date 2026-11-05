@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
-import { MapPin } from 'lucide-vue-next'
+import { MapPin, ShoppingCart } from 'lucide-vue-next'
 import Button from '@/components/ui/Button.vue'
 import MegaMenu from './MegaMenu.vue'
 import SearchBox from './SearchBox.vue'
@@ -10,6 +10,7 @@ import LogoTranshome from '@/components/layout/LogoTranshome.vue'
 import { useWhatsApp } from '@/composables/useWhatsApp'
 import { useAuthStore } from '@/stores/auth'
 import { useSettingsStore } from '@/stores/settings'
+import { useCartStore } from '@/stores/cart'
 
 const NAVIGASI = [
   { label: 'Ruangan', to: '/ruangan' },
@@ -22,6 +23,7 @@ const NAVIGASI = [
 const route = useRoute()
 const auth = useAuthStore()
 const settings = useSettingsStore()
+const cart = useCartStore()
 const { generalLink } = useWhatsApp()
 
 const linkWhatsApp = computed(() => generalLink())
@@ -92,6 +94,11 @@ const kelasTautanGelap =
         </RouterLink>
 
         <div class="ml-auto flex items-center gap-2 lg:order-last lg:ml-0">
+          <Button variant="outline" size="sm" class="relative sm:h-11" to="/keranjang" aria-label="Keranjang belanja">
+            <template #icon><ShoppingCart class="size-4.5" aria-hidden="true" /></template>
+            <span class="hidden sm:inline">Keranjang</span>
+            <span v-if="cart.jumlah" class="absolute -top-2 -right-2 grid min-w-5 place-items-center rounded-full bg-primary px-1 text-xs font-bold text-primary-foreground">{{ cart.jumlah }}</span>
+          </Button>
           <UserMenu v-if="auth.isLoggedIn" />
           <template v-else>
             <Button variant="outline" size="sm" class="sm:h-11" :to="linkMasuk">Masuk</Button>
