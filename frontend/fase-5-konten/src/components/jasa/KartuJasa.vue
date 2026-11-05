@@ -10,18 +10,27 @@ defineProps({
   jasa: { type: Object, required: true },
   // Tingkat judul kartu: h3 di bawah judul seksi (Beranda), h2 bila kartu langsung di bawah h1 (/jasa).
   tingkat: { type: String, default: 'h3' },
+  tone: { type: String, default: 'sand' },
 })
 
 const { jasaLink } = useWhatsApp()
+const TONE = {
+  sand: 'bg-th-sand',
+  sage: 'bg-th-sage',
+  blue: 'bg-th-blue',
+  yellow: 'bg-th-yellow',
+  stone: 'bg-th-cream',
+  peach: 'bg-th-peach',
+}
 </script>
 
 <template>
-  <article class="relative flex h-full flex-col overflow-hidden rounded-xl border border-border bg-surface transition-colors duration-150 hover:border-border-strong" data-kartu-jasa>
-    <span class="flex aspect-video items-center justify-center bg-subtle text-faint">
+  <article class="th-card relative flex h-full flex-col overflow-hidden" :class="TONE[tone] ?? TONE.sand" data-kartu-jasa>
+    <span class="relative flex aspect-video items-center justify-center overflow-hidden bg-white/20 text-th-muted">
       <img v-if="jasa.image_url" :src="jasa.image_url" alt="" width="800" height="450" loading="lazy" class="size-full object-cover" />
       <Wrench v-else class="size-8" aria-hidden="true" />
     </span>
-    <div class="flex flex-1 flex-col gap-2 p-4">
+    <div class="flex flex-1 flex-col gap-3 p-5 sm:p-6">
       <component :is="tingkat" class="text-lg leading-snug font-bold">
         <!-- Tautan meliputi seluruh kartu (::after); tombol WhatsApp di atasnya (relative z-10) tetap bisa diklik. -->
         <RouterLink
@@ -41,7 +50,7 @@ const { jasaLink } = useWhatsApp()
         {{ jasa.service_area }}
       </p>
       <div class="relative z-10 pt-2">
-        <WhatsAppButton block :href="jasaLink(jasa)" label="Konsultasi via WhatsApp" />
+        <WhatsAppButton block variant="whatsapp-outline" :context="jasaLink(jasa)" label="Konsultasi jasa" />
       </div>
     </div>
   </article>

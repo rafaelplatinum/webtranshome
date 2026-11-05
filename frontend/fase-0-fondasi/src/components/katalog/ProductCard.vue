@@ -1,12 +1,14 @@
 <script setup>
 import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
-import { ImageOff } from 'lucide-vue-next'
+import { ImageOff, Plus } from 'lucide-vue-next'
+import Button from '@/components/ui/Button.vue'
 import PriceTag from '@/components/ui/PriceTag.vue'
 import StockBadge from '@/components/ui/StockBadge.vue'
 import WhatsAppButton from '@/components/layout/WhatsAppButton.vue'
 import { useWhatsApp } from '@/composables/useWhatsApp'
 import { labelTanyaProduk } from '@/utils/whatsapp'
+import { useCartStore } from '@/stores/cart'
 
 const props = defineProps({
   // Item dari GET /products: { sku, name, slug, price_general, unit_sale, stock_status, stock_qty_label, brand, primary_image_url }
@@ -14,8 +16,8 @@ const props = defineProps({
 })
 
 const { productLink } = useWhatsApp()
+const cart = useCartStore()
 const tautan = computed(() => `/produk/${props.product.slug}`)
-const linkWhatsApp = computed(() => productLink(props.product))
 </script>
 
 <template>
@@ -30,9 +32,8 @@ const linkWhatsApp = computed(() => productLink(props.product))
         height="400"
         class="size-full object-cover"
       />
-      <span v-else class="flex size-full flex-col items-center justify-center gap-2 text-faint">
+      <span v-else class="flex size-full items-center justify-center text-faint">
         <ImageOff class="size-8" aria-hidden="true" />
-        <span class="text-xs">Foto belum ada</span>
       </span>
     </RouterLink>
 
@@ -47,7 +48,11 @@ const linkWhatsApp = computed(() => productLink(props.product))
       <span class="font-mono text-xs text-faint">SKU {{ product.sku }}</span>
       <PriceTag class="mt-1" size="card" :price="product.price_general" :show="product.show_price !== false" :unit="product.unit_sale" />
       <StockBadge :status="product.stock_status" :keterangan="product.stock_qty_label ?? ''" />
-      <WhatsAppButton class="mt-auto" :href="linkWhatsApp" :label="labelTanyaProduk(product)" block wrap />
+      <Button variant="outline" class="mt-1" block wrap @click="cart.tambah(product)">
+        <template #icon><Plus class="size-4" aria-hidden="true" /></template>
+        + Tambahkan ke keranjang
+      </Button>
+      <WhatsAppButton class="mt-auto" variant="whatsapp-outline" :context="productLink(product)" :label="labelTanyaProduk(product)" block wrap />
     </div>
   </article>
 </template>

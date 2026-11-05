@@ -1,20 +1,18 @@
 // Rute API tiruan konten (Fase 5): banner (termasuk hero Beranda), artikel/promo/event, jasa, dan pengaturan toko.
 // TODO: ganti ke API begitu endpoint /banners, /articles, /admin/banners, /admin/articles,
 // dan /admin/settings tersedia di backend.
-import { normalisasiNomorHp } from '@/utils/format'
 import { publicSettings } from '@/services/mock/data/akun'
-import { categories } from '@/services/mock/data/catalog'
+import { brands, categories } from '@/services/mock/data/catalog'
 import { articles, banners, services } from '@/services/mock/data/konten'
 import { idBaru, simpanDb } from '@/services/mock/db'
 import { catat, halaman, perubahan } from '@/services/mock/routesAdmin'
 import { cekAdmin, ditolak, izinPengguna, namaPengguna, sekarang } from '@/services/mock/sesi'
 
 // HOME_HERO: hero paling atas Beranda (gambar atau video), pengganti ilustrasi rumah 3D (30 Okt 2026).
-const POSISI = ['HOME_HERO', 'HOME_SLIDER', 'HOME_SIDE']
+const POSISI = ['HOME_HERO', 'ABOUT_HERO', 'HOME_SLIDER', 'HOME_SIDE']
 const TIPE = ['ARTIKEL', 'PROMO', 'EVENT', 'HALAMAN']
 const POLA_SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 const POLA_TANGGAL = /^\d{4}-\d{2}-\d{2}$/
-const POLA_HP = /^628\d{7,11}$/
 const kosong = (nilai) => nilai == null || String(nilai).trim() === ''
 const sama = (a, b) => String(a) === String(b)
 const tidakDitemukan = (pesan) => ({ status: 404, data: { message: pesan } })
@@ -376,7 +374,8 @@ function patchJasa({ headers, params, body }) {
 function pengaturanAdmin({ headers }) {
   const { gagal } = cekAdmin(headers, 'setting.update')
   if (gagal) return gagal
-  return { data: { data: { ...publicSettings } } }
+  const { wa_number, ...pengaturan } = publicSettings
+  return { data: { data: pengaturan } }
 }
 
 // Rasio poin hanya boleh diubah pemegang izin setting.point_ratio (usulan: Super Admin).
@@ -384,12 +383,21 @@ function ubahPengaturan({ headers, body }) {
   const { u, gagal } = cekAdmin(headers, 'setting.update')
   if (gagal) return gagal
   const errors = {}
-  const wa = normalisasiNomorHp(body.wa_number)
-  if (!POLA_HP.test(wa)) errors.wa_number = ['Nomor WhatsApp harus nomor Indonesia, mis. 0812 3456 7890']
-  if (kosong(body.address)) errors.address = ['Alamat wajib diisi']
-  if (kosong(body.opening_hours)) errors.opening_hours = ['Jam buka wajib diisi']
-  const peta = String(body.maps_url ?? '').trim()
-  if (peta && !peta.startsWith('https://')) errors.maps_url = ['Link Google Maps harus diawali https://']
+  const adaAlamat = Object.hasOwn(body, 'address')
+  const adaJamBuka = Object.hasOwn(body, 'opening_hours')
+  const adaPeta = Object.hasOwn(body, 'maps_url')
+  if (adaAlamat && kosong(body.address)) errors.address = ['Alamat wajib diisi']
+  if (adaJamBuka && kosong(body.opening_hours)) errors.opening_hours = ['Jam buka wajib diisi']
+  const peta = adaPeta ? String(body.maps_url ?? '').trim() : publicSettings.maps_url
+  if (adaPeta && peta && !peta.startsWith('https://')) errors.maps_url = ['Link Google Maps harus diawali https://']
+  const pilihanBrand = body.home_featured_brand_ids
+  if (pilihanBrand != null) {
+    if (!Array.isArray(pilihanBrand) || pilihanBrand.length < 1 || pilihanBrand.length > 18) {
+      errors.home_featured_brand_ids = ['Pilih 1 sampai 18 brand untuk Beranda']
+    } else if (pilihanBrand.some((id) => !Number.isInteger(Number(id)) || !brands.some((brand) => brand.id === Number(id) && brand.is_active))) {
+      errors.home_featured_brand_ids = ['Pilih brand aktif yang tersedia']
+    }
+  }
   const ubahRasio = body.point_ratio_rupiah != null && Number(body.point_ratio_rupiah) !== Number(publicSettings.point_ratio_rupiah)
   if (ubahRasio && !izinPengguna(u).includes('setting.point_ratio')) return ditolak('Rasio poin hanya bisa diubah Super Admin.')
   if (ubahRasio && !(Number.isInteger(Number(body.point_ratio_rupiah)) && Number(body.point_ratio_rupiah) >= 1000)) {
@@ -397,13 +405,15 @@ function ubahPengaturan({ headers, body }) {
   }
   if (Object.keys(errors).length) return galatIsian(errors)
   const sebelum = { ...publicSettings }
-  Object.assign(publicSettings, {
-    wa_number: wa, address: body.address.trim(), opening_hours: body.opening_hours.trim(), maps_url: peta || null,
-    ...(ubahRasio && { point_ratio_rupiah: Number(body.point_ratio_rupiah) }),
-  })
+  if (adaAlamat) publicSettings.address = body.address.trim()
+  if (adaJamBuka) publicSettings.opening_hours = body.opening_hours.trim()
+  if (adaPeta) publicSettings.maps_url = peta || null
+  if (pilihanBrand != null) publicSettings.home_featured_brand_ids = [...new Set(pilihanBrand.map(Number))]
+  if (ubahRasio) publicSettings.point_ratio_rupiah = Number(body.point_ratio_rupiah)
   catat(u, 'setting.update', 'Pengaturan toko', { sebelum, sesudah: { ...publicSettings } })
   simpanDb()
-  return { data: { data: { ...publicSettings } } }
+  const { wa_number, ...pengaturan } = publicSettings
+  return { data: { data: pengaturan } }
 }
 
 // Urutan penting: path tetap sebelum path ber-parameter.

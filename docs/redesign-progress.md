@@ -7,8 +7,8 @@ Branch kerja sesuai instruksi pengguna: `main` lokal. `origin/main` saat mulai b
 
 - [x] Step 0: prompt induk, AGENTS, dan checklist tersimpan di repo dan checkpoint Desktop. di `docs/redesign-spec.md`.
 - [x] Ringkasan aturan kerja disimpan di `AGENTS.md`.
-- [ ] A+B+D+E: implementasi ada di commit `5dde9b5` pada branch UI, belum diintegrasikan ke `main`; perlu merge dan cek final.
-- [ ] C: redesign halaman publik ada di `5dde9b5`, belum diintegrasikan ke `main`; perlu merge dan cek visual/responsif.
+- [x] A+B+D+E: implementasi UI/WhatsApp/config kontak dari `5dde9b5` diintegrasikan ke `main`; header mempertahankan top bar, main bar, sub-navigation, dan footer terbaru sesuai arahan pengguna.
+- [x] C: redesign halaman publik dari `5dde9b5` diintegrasikan ke `main`; build frontend lulus. Pemeriksaan visual mobile/desktop masih perlu dilakukan.
 - [x] F1: inventaris aset/admin ada di `docs/image-inventory.md` pada branch `docs/image-inventory-phase-1`; inventaris sudah tersedia pada branch dokumen; perlu ikut diintegrasikan.
 - [ ] F2: manajemen gambar admin untuk slot yang BELUM/SEBAGIAN — belum dikerjakan. Pengguna meminta melanjutkan progress; fase ini akan menjadi fokus berikutnya.
 - [ ] F3: aset dummy/fallback dan alt — belum dikerjakan.
@@ -18,7 +18,6 @@ Branch kerja sesuai instruksi pengguna: `main` lokal. `origin/main` saat mulai b
 ## Checkpoint awal
 
 - URL aplikasi lokal yang tercatat: `http://127.0.0.1:5173/`; jalur preview perubahan terakhir OTP: `/lupa-password` dan `/dev/email`.
-- Build frontend lulus setelah penggabungan sementara; `go test ./...` lulus setelah memakai cache Go lokal. GET `http://127.0.0.1:5173/lupa-password` mengembalikan HTTP 200. Pemeriksaan listener port 5173 tidak menemukan proses dari sesi shell ini.
+- Build frontend lulus; `go test ./...` lulus setelah memakai cache Go lokal. GET `http://127.0.0.1:5173/lupa-password` mengembalikan HTTP 200. Pemeriksaan listener port 5173 tidak menemukan proses dari sesi shell ini.
 - Jangan migrasikan database produksi. File `backend/.cache/` muncul sebagai file lokal tak terlacak pada worktree utama fitur OTP; jangan masukkan ke commit.
 - Seluruh pekerjaan berikutnya dicatat di file ini dan dicopy sebagai checkpoint ke Desktop.
-

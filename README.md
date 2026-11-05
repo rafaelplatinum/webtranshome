@@ -1,22 +1,21 @@
-# webtranshome
+# Membership — design reference
 
-Website Transhome, retailer bahan bangunan dan elektronik di Yogyakarta.
+This is a design mockup created in a visual design tool, exported as a
+standalone page. Treat it as a REFERENCE MOCKUP, not production code:
+the markup and inline styles carry the design's precise values — colors,
+font sizes, spacing, radii, shadows, layout — which an implementation
+should replicate faithfully in its own components and styling system
+rather than copy wholesale.
 
-- **Muka 1**: Katalog produk & Membership (poin per pembelian), terhubung ke Mekari Qontak.
-- **Muka 2** (rencana): E-commerce.
+## Contents
 
-## Struktur repo
+- `Membership.dc.html` — the artboard (a Design Component: an `<x-dc>`
+  template + a small logic class). The values to replicate live in its
+  inline `style="…"` attributes and the `<helmet><style>` block.
+- `support.js`, `vendor/react*.js` — the runtime that renders the
+  component in a browser; not part of the design.
 
-| Folder | Isi |
-|---|---|
-| [`backend/`](backend/) | API Go (go-zero), arsitektur DDD modular monolith. Lihat [backend/README.md](backend/README.md) |
-| [`frontend/`](frontend/) | Frontend Vue 3 + Vite + Tailwind CSS, hanya memakai REST API backend. Lihat [frontend/README.md](frontend/README.md) dan [frontend/CLAUDE.md](frontend/CLAUDE.md) |
+## Viewing
 
-
-## Menjalankan frontend
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
+Serve the folder (e.g. `python3 -m http.server`) and open `Membership.dc.html`;
+some browsers block the scripts over file://.

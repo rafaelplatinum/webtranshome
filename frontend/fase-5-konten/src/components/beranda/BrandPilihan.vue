@@ -5,6 +5,7 @@ import Button from '@/components/ui/Button.vue'
 import Skeleton from '@/components/ui/Skeleton.vue'
 import { useMuat } from '@/composables/useMuat'
 import { listBrands } from '@/services/catalogService'
+import { useSettingsStore } from '@/stores/settings'
 import { formatAngka } from '@/utils/format'
 import LingkaranBrand from './LingkaranBrand.vue'
 import PesanGagal from './PesanGagal.vue'
@@ -31,17 +32,23 @@ const HIASAN = [
 ]
 
 const merek = useMuat(listBrands)
+const pengaturan = useSettingsStore()
 const jumlah = computed(() => merek.data.value?.length ?? 0)
+const urut = computed(() => [...(merek.data.value ?? [])].sort(
+  (a, b) =>
+    Number(Boolean(b.logo_url)) - Number(Boolean(a.logo_url)) ||
+    (b.product_count ?? 0) - (a.product_count ?? 0) ||
+    a.name.localeCompare(b.name, 'id'),
+))
+const brandTampil = computed(() => {
+  const ids = pengaturan.data?.home_featured_brand_ids
+  const pilih = Array.isArray(ids) ? new Set(ids.map(Number)) : null
+  return (pilih ? urut.value.filter((brand) => pilih.has(brand.id)) : urut.value).slice(0, JUMLAH_LINGKARAN)
+})
 
 const isi = computed(() => {
-  const urut = [...(merek.data.value ?? [])].sort(
-    (a, b) =>
-      Number(Boolean(b.logo_url)) - Number(Boolean(a.logo_url)) ||
-      (b.product_count ?? 0) - (a.product_count ?? 0) ||
-      a.name.localeCompare(b.name, 'id'),
-  )
   return Array.from({ length: JUMLAH_LINGKARAN }, (_, i) =>
-    urut[i] ? { kunci: `b${urut[i].id}`, brand: urut[i] } : { kunci: `h${i}`, hiasan: HIASAN[i % HIASAN.length] },
+    brandTampil.value[i] ? { kunci: `b${brandTampil.value[i].id}`, brand: brandTampil.value[i] } : { kunci: `h${i}`, hiasan: HIASAN[i % HIASAN.length] },
   )
 })
 
@@ -68,7 +75,7 @@ const geser = (arah) => ({ transform: `translateX(calc(${arah} * (var(--d) + 1re
 
 <template>
   <section
-    v-if="merek.status.value !== 'ready' || jumlah"
+    v-if="merek.status.value !== 'ready' || brandTampil.length"
     aria-labelledby="judul-brand-pilihan"
     class="relative overflow-hidden rounded-2xl border border-border bg-surface py-8 [--d:5rem] sm:[--d:6rem] lg:py-6 lg:[--d:7rem] xl:[--d:8rem]"
     data-brand-pilihan

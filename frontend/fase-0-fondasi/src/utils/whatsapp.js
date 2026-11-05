@@ -1,10 +1,3 @@
-import { normalisasiNomorHp } from './format'
-
-/** Link wa.me dengan pesan yang sudah di-encode. Nomor diambil dari pengaturan toko, jangan hardcode. */
-export function buatLinkWhatsApp(nomorWa, pesan) {
-  return `https://wa.me/${normalisasiNomorHp(nomorWa)}?text=${encodeURIComponent(pesan)}`
-}
-
 /**
  * Harga produk tidak ditampilkan: admin mematikan "Tampilkan harga di website" (`show_price` false)
  * atau produk memang belum diberi harga. Pelanggan melihat "Harga via WhatsApp".

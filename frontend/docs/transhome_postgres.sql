@@ -3,7 +3,7 @@
 -- Skema resmi ada di backend/migrations (database CRM_TH, schema "CRM_Schema").
 -- Bedanya dengan migration backend per 7 Okt 2026:
 --   1. users.phone_number boleh NULL (KEPUTUSAN #11). Database masih NOT NULL.
---   2. Seed site_settings point_ratio_rupiah = 1000000 (KEPUTUSAN #6).
+--   2. Seed site_settings point_ratio_rupiah, wa_number, dan pilihan brand Beranda.
 --   3. Nama schema di file ini "transhome", di database "CRM_Schema".
 -- =====================================================================
 
@@ -335,6 +335,8 @@ ON CONFLICT (code) DO NOTHING;
 
 -- ================= SEED PENGATURAN =================
 -- point_ratio_rupiah: nominal belanja (Rp) untuk 1 poin. CONTOH, ganti sesuai keputusan Transhome.
+-- wa_number: nomor WhatsApp situs. Pilihan brand awal disusun oleh migration 000005 setelah brand tersedia.
 INSERT INTO site_settings (setting_key, setting_value) VALUES
-('point_ratio_rupiah', '1000000')
+('point_ratio_rupiah', '1000000'),
+('wa_number', '087708777989')
 ON CONFLICT (setting_key) DO NOTHING;

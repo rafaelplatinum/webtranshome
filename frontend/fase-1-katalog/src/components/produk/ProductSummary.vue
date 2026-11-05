@@ -86,7 +86,7 @@ async function bagikan() {
     </div>
 
     <div class="flex flex-col gap-2">
-      <WhatsAppButton size="lg" block wrap :href="productLink(produk)" :label="labelTanyaProduk(produk)" />
+      <WhatsAppButton size="lg" block wrap :context="productLink(produk)" :label="labelTanyaProduk(produk)" />
       <p class="text-sm text-muted">
         {{
           habis
@@ -114,7 +114,7 @@ async function bagikan() {
         <p class="font-bold">Butuh jumlah besar?</p>
         <p class="text-sm text-muted">Untuk proyek atau kontraktor, chat langsung dengan tim proyek kami.</p>
       </div>
-      <WhatsAppButton :href="bulkLink(produk)" label="Chat tim proyek" />
+      <WhatsAppButton :context="bulkLink(produk)" label="Chat tim proyek" />
     </div>
 
     <!-- Jasa pemasangan dari kategori produk ini (KEPUTUSAN #20); tidak tampil bila tidak ada. -->
