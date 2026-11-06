@@ -1,14 +1,13 @@
 <script setup>
 import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
-import { ImageOff, Plus } from 'lucide-vue-next'
-import Button from '@/components/ui/Button.vue'
+import { ImageOff } from 'lucide-vue-next'
 import PriceTag from '@/components/ui/PriceTag.vue'
 import StockBadge from '@/components/ui/StockBadge.vue'
 import WhatsAppButton from '@/components/layout/WhatsAppButton.vue'
+import TombolKeranjang from '@/components/keranjang/TombolKeranjang.vue'
 import { useWhatsApp } from '@/composables/useWhatsApp'
 import { labelTanyaProduk } from '@/utils/whatsapp'
-import { useCartStore } from '@/stores/cart'
 
 const props = defineProps({
   // Item dari GET /products: { sku, name, slug, price_general, unit_sale, stock_status, stock_qty_label, brand, primary_image_url }
@@ -16,12 +15,12 @@ const props = defineProps({
 })
 
 const { productLink } = useWhatsApp()
-const cart = useCartStore()
 const tautan = computed(() => `/produk/${props.product.slug}`)
+const linkWhatsApp = computed(() => productLink(props.product))
 </script>
 
 <template>
-  <article class="flex flex-col overflow-hidden rounded-xl border border-border bg-surface transition-colors duration-150 hover:border-border-strong">
+  <article class="relative flex flex-col overflow-hidden rounded-xl border border-border bg-surface transition-colors duration-150 hover:border-border-strong">
     <RouterLink :to="tautan" class="block aspect-square bg-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset" tabindex="-1" aria-hidden="true">
       <img
         v-if="product.primary_image_url"
@@ -32,8 +31,9 @@ const tautan = computed(() => `/produk/${props.product.slug}`)
         height="400"
         class="size-full object-cover"
       />
-      <span v-else class="flex size-full items-center justify-center text-faint">
+      <span v-else class="flex size-full flex-col items-center justify-center gap-2 text-faint">
         <ImageOff class="size-8" aria-hidden="true" />
+        <span class="text-xs">Foto belum ada</span>
       </span>
     </RouterLink>
 
@@ -48,11 +48,12 @@ const tautan = computed(() => `/produk/${props.product.slug}`)
       <span class="font-mono text-xs text-faint">SKU {{ product.sku }}</span>
       <PriceTag class="mt-1" size="card" :price="product.price_general" :show="product.show_price !== false" :unit="product.unit_sale" />
       <StockBadge :status="product.stock_status" :keterangan="product.stock_qty_label ?? ''" />
-      <Button variant="outline" class="mt-1" block wrap @click="cart.tambah(product)">
-        <template #icon><Plus class="size-4" aria-hidden="true" /></template>
-        + Tambahkan ke keranjang
-      </Button>
-      <WhatsAppButton class="mt-auto" variant="whatsapp-outline" :context="productLink(product)" :label="labelTanyaProduk(product)" block wrap />
+      <WhatsAppButton class="mt-auto" :href="linkWhatsApp" :label="labelTanyaProduk(product)" block wrap />
+    </div>
+
+    <!-- Keranjang (KEPUTUSAN #23): tombol bulat di pojok foto; di DOM setelah tombol WhatsApp supaya urutan Tab tetap nama → WA → keranjang. -->
+    <div class="absolute top-2 right-2">
+      <TombolKeranjang ikon :produk="product" />
     </div>
   </article>
 </template>

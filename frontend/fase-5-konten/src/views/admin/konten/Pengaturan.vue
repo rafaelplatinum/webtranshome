@@ -1,5 +1,6 @@
 <script setup>
 import { computed, nextTick, onMounted, reactive, ref } from 'vue'
+import { RouterLink } from 'vue-router'
 import { TriangleAlert } from 'lucide-vue-next'
 import Button from '@/components/ui/Button.vue'
 import ConfirmModal from '@/components/ui/ConfirmModal.vue'
@@ -14,8 +15,9 @@ import { getAdminSettings, updateSettings } from '@/services/adminKontenService'
 import { errorField, pesanError } from '@/services/errors'
 import { useSettingsStore } from '@/stores/settings'
 import { useUiStore } from '@/stores/ui'
-import { formatRupiah } from '@/utils/format'
+import { formatRupiah, normalisasiNomorHp } from '@/utils/format'
 
+const POLA_WA = /^628\d{7,11}$/
 const angka = (teks) => String(teks ?? '').replace(/\D/g, '')
 
 const { can } = usePermission()
@@ -31,19 +33,23 @@ const konfirmasiRasio = ref(false)
 const asli = ref(null)
 const awal = ref('')
 const formEl = ref(null)
-const form = reactive({ address: '', opening_hours: '', maps_url: '', point_ratio_rupiah: '' })
+const form = reactive({ wa_number: '', address: '', opening_hours: '', maps_url: '', point_ratio_rupiah: '' })
 
 // Rasio poin hanya bisa diubah pemegang izin setting.point_ratio (Super Admin).
 const bolehUbahRasio = computed(() => can('setting.point_ratio'))
 const kotor = computed(() => status.value === 'ready' && JSON.stringify(form) !== awal.value)
 const rasioBaru = computed(() => Number(angka(form.point_ratio_rupiah)))
 const rasioBerubah = computed(() => bolehUbahRasio.value && rasioBaru.value !== Number(asli.value?.point_ratio_rupiah))
+const nomorDisimpan = computed(() => normalisasiNomorHp(form.wa_number))
+const petunjukWa = computed(() =>
+  POLA_WA.test(nomorDisimpan.value) ? `Disimpan sebagai ${nomorDisimpan.value}. Dipakai semua tombol WhatsApp di website.` : 'Contoh: 0812 3456 7890 atau 6281234567890.',
+)
 const keluar = useKonfirmasiKeluar(kotor)
 
 function isi(s) {
   asli.value = s
   Object.assign(form, {
-    address: s.address ?? '', opening_hours: s.opening_hours ?? '', maps_url: s.maps_url ?? '',
+    wa_number: s.wa_number ?? '', address: s.address ?? '', opening_hours: s.opening_hours ?? '', maps_url: s.maps_url ?? '',
     point_ratio_rupiah: String(s.point_ratio_rupiah ?? ''),
   })
   awal.value = JSON.stringify(form)
@@ -63,6 +69,7 @@ onMounted(muat)
 
 function validasi() {
   const e = {}
+  if (!POLA_WA.test(nomorDisimpan.value)) e.wa_number = 'Nomor WhatsApp harus nomor Indonesia, mis. 0812 3456 7890'
   if (!form.address.trim()) e.address = 'Alamat wajib diisi'
   if (!form.opening_hours.trim()) e.opening_hours = 'Jam buka wajib diisi'
   if (form.maps_url.trim() && !form.maps_url.trim().startsWith('https://')) e.maps_url = 'Link Google Maps harus diawali https://'
@@ -89,7 +96,7 @@ function mintaSimpan() {
 async function simpan() {
   menyimpan.value = true
   const payload = {
-    address: form.address.trim(), opening_hours: form.opening_hours.trim(), maps_url: form.maps_url.trim() || null,
+    wa_number: nomorDisimpan.value, address: form.address.trim(), opening_hours: form.opening_hours.trim(), maps_url: form.maps_url.trim() || null,
     ...(rasioBerubah.value && { point_ratio_rupiah: rasioBaru.value }),
   }
   try {
@@ -126,6 +133,14 @@ async function simpan() {
     <p v-if="galatUmum" role="alert" class="max-w-3xl rounded-md bg-danger-soft px-4 py-3 text-sm font-semibold text-danger-ink">{{ galatUmum }}</p>
 
     <div class="flex max-w-3xl flex-col gap-6">
+      <FormSection judul="WhatsApp toko" deskripsi="Semua tombol WhatsApp di website mengarah ke nomor ini.">
+        <Input v-model="form.wa_number" label="Nomor WhatsApp" required type="tel" inputmode="tel" autocomplete="off" :error="errors.wa_number ?? ''" :hint="petunjukWa" />
+        <p class="text-sm text-muted">
+          Isi pesan otomatis per produk dan dari keranjang belanja diatur di
+          <RouterLink to="/admin/template-whatsapp" class="rounded-sm font-semibold text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Template WhatsApp</RouterLink>.
+        </p>
+      </FormSection>
+
       <FormSection judul="Lokasi dan jam buka" deskripsi="Tampil di header, footer, dan halaman Info toko.">
         <Textarea v-model="form.address" label="Alamat" required :rows="3" :error="errors.address ?? ''" />
         <Input v-model="form.opening_hours" label="Jam buka" required autocomplete="off" placeholder="Senin–Sabtu, 08.00–17.00" :error="errors.opening_hours ?? ''" />

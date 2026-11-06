@@ -2,6 +2,7 @@
 import { computed, nextTick, ref } from 'vue'
 import { Plus, Search, SearchX, Tag } from 'lucide-vue-next'
 import Button from '@/components/ui/Button.vue'
+import Checkbox from '@/components/ui/Checkbox.vue'
 import ConfirmModal from '@/components/ui/ConfirmModal.vue'
 import EmptyState from '@/components/ui/EmptyState.vue'
 import ErrorState from '@/components/ui/ErrorState.vue'
@@ -15,6 +16,7 @@ import { usePermission } from '@/composables/usePermission'
 import { deleteBrand } from '@/services/adminMasterService'
 import { pesanError } from '@/services/errors'
 import { useUiStore } from '@/stores/ui'
+import { MAKS_LINGKARAN_BRAND } from '@/utils/brandBeranda'
 
 const m = useMasterData('brands')
 const { can } = usePermission()
@@ -32,9 +34,16 @@ const baris = computed(() => {
 const KOLOM = [
   { key: 'nama', label: 'Brand', class: 'min-w-56' },
   { key: 'produk', label: 'Produk', align: 'right' },
+  { key: 'beranda', label: 'Lingkaran Beranda', align: 'center' },
   { key: 'aktif', label: 'Aktif', align: 'center' },
   { key: 'aksi', label: 'Aksi', align: 'right' },
 ]
+
+// Lingkaran "Brand pilihan" Beranda (KEPUTUSAN #21): hanya brand aktif yang dicentang yang tampil, maksimal 16 (MAKS_LINGKARAN_BRAND).
+const terisi = computed(() => m.daftar.value.filter((b) => b.show_on_home && b.is_active).length)
+const penuh = computed(() => terisi.value >= MAKS_LINGKARAN_BRAND)
+const hanyaLingkaran = ref(false)
+const tampil = computed(() => (hanyaLingkaran.value ? baris.value.filter((b) => b.show_on_home) : baris.value))
 
 const pesanNonaktif = computed(() => {
   const b = m.konfirmasi.value
@@ -71,7 +80,7 @@ async function hapus() {
 <template>
   <div class="flex flex-col gap-4">
     <div class="flex flex-wrap items-center justify-between gap-3">
-      <p class="text-sm text-muted">Brand untuk filter katalog dan halaman /brand. Brand juga bisa ditambah langsung dari form produk.</p>
+      <p class="text-sm text-muted">Brand untuk filter katalog, halaman /brand, dan lingkaran Beranda. Brand juga bisa ditambah langsung dari form produk.</p>
       <Button v-if="can('brand.create')" @click="m.bukaForm()">
         <template #icon><Plus class="size-4.5" aria-hidden="true" /></template>
         Tambah brand
@@ -94,7 +103,21 @@ async function hapus() {
             <template #akhir><Search class="mr-2.5 size-4.5 text-muted" aria-hidden="true" /></template>
           </Input>
         </div>
-        <p class="text-sm text-muted" aria-live="polite">Menampilkan {{ baris.length }} dari {{ semua.length }} brand</p>
+        <p class="text-sm text-muted" aria-live="polite">Menampilkan {{ tampil.length }} dari {{ semua.length }} brand</p>
+      </div>
+
+      <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-surface px-4 py-3" data-ringkas-lingkaran>
+        <p class="text-sm">
+          <strong>Lingkaran Beranda: {{ terisi }} dari {{ MAKS_LINGKARAN_BRAND }} terisi.</strong>{{ ' ' }}
+          <span class="text-muted">
+            {{ penuh ? 'Sudah penuh: hapus centang brand lain untuk menggantinya.' : 'Centang brand yang tampil di seksi "Siap untuk menjelajah lebih banyak Brand?". Lingkaran kosong diisi hiasan.' }}
+            {{ terisi === 0 ? 'Belum ada yang dicentang: Beranda memilih otomatis.' : '' }}
+          </span>
+        </p>
+        <span class="flex flex-wrap items-center gap-3">
+          <Checkbox v-model="hanyaLingkaran" label="Hanya yang dicentang" />
+          <Button variant="outline" size="sm" to="/admin/brand-beranda" data-atur-lingkaran>Atur urutan &amp; pratinjau</Button>
+        </span>
       </div>
 
       <EmptyState v-if="!baris.length" :title="`Brand “${cari.trim()}” tidak ditemukan`" description="Periksa ejaan, atau tambahkan brand baru.">
@@ -102,7 +125,7 @@ async function hapus() {
         <template #actions><Button variant="outline" @click="cari = ''">Tampilkan semua</Button></template>
       </EmptyState>
 
-      <Table v-else :columns="KOLOM" :rows="baris" caption="Daftar brand">
+      <Table v-else :columns="KOLOM" :rows="tampil" caption="Daftar brand">
         <template #cell-nama="{ row }">
           <div class="flex items-center gap-3">
             <span class="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-md border border-border bg-surface text-sm font-extrabold text-muted">
@@ -116,6 +139,19 @@ async function hapus() {
           </div>
         </template>
         <template #cell-produk="{ row }"><span class="tabular-nums">{{ row.product_count }}</span></template>
+        <template #cell-beranda="{ row }">
+          <span class="inline-flex flex-col items-center" :title="!row.is_active ? 'Brand nonaktif tidak tampil di Beranda' : penuh && !row.show_on_home ? 'Lingkaran Beranda sudah penuh' : undefined">
+            <Checkbox
+              :model-value="Boolean(row.show_on_home)"
+              :label="`Tampil di lingkaran Beranda: ${row.name}`"
+              hide-label
+              :disabled="!can('brand.update') || row.sibuk || (penuh && !row.show_on_home && row.is_active)"
+              :data-lingkaran-brand-admin="row.id"
+              @update:model-value="(v) => m.ubahBeranda(row, v)"
+            />
+            <span v-if="row.show_on_home && !row.is_active" class="text-xs text-muted">nonaktif</span>
+          </span>
+        </template>
         <template #cell-aktif="{ row }">
           <Switch
             :model-value="row.is_active"

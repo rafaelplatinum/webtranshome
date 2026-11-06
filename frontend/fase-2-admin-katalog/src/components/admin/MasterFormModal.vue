@@ -6,6 +6,8 @@ import Modal from '@/components/ui/Modal.vue'
 import Select from '@/components/ui/Select.vue'
 import Switch from '@/components/ui/Switch.vue'
 import GambarField from './GambarField.vue'
+import Checkbox from '@/components/ui/Checkbox.vue'
+import { MAKS_LINGKARAN_BRAND } from '@/utils/brandBeranda'
 import { createMaster, updateMaster } from '@/services/adminMasterService'
 import { errorField, pesanError } from '@/services/errors'
 import { buatSlug, POLA_SLUG } from '@/utils/slug'
@@ -33,7 +35,7 @@ const KONFIG = {
 }
 const k = computed(() => KONFIG[props.jenis])
 
-const form = reactive({ name: '', slug: '', parent_id: '', gambar: '', is_active: true })
+const form = reactive({ name: '', slug: '', parent_id: '', gambar: '', is_active: true, show_on_home: false })
 const errors = ref({})
 const galatUmum = ref('')
 const menyimpan = ref(false)
@@ -50,6 +52,7 @@ watch(open, (buka) => {
     parent_id: b?.parent_id ?? '',
     gambar: b?.[k.value.gambar] ?? '',
     is_active: b?.is_active ?? true,
+    show_on_home: b?.show_on_home ?? false,
   })
   slugManual.value = Boolean(b)
   errors.value = {}
@@ -91,6 +94,7 @@ async function simpan() {
   }
   const payload = { name: form.name.trim(), slug: form.slug, [k.value.gambar]: form.gambar || null, is_active: form.is_active }
   if (props.jenis === 'categories') payload.parent_id = form.parent_id === '' ? null : Number(form.parent_id)
+  if (props.jenis === 'brands') payload.show_on_home = form.show_on_home
   menyimpan.value = true
   try {
     const hasil = props.baris ? await updateMaster(props.jenis, props.baris.id, payload) : await createMaster(props.jenis, payload)
@@ -123,6 +127,13 @@ async function simpan() {
       <Select v-if="jenis === 'categories'" v-model="form.parent_id" label="Induk kategori" :options="opsiInduk" :error="errors.parent_id ?? ''" />
       <GambarField v-model="form.gambar" :label="k.labelGambar" :required="k.wajib" :rasio="k.rasio" :hint="k.hint" :error="errors[k.gambar] ?? ''" />
       <Switch v-model="form.is_active" label="Tampil di website" />
+      <Checkbox
+        v-if="jenis === 'brands'"
+        v-model="form.show_on_home"
+        label="Tampil di lingkaran Beranda"
+        :description="`Masuk seksi &quot;Siap untuk menjelajah lebih banyak Brand?&quot; di Beranda. Maksimal ${MAKS_LINGKARAN_BRAND} brand aktif; brand tanpa logo tampil sebagai nama.`"
+      />
+      <p v-if="jenis === 'brands' && errors.show_on_home" role="alert" data-galat class="-mt-2 text-sm font-medium text-danger-ink">{{ errors.show_on_home }}</p>
     </form>
     <template #footer>
       <Button variant="outline" :disabled="menyimpan" @click="open = false">Batal</Button>

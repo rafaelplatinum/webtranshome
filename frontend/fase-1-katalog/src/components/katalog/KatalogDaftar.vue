@@ -146,7 +146,7 @@ async function gantiHalaman(nomor) {
           <template #icon><SearchX class="size-10" aria-hidden="true" /></template>
           <template #actions>
             <Button v-if="chip.length" variant="outline" @click="resetFilter">Reset filter</Button>
-            <WhatsAppButton :context="searchLink(topik)" label="Tanya via WhatsApp" />
+            <WhatsAppButton :href="searchLink(topik)" label="Tanya via WhatsApp" />
           </template>
         </EmptyState>
 

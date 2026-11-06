@@ -8,12 +8,12 @@ dijalankan dari folder `frontend/`.
 frontend/
   index.html, vite.config.js, jsconfig.json, package.json, .env.example   pengaturan proyek (dipakai semua fase)
   CLAUDE.md, README.md, docs/, design-system/                             aturan dan dokumen
-  fase-0-fondasi/src/            74 file
-  fase-1-katalog/src/            30 file
-  fase-2-admin-katalog/src/      42 file
+  fase-0-fondasi/src/            76 file
+  fase-1-katalog/src/            37 file
+  fase-2-admin-katalog/src/      45 file
   fase-3-akun-member/src/        24 file
   fase-4-membership-admin/src/   24 file
-  fase-5-konten/src/             42 file
+  fase-5-konten/src/             55 file
   fase-6-sistem/src/             27 file
 ```
 
@@ -60,12 +60,14 @@ frontend/
 | Folder | File |
 |---|---|
 | `components/katalog/` | ActiveFilterChips.vue, ChipNav.vue, FilterOpsi.vue, FilterPanel.vue, FilterSheet.vue, KatalogDaftar.vue, KatalogToolbar.vue, RentangHarga.vue, RoomCard.vue, RoomCarousel.vue |
+| `components/keranjang/` | BarisKeranjang.vue, PengaturJumlah.vue, RingkasanKeranjang.vue, TombolKeranjang.vue (4 Nov 2026) |
 | `components/produk/` | Lightbox.vue, ProductGallery.vue, ProductSummary.vue, ProductTabs.vue, RelatedProducts.vue |
 | `components/ui/` | Breadcrumb.vue, CopyButton.vue, NotFoundState.vue |
 | `composables/` | useKatalog.js |
 | `services/` | catalogService.js |
-| `utils/` | clipboard.js, gerak.js, produk.js |
-| `views/public/` | Brand.vue, BrandDaftar.vue (8 Okt 2026), Cari.vue, Katalog.vue, ProdukDetail.vue, Ruangan.vue, RuanganDetail.vue |
+| `stores/` | keranjang.js (4 Nov 2026) |
+| `utils/` | clipboard.js, gerak.js, produk.js, templateWhatsApp.js (4 Nov 2026) |
+| `views/public/` | Brand.vue, BrandDaftar.vue (8 Okt 2026), Cari.vue, Katalog.vue, Keranjang.vue (4 Nov 2026), ProdukDetail.vue, Ruangan.vue, RuanganDetail.vue |
 
 ### Fase 2 — Admin: masuk, dashboard, master katalog
 
@@ -121,14 +123,14 @@ frontend/
 
 | Folder | File |
 |---|---|
-| `components/admin/konten/` | ArtikelFilterBar.vue, StatusArtikel.vue, StatusBanner.vue, VideoField.vue |
+| `components/admin/konten/` | ArtikelFilterBar.vue, EditorTemplateWa.vue (4 Nov 2026), PratinjauWa.vue (4 Nov 2026), StatusArtikel.vue, StatusBanner.vue, VideoField.vue |
 | `components/beranda/` | AjakanMember.vue, BannerPromo.vue, BannerSlider.vue, BrandPilihan.vue, HeroBanner.vue, InspirasiRuangan.vue, JudulSeksi.vue, KategoriTahap.vue, Keunggulan.vue, PesanGagal.vue, ProdukUnggulan.vue, PromoEvent.vue |
 | `components/konten/` | ArtikelLainnya.vue, DaftarArtikel.vue, IsiArtikel.vue, KartuArtikel.vue |
 | `composables/` | useDaftarBanner.js, useFormArtikel.js, useFormBanner.js, useMuat.js |
 | `services/` | adminKontenService.js, kontenService.js |
 | `services/mock/` | routesKonten.js |
 | `utils/` | artikel.js, banner.js |
-| `views/admin/konten/` | ArtikelDaftar.vue, ArtikelForm.vue, BannerDaftar.vue, BannerForm.vue, Pengaturan.vue |
+| `views/admin/konten/` | ArtikelDaftar.vue, ArtikelForm.vue, BannerDaftar.vue, BannerForm.vue, Pengaturan.vue, TemplateWhatsApp.vue (4 Nov 2026) |
 | `views/public/` | ArtikelDaftar.vue, ArtikelDetail.vue, Beranda.vue, InfoToko.vue, Promo.vue |
 
 ### Fase 6 — Sistem Admin dan Integrasi Qontak
@@ -191,6 +193,9 @@ File tetap berada di folder fase pembuatnya; fase berikutnya mengubahnya di temp
 | `services/mock/data/konten.js` (0) | 2 Nov 2026: 4 artikel contoh lama diganti seri panduan isi rumah (1 utama + 5 pilar, pilar sofa draf); helper `artikel()` merapikan indentasi isi dan menerima label pendek untuk gambar sampul |
 | Fitur Jasa (2 Nov 2026, KEPUTUSAN #20) | File baru di `fase-5-konten/src/`: `views/public/JasaDaftar.vue`, `views/public/JasaDetail.vue`, `views/admin/konten/JasaDaftar.vue`, `views/admin/konten/JasaForm.vue`, `components/jasa/KartuJasa.vue`, `components/jasa/JasaTerkait.vue`, `components/beranda/JasaBeranda.vue`, `composables/useDaftarJasa.js`, `composables/useFormJasa.js`, `utils/jasa.js`. Diubah: `data/konten.js` (7 jasa contoh, tanpa harga), `data/akun.js` (izin), `router/routes/public.js`, `admin.js`, `AppHeader.vue`, `MegaMenu.vue`, `AppFooter.vue`, `utils/whatsapp.js`, `useWhatsApp.js` (0); `ProductSummary.vue` (1); `db.js`, `data/admin.js` (menu) (2); `routesKonten.js`, `kontenService.js`, `adminKontenService.js`, `Beranda.vue`, `utils/artikel.js` (5); `data/sistem.js`, `utils/log.js` (6) |
 | `router/guard.js`, `views/public/TidakPunyaAkses.vue` (0), `views/admin/Masuk.vue` (2) | Perbaikan akses login admin (2 Nov 2026): member yang membuka halaman admin diarahkan ke login admin (bisa ganti akun); tombol "Masuk dengan akun lain" di halaman Tidak punya akses |
+| `vite.config.js` (akar `frontend/`), `router/guard.js`, `components/ui/Checkbox.vue`, `routes.js`, `data/catalog.js` (0), `Brand.vue`, `MasterFormModal.vue`, `useMasterData.js`, `routesAdmin.js` (2), `BrandPilihan.vue` (5), `utils/log.js` (6); file baru `fase-2-admin-katalog/src/utils/brandBeranda.js` | 3 Nov 2026: centang "Tampil di lingkaran Beranda" (KEPUTUSAN #21, `show_on_home`, batas 16) dan SEO di HTML mentah lewat plugin `transhome-seo-statis` (KEPUTUSAN #22); `Checkbox` dapat prop `hideLabel` |
+| `router/routes/admin.js` (0), `adminMasterService.js`, `data/admin.js` (menu), `Brand.vue` (2), `BrandPilihan.vue` (5); file baru `fase-2-admin-katalog/src/views/admin/katalog/BrandBeranda.vue`, `fase-2-admin-katalog/src/composables/useBrandBeranda.js`, `fase-5-konten/src/components/beranda/SusunanLingkaranBrand.vue` | 3 Nov 2026 (lanjutan KEPUTUSAN #21): lingkaran brand utuh di frame (16 desktop pola 3–2–3, 8 di HP), urutan `home_order`, halaman admin "Brand di Beranda" (`/admin/brand-beranda`, `PUT /admin/brands/home`). `SusunanLingkaranBrand.vue` dipakai bersama Beranda dan pratinjau admin |
+| `utils/whatsapp.js`, `composables/useWhatsApp.js`, `stores/settings.js`, `stores/ui.js`, `components/ui/Toast.vue`, `components/layout/AppHeader.vue`, `components/katalog/ProductCard.vue`, `ProductListRow.vue`, `router/routes/public.js`, `admin.js`, `services/productService.js`, `mock/routes.js`, `mock/data/akun.js` (0), `ProductSummary.vue`, `ProdukDetail.vue` (1), `data/admin.js` (menu) (2), `Pengaturan.vue`, `adminKontenService.js`, `routesKonten.js` (5), `data/sistem.js`, `utils/log.js` (6); file baru `fase-1-katalog/src/`: `stores/keranjang.js`, `utils/templateWhatsApp.js`, `views/public/Keranjang.vue`, `components/keranjang/*` (4 file); `fase-5-konten/src/`: `views/admin/konten/TemplateWhatsApp.vue`, `components/admin/konten/EditorTemplateWa.vue`, `PratinjauWa.vue`, `composables/useFormTemplateWa.js` | 4 Nov 2026 (KEPUTUSAN #23): keranjang belanja WhatsApp (`/keranjang`, tombol di kartu/daftar/detail produk, ikon header) dan template pesan WhatsApp per produk & keranjang yang diatur admin (`/admin/template-whatsapp`, `GET/PUT /admin/settings/whatsapp-templates`, `GET /products?ids=`). `pesanTanyaProduk()` lama diganti `pesanProduk()` + template; toast bisa punya aksi |
 | `data/sistem.js`, `useMatriksIzin.js`, `utils/log.js` (6) | Brand: izin `brand.delete` (kolom Lainnya: "Hapus"), label log `brand.delete` |
 | `services/mock/data/konten.js`, `services/mock/routes.js`, `main.css` (0), `catalogService.js`, `BrandDaftar.vue` (1), `uploadService.js`, `routesAdmin.js` (2), `Beranda.vue`, `BannerDaftar.vue`, `BannerForm.vue`, `useFormBanner.js`, `utils/banner.js`, `kontenService.js`, `routesKonten.js` (5) | Hero banner (30 Okt 2026): posisi banner `HOME_HERO` + `subtitle`/`video_url`/`cta_label`, unggah video (`jenis=video`), `HeroBanner.vue` + `VideoField.vue` baru. Dihapus: `HeroRumah.vue`, `RumahTigaDimensi.vue`, `geometriRumah.js`, `bagianRumah.js`, `services/mock/data/beranda.js`, rute `/home/house-parts`, token `--color-rumah-*`. `/brand` mengikuti wireframe (Cari, filter kategori, A–Z, kartu 6/3/2 kolom, 24 per halaman); `GET /brands` + `categories`. Hari yang sama: hero setinggi layar + tombol WhatsApp, tombol kedua (`cta2_label`/`cta2_url`), Lihat selengkapnya; label log baru di `utils/log.js` (6) |
 | `AppHeader.vue`, `AppFooter.vue`, `AuthLayout.vue`, `MemberLayout.vue`, `index.html` (0), `AdminSidebar.vue` (2), `AjakanMember.vue`, `BannerPromo.vue` (5); file baru `components/layout/LogoTranshome.vue` + `assets/logo-transhome.png` (0), `frontend/public/favicon.ico`, `apple-touch-icon.png` | Logo & kartu member (30 Okt 2026): lambang resmi di samping tulisan Transhome + ikon tab; ajakan/kartu member hanya disembunyikan untuk member, tidak untuk admin. KEPUTUSAN #18 |

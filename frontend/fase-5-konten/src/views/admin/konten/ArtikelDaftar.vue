@@ -114,7 +114,7 @@ async function gantiHalaman(nomor) {
           <template #cell-judul="{ row }">
             <span class="flex min-w-0 flex-col">
               <strong class="font-semibold">{{ row.title }}</strong>
-              <span class="font-mono text-xs text-faint">/artikel/{{ row.slug }}</span>
+              <span class="font-mono text-xs text-faint">{{ tautanArtikel(row) }}</span>
             </span>
           </template>
           <template #cell-tipe="{ row }">
@@ -134,7 +134,7 @@ async function gantiHalaman(nomor) {
           </template>
           <template #cell-aksi="{ row }">
             <div class="flex items-center justify-end gap-1.5 whitespace-nowrap">
-              <Button v-if="row.status === 'PUBLISHED'" variant="ghost" size="sm" :href="tautanArtikel(row.slug)">
+              <Button v-if="row.status === 'PUBLISHED'" variant="ghost" size="sm" :href="tautanArtikel(row)">
                 Lihat <span class="sr-only">{{ row.title }} (tab baru)</span>
               </Button>
               <Button v-if="can('article.update')" variant="outline" size="sm" :to="`/admin/artikel/${row.id}`">

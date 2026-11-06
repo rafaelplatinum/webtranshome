@@ -16,11 +16,9 @@ const props = defineProps({
   judul: { type: String, required: true },
   judulKosong: { type: String, default: 'Belum ada artikel' },
   deskripsiKosong: { type: String, default: '' },
-  gayaPromo: { type: Boolean, default: false },
-  featured: { type: Boolean, default: false },
 })
 
-const perHalaman = computed(() => props.featured ? 4 : 9)
+const PER_HALAMAN = 9
 
 const status = ref('loading') // loading | ready | error
 const items = ref([])
@@ -36,7 +34,7 @@ async function muat() {
   pengendali = new AbortController()
   status.value = 'loading'
   try {
-    const hasil = await listArticles({ type: props.tipe, page: 1, per_page: perHalaman.value }, { signal: pengendali.signal })
+    const hasil = await listArticles({ type: props.tipe, page: 1, per_page: PER_HALAMAN }, { signal: pengendali.signal })
     items.value = hasil.data
     meta.value = hasil.meta
     status.value = 'ready'
@@ -51,7 +49,7 @@ async function muat() {
 async function muatBerikutnya() {
   memuatLagi.value = true
   try {
-    const hasil = await listArticles({ type: props.tipe, page: meta.value.page + 1, per_page: perHalaman.value })
+    const hasil = await listArticles({ type: props.tipe, page: meta.value.page + 1, per_page: PER_HALAMAN })
     items.value = [...items.value, ...hasil.data]
     meta.value = hasil.meta
   } catch (error) {
@@ -76,13 +74,10 @@ onBeforeUnmount(() => pengendali?.abort())
     <EmptyState v-else-if="!items.length" :title="judulKosong" :description="deskripsiKosong">
       <template #icon><Newspaper class="size-10" aria-hidden="true" /></template>
     </EmptyState>
-    <div v-else class="flex flex-col gap-8 sm:gap-10">
-      <div v-if="featured && items.length" v-reveal>
-        <KartuArtikel :artikel="items[0]" featured />
-      </div>
-      <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6" data-daftar-artikel>
-        <li v-for="(a, i) in featured ? items.slice(1) : items" :key="a.id" v-reveal="i % 3">
-          <KartuArtikel :artikel="a" :gaya-promo="gayaPromo" />
+    <div v-else class="flex flex-col gap-6">
+      <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" data-daftar-artikel>
+        <li v-for="(a, i) in items" :key="a.id" v-reveal="i % 3">
+          <KartuArtikel :artikel="a" />
         </li>
       </ul>
       <div class="flex flex-col items-center gap-2">

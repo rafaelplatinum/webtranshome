@@ -45,6 +45,11 @@ export default [
         component: () => import('@/views/public/ArtikelDetail.vue'),
         meta: { title: 'Artikel' },
       },
+      // Promo, event, dan halaman tetap punya alamat sesuai tipenya (6 Nov 2026); isinya sama-sama dari /articles/:slug.
+      { path: 'promo/:slug', name: 'promo-detail', component: () => import('@/views/public/ArtikelDetail.vue'), meta: { title: 'Promo' } },
+      { path: 'event/:slug', name: 'event-detail', component: () => import('@/views/public/ArtikelDetail.vue'), meta: { title: 'Event' } },
+      { path: 'event', redirect: '/promo' },
+      { path: 'halaman/:slug', name: 'halaman-detail', component: () => import('@/views/public/ArtikelDetail.vue'), meta: { title: 'Halaman' } },
       {
         path: 'jasa',
         name: 'jasa',
@@ -70,6 +75,7 @@ export default [
         meta: { title: 'Info toko' },
       },
       {
+        // Halaman program Trans Family (desain dari redesign Dylan, diminta pemilik 6 Nov 2026).
         path: 'membership',
         name: 'membership',
         component: () => import('@/views/public/Membership.vue'),
@@ -80,12 +86,6 @@ export default [
         name: 'katalog',
         component: () => import('@/views/public/Katalog.vue'),
         meta: { title: 'Katalog' },
-      },
-      {
-        path: 'keranjang',
-        name: 'keranjang',
-        component: () => import('@/views/public/Keranjang.vue'),
-        meta: { title: 'Keranjang belanja' },
       },
       {
         path: 'cari',
@@ -100,6 +100,13 @@ export default [
         // Di HP halaman ini punya bar harga + WhatsApp sendiri di bawah: tombol WA melayang hanya di desktop,
         // dan PublicLayout memberi ruang di bawah footer agar tidak tertutup bar.
         meta: { title: 'Detail produk', barAksiHp: true },
+      },
+      {
+        // Keranjang belanja (KEPUTUSAN #23): dikirim lewat WhatsApp, tanpa checkout. Bar kirim sendiri di HP.
+        path: 'keranjang',
+        name: 'keranjang',
+        component: () => import('@/views/public/Keranjang.vue'),
+        meta: { title: 'Keranjang belanja', barAksiHp: true },
       },
       {
         path: 'brand',

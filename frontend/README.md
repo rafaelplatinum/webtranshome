@@ -109,8 +109,8 @@ admin banner/artikel/pengaturan), dan Fase 6 (sistem: pengguna admin, role &
 izin, log aktivitas, sync Qontak) selesai 7 Okt 2026; hasil QA ada di
 [docs/FRONTEND_BUILD_PLAN.md](docs/FRONTEND_BUILD_PLAN.md).
 
-- Publik: `/` (Beranda), `/artikel`, `/artikel/:slug` (`?preview=<token>` untuk draf),
-  `/promo` (`?jenis=promo|event`), `/info-toko`, `/katalog`, `/katalog/:kategori`, `/cari?q=`, `/produk/:slug`,
+- Publik: `/` (Beranda), `/artikel`, `/artikel/:slug`, `/promo/:slug`, `/event/:slug`, `/halaman/:slug`
+  (`?preview=<token>` untuk draf), `/promo` (`?jenis=promo|event`), `/info-toko`, `/membership`, `/keranjang`, `/jasa`, `/jasa/:slug`, `/katalog`, `/katalog/:kategori`, `/cari?q=`, `/produk/:slug`,
   `/brand` (semua brand A–Z), `/brand/:slug`, `/ruangan`, `/ruangan/:slug`.
 - Auth: `/masuk`, `/daftar`, `/verifikasi`, `/lupa-password`, `/reset-password`,
   `/masuk/google` (callback Google).
@@ -119,8 +119,48 @@ izin, log aktivitas, sync Qontak) selesai 7 Okt 2026; hasil QA ada di
   `/:id/pratinjau`), `/admin/kategori`, `/admin/brand`, `/admin/ruangan`,
   `/admin/member`, `/admin/member/:id`, `/admin/poin/input` (`?member=<id>`),
   `/admin/banner` (+ `/baru`, `/:id`, `/:id#periode`), `/admin/artikel` (+ `/baru`, `/:id`),
-  `/admin/pengaturan`, `/admin/pengguna`, `/admin/role` (`?role=<kode>`),
+  `/admin/brand-beranda`, `/admin/jasa`, `/admin/pengaturan`, `/admin/template-whatsapp`, `/admin/pengguna`, `/admin/role` (`?role=<kode>`),
   `/admin/log-aktivitas`, `/admin/sync-qontak` (`?status=FAILED`).
 
 Semua fase Muka 1 (0–6) sudah selesai dengan data mock. Langkah berikutnya: sambungkan ke
 API backend begitu endpoint di lampiran rencana build tersedia (matikan `VITE_USE_MOCK`).
+
+## Catatan untuk tim backend (6 Nov 2026)
+
+**Isi `main` sekarang.** Folder `frontend/` memakai tampilan lama + beberapa fitur dari redesign 5–6 Nov
+(footer + pita ajakan di semua halaman, menu Membership/Tentang Kami/Keranjang, halaman Daftar dua kolom,
+`/membership`), lihat [KEPUTUSAN #24](docs/KEPUTUSAN.md). Redesign frontend lainnya tidak dipakai, tetapi
+masih ada di riwayat git (commit `4079afd`). Semua isi di luar `frontend/` (backend, migrasi `000005`–`000008`,
+`docs/`, `AGENTS.md`) tidak diubah oleh penggabungan ini.
+
+**Frontend masih memakai mock** (`VITE_USE_MOCK=true`). Kontrak lengkap tiap endpoint ada di
+[docs/FRONTEND_BUILD_PLAN.md](docs/FRONTEND_BUILD_PLAN.md) (bagian "Detail kontrak" dan "Catatan untuk backend"),
+bentuk data di [docs/transhome_postgres.sql](docs/transhome_postgres.sql).
+
+### Perlu disepakati (frontend dan backend berbeda)
+
+| Topik | Frontend memakai | Backend sekarang | Usulan |
+|---|---|---|---|
+| Alamat admin katalog | `/admin/products`, `/admin/brands`, `/admin/categories`, `/admin/rooms` | `/admin/catalog/products`, `/admin/catalog/brands`, … | Pilih satu awalan; frontend cukup mengganti alamat di `services/` bila backend tetap `/admin/catalog` |
+| Brand di lingkaran Beranda (KEPUTUSAN #21) | `brands.show_on_home` + `brands.home_order`, `PATCH /admin/brands/:id { show_on_home }`, `PUT /admin/brands/home { brand_ids }`, maks **16** | Migrasi `000005`: `site_settings.home_featured_brand_ids` (maks 18) | Boleh tetap `home_featured_brand_ids` asal urutan array = urutan tampil dan batas 16; kabari frontend agar service-nya disesuaikan |
+| Nomor WhatsApp toko | Bisa diubah di admin › Pengaturan toko (`PUT /admin/settings` berisi `wa_number`) | Migrasi `000006`: nomor dikunci | Keputusan keamanan nomor ditunda pemilik; sementara backend boleh mengabaikan `wa_number` dan frontend akan menyembunyikan isiannya bila diputuskan |
+| Lupa password | Tautan reset lewat email: `POST /auth/forgot-password`, `POST /auth/reset-password` | OTP: `/auth/password/forgot`, `/auth/password/verify-otp`, `/auth/password/reset` | Halaman OTP belum ada di frontend; perlu disepakati alur mana yang dipakai |
+| Unggah gambar | `POST /admin/uploads` (`jenis=gambar` atau `video`) | `/admin/image-assets` + `GET /media/:filename` | Samakan; frontend belum punya halaman kelola gambar per slot |
+
+### Dibutuhkan frontend, belum ada di backend
+
+- **Pengaturan publik:** `GET /settings/public` (nomor WA, alamat, jam buka, peta, rasio poin, template WhatsApp).
+- **Template WhatsApp (KEPUTUSAN #23):** kunci `site_settings` `wa_template_product`, `wa_template_cart`, `wa_template_cart_item`;
+  `GET/PUT /admin/settings/whatsapp-templates` (izin `setting.update`, validasi kode `{…}`). Seed bawaan ada di SQL.
+- **Keranjang:** `GET /products?ids=1,2,3` (maks 30) mengembalikan produk aktif dengan bentuk item yang sama; tanpa
+  tabel/endpoint pesanan (keranjang disimpan di browser, dikirim lewat WhatsApp).
+- **Alamat konten per tipe (KEPUTUSAN #25):** sitemap dan tautan dari server memakai `/artikel/`, `/promo/`, `/event/`,
+  `/halaman/` + slug sesuai `articles.type`; data tetap dari `GET /articles/:slug`.
+- **SEO HTML mentah:** hosting menyajikan `dist/<halaman>/index.html` untuk halaman tetap, build produksi memakai
+  `VITE_SITE_URL`; halaman berparameter butuh meta dari server (detail di rencana build).
+- **Endpoint publik katalog & konten** (`/products`, `/brands`, `/categories`, `/rooms`, `/articles`, `/banners`,
+  `/services`) serta seed `menus`/`permissions` sesuai lampiran rencana build.
+
+Data kontak toko untuk footer (telepon, WhatsApp, sosial media) ada di
+[fase-0-fondasi/src/config/contact.js](fase-0-fondasi/src/config/contact.js); URL Facebook, YouTube, Shopee, dan
+Tokopedia masih kosong (tombol tampil nonaktif) sampai dikonfirmasi pemilik.

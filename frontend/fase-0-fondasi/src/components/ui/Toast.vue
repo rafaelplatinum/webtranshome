@@ -1,9 +1,18 @@
 <script setup>
+import { RouterLink } from 'vue-router'
 import { CircleCheck, CircleX, Info, TriangleAlert, X } from 'lucide-vue-next'
 import { useUiStore } from '@/stores/ui'
 
 // Satu wadah toast untuk seluruh aplikasi, dipasang di App.vue. Isi dari store `ui`.
 const ui = useUiStore()
+
+const kelasAksi =
+  '-my-1 inline-flex min-h-8 shrink-0 items-center rounded-sm text-sm font-bold text-primary underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+
+function jalankan(toast) {
+  ui.hapusToast(toast.id)
+  toast.aksi.jalankan?.()
+}
 
 const JENIS = {
   info: { ikon: Info, kelas: 'text-info' },
@@ -33,6 +42,10 @@ const JENIS = {
       >
         <component :is="(JENIS[toast.jenis] ?? JENIS.info).ikon" class="mt-0.5 size-5 shrink-0" :class="(JENIS[toast.jenis] ?? JENIS.info).kelas" aria-hidden="true" />
         <p class="flex-1 text-sm font-medium">{{ toast.pesan }}</p>
+        <template v-if="toast.aksi">
+          <RouterLink v-if="toast.aksi.to" :to="toast.aksi.to" :class="kelasAksi" @click="ui.hapusToast(toast.id)">{{ toast.aksi.label }}</RouterLink>
+          <button v-else type="button" :class="kelasAksi" @click="jalankan(toast)">{{ toast.aksi.label }}</button>
+        </template>
         <button
           type="button"
           class="-m-1.5 inline-flex size-8 shrink-0 items-center justify-center rounded-md text-muted transition-colors duration-150 hover:bg-subtle hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"

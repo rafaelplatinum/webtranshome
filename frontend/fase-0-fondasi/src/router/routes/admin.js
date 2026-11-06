@@ -42,6 +42,12 @@ export default [
         meta: { title: 'Brand', grup: 'Katalog', permission: 'brand.view' },
       },
       {
+        path: 'brand-beranda',
+        name: 'admin-brand-beranda',
+        component: () => import('@/views/admin/katalog/BrandBeranda.vue'),
+        meta: { title: 'Brand di Beranda', grup: 'Katalog', permission: 'brand.view' },
+      },
+      {
         path: 'ruangan',
         name: 'admin-ruangan',
         component: () => import('@/views/admin/katalog/Ruangan.vue'),
@@ -71,12 +77,6 @@ export default [
         component: () => import('@/views/admin/konten/BannerDaftar.vue'),
         meta: { title: 'Banner', grup: 'Konten', permission: 'banner.view' },
       },
-      {
-        path: 'pengelolaan-gambar',
-        name: 'admin-pengelolaan-gambar',
-        component: () => import('@/views/admin/konten/PengelolaanGambar.vue'),
-        meta: { title: 'Pengelolaan gambar', grup: 'Konten', permission: 'image.manage' },
-      },
       { path: 'banner/baru', name: 'admin-banner-baru', component: BannerForm, meta: { title: 'Buat banner', grup: 'Konten', permission: 'banner.create' } },
       { path: 'banner/:id(\\d+)', name: 'admin-banner-ubah', component: BannerForm, meta: { title: 'Ubah banner', grup: 'Konten', permission: 'banner.update' } },
       {
@@ -100,6 +100,12 @@ export default [
         name: 'admin-pengaturan',
         component: () => import('@/views/admin/konten/Pengaturan.vue'),
         meta: { title: 'Pengaturan toko', grup: 'Konten', permission: 'setting.update' },
+      },
+      {
+        path: 'template-whatsapp',
+        name: 'admin-template-whatsapp',
+        component: () => import('@/views/admin/konten/TemplateWhatsApp.vue'),
+        meta: { title: 'Template WhatsApp', grup: 'Konten', permission: 'setting.update' },
       },
       {
         path: 'pengguna',

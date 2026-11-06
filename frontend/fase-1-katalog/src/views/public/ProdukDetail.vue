@@ -10,6 +10,7 @@ import WhatsAppButton from '@/components/layout/WhatsAppButton.vue'
 import ProductGallery from '@/components/produk/ProductGallery.vue'
 import ProductSummary from '@/components/produk/ProductSummary.vue'
 import ProductTabs from '@/components/produk/ProductTabs.vue'
+import TombolKeranjang from '@/components/keranjang/TombolKeranjang.vue'
 import RelatedProducts from '@/components/produk/RelatedProducts.vue'
 import { useSeo } from '@/composables/useSeo'
 import { useWhatsApp } from '@/composables/useWhatsApp'
@@ -122,11 +123,12 @@ useSeo({
       <ProductTabs class="mt-10" :produk="produk" />
       <RelatedProducts class="mt-12" :produk="produk" />
 
-      <!-- HP: harga + WhatsApp selalu terjangkau. Tombol WhatsApp melayang disembunyikan di halaman ini (meta.barAksiHp). -->
+      <!-- HP: harga + keranjang + WhatsApp selalu terjangkau. Tombol WhatsApp melayang disembunyikan di halaman ini (meta.barAksiHp). -->
       <div class="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] lg:hidden">
-        <div class="mx-auto flex max-w-7xl items-center gap-3">
+        <div class="mx-auto flex max-w-7xl items-center gap-2">
           <PriceTag class="min-w-0 flex-1" size="sm" :price="produk.price_general" :show="produk.show_price !== false" :unit="produk.unit_sale" />
-          <WhatsAppButton class="shrink-0" :context="productLink(produk)" :label="labelTanyaProduk(produk)" />
+          <TombolKeranjang v-if="produk.stock_status !== 'HABIS'" class="shrink-0" ikon :produk="produk" />
+          <WhatsAppButton class="shrink-0" :href="productLink(produk)" :label="labelTanyaProduk(produk)" />
         </div>
       </div>
     </template>

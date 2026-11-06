@@ -1,5 +1,6 @@
 <script setup>
 import { RouterLink, RouterView, useRouter } from 'vue-router'
+import FooterSitus from '@/components/layout/FooterSitus.vue'
 import { History, LayoutDashboard, LogOut, ShieldCheck, UserRound } from 'lucide-vue-next'
 import UserMenu from '@/components/layout/UserMenu.vue'
 import LogoTranshome from '@/components/layout/LogoTranshome.vue'
@@ -73,5 +74,6 @@ async function keluar() {
         <RouterView />
       </main>
     </div>
+    <FooterSitus />
   </div>
 </template>

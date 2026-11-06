@@ -115,7 +115,7 @@ useSeo({
           <MapPin class="size-4 shrink-0" aria-hidden="true" />
           Area layanan: {{ jasa.service_area }}
         </p>
-        <WhatsAppButton block size="lg" :context="jasaLink(jasa)" label="Konsultasi via WhatsApp" />
+        <WhatsAppButton block size="lg" :href="jasaLink(jasa)" label="Konsultasi via WhatsApp" />
         <p class="text-sm text-muted">Kirim foto, ukuran, dan lokasi pekerjaan supaya tim kami bisa menghitung biaya dan jadwalnya.</p>
       </aside>
 

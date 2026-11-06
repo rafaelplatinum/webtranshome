@@ -46,8 +46,8 @@ function simulasiMuat() {
     <div class="flex flex-col gap-2">
       <p class="text-sm font-semibold text-muted">WhatsApp (nomor dari pengaturan toko) dan salin</p>
       <div class="flex flex-wrap items-center gap-3">
-        <WhatsAppButton :context="generalLink()" />
-        <WhatsAppButton label="Nomor belum tersedia" />
+        <WhatsAppButton :href="generalLink()" />
+        <WhatsAppButton :href="null" label="Nomor belum tersedia" />
         <CopyButton text="KRM-4040-01" label="Salin SKU" copied-label="SKU disalin" />
       </div>
     </div>

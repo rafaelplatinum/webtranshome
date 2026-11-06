@@ -3,8 +3,9 @@
 -- Skema resmi ada di backend/migrations (database CRM_TH, schema "CRM_Schema").
 -- Bedanya dengan migration backend per 7 Okt 2026:
 --   1. users.phone_number boleh NULL (KEPUTUSAN #11). Database masih NOT NULL.
---   2. Seed site_settings point_ratio_rupiah, wa_number, dan pilihan brand Beranda.
+--   2. Seed site_settings point_ratio_rupiah = 1000000 (KEPUTUSAN #6).
 --   3. Nama schema di file ini "transhome", di database "CRM_Schema".
+--   4. Seed site_settings template pesan WhatsApp (KEPUTUSAN #23, 4 Nov 2026).
 -- =====================================================================
 
 -- =====================================================================
@@ -153,6 +154,8 @@ CREATE TABLE IF NOT EXISTS brands (
     slug VARCHAR(150) NOT NULL UNIQUE,
     logo_url VARCHAR(255) NULL,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    show_on_home BOOLEAN NOT NULL DEFAULT FALSE, -- USULAN frontend 3 Nov 2026 (KEPUTUSAN #21): tampil di lingkaran Beranda, maks 16 brand aktif
+    home_order INT NULL, -- USULAN frontend 3 Nov 2026 (KEPUTUSAN #21): urutan di lingkaran Beranda (1 = paling dekat judul), NULL bila tidak tampil
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -335,8 +338,11 @@ ON CONFLICT (code) DO NOTHING;
 
 -- ================= SEED PENGATURAN =================
 -- point_ratio_rupiah: nominal belanja (Rp) untuk 1 poin. CONTOH, ganti sesuai keputusan Transhome.
--- wa_number: nomor WhatsApp situs. Pilihan brand awal disusun oleh migration 000005 setelah brand tersedia.
 INSERT INTO site_settings (setting_key, setting_value) VALUES
 ('point_ratio_rupiah', '1000000'),
-('wa_number', '087708777989')
+-- Template pesan WhatsApp (KEPUTUSAN #23), diubah admin di Konten › Template WhatsApp. Daftar kode {…} dan
+-- aturannya: docs/FRONTEND_BUILD_PLAN.md (catatan backend "Keranjang & template WhatsApp").
+('wa_template_product', E'Halo Transhome, {pertanyaan}\n{nama_produk}\nSKU: {sku}\n{link}'),
+('wa_template_cart', E'Halo Transhome, saya ingin memesan produk berikut:\n\n{daftar_produk}\n\nJumlah: {jumlah_produk} produk\nPerkiraan total: {perkiraan_total}\nAtas nama: {pelanggan}\n\nMohon dibantu cek stok dan total harganya. Terima kasih.'),
+('wa_template_cart_item', E'{no}. {nama_produk}\n   SKU {sku} · {jumlah} {satuan} · {harga}\n   {catatan}')
 ON CONFLICT (setting_key) DO NOTHING;

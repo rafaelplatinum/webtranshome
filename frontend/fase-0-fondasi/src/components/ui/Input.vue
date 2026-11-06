@@ -1,5 +1,5 @@
 <script setup>
-import { computed, useId, useSlots } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, useId, useSlots } from 'vue'
 
 // Atribut lain (placeholder, autocomplete, inputmode, ...) diteruskan ke <input>.
 defineOptions({ inheritAttrs: false })
@@ -19,6 +19,19 @@ const props = defineProps({
 
 const slots = useSlots()
 const id = useId()
+// Teks isian mulai tepat setelah awalan: lebar awalan diukur (mis. "/halaman/" lebih lebar dari "/promo/").
+const elAwalan = ref(null)
+const lebarAwalan = ref(0)
+let pengamat = null
+onMounted(() => {
+  if (!elAwalan.value) return
+  pengamat = new ResizeObserver(([entri]) => {
+    lebarAwalan.value = Math.ceil(entri.contentRect.width)
+  })
+  pengamat.observe(elAwalan.value)
+})
+onBeforeUnmount(() => pengamat?.disconnect())
+
 const keterangan = computed(() => {
   if (props.error) return `${id}-error`
   if (props.hint) return `${id}-hint`
@@ -32,7 +45,7 @@ const keterangan = computed(() => {
       {{ label }}<span v-if="required" class="text-danger" aria-hidden="true"> *</span>
     </label>
     <div class="relative">
-      <span v-if="prefix" class="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm text-muted" aria-hidden="true">{{ prefix }}</span>
+      <span v-if="prefix" ref="elAwalan" class="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm text-muted" aria-hidden="true">{{ prefix }}</span>
       <input
         :id="id"
         v-model="model"
@@ -43,6 +56,7 @@ const keterangan = computed(() => {
         v-bind="$attrs"
         class="h-11 w-full min-w-0 rounded-md border bg-surface text-base text-foreground transition-colors duration-150 placeholder:text-faint focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:bg-subtle"
         :class="[error ? 'border-danger' : 'border-border-strong focus-visible:border-primary', prefix ? (prefix.length > 3 ? 'pl-19' : 'pl-10') : 'pl-3', slots.akhir ? 'pr-12' : 'pr-3']"
+        :style="prefix && lebarAwalan ? { paddingLeft: `calc(${lebarAwalan}px + 1.25rem)` } : undefined"
       />
       <!-- Slot `akhir`: tombol/ikon di sisi kanan isian, mis. tampilkan password atau tanda SKU tersedia. -->
       <div v-if="slots.akhir" class="absolute inset-y-0 right-0 flex items-center pr-1">

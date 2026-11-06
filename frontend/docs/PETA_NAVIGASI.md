@@ -34,6 +34,7 @@ Aturan guard (`router/guard.js`):
 | Kotak pencarian: Enter / tombol cari | `/cari?q=...` |
 | Kotak pencarian: klik saran | halaman saran (produk/kategori/brand) |
 | Menu desktop (xl): `Ruangan`, `Brand`, `Jasa`, `Promo`, `Artikel` | `/ruangan`, `/brand`, `/jasa`, `/promo`, `/artikel` |
+| Ikon keranjang (angka = banyaknya produk di keranjang, 4 Nov 2026) | `/keranjang` |
 | Belum login: `Masuk` | `/masuk?redirect=<halaman sekarang>` |
 | Belum login: `Daftar member` | `/daftar` |
 | Sudah login (member): menu avatar → `Akun saya` / `Riwayat poin` | `/akun` / `/akun/poin` |
@@ -44,7 +45,7 @@ Aturan guard (`router/guard.js`):
 `Katalog` `/katalog` · `Ruangan` `/ruangan` · `Brand` `/brand` · `Jasa` `/jasa` · `Promo` `/promo` · `Artikel` `/artikel` · `Info toko` `/info-toko` · `Buka di Google Maps` (eksternal) · `Chat WhatsApp CS` (WA) · "Ikuti kami": `Instagram` (instagram.com/transhome, tab baru) · `TikTok` (tiktok.com/@transhome_id, tab baru).
 
 ### Tombol WhatsApp melayang
-Desktop saja → WhatsApp CS. Di halaman produk HP digantikan bar harga + WA di bawah layar.
+Desktop saja → WhatsApp CS. Di halaman produk HP digantikan bar harga + keranjang + WA di bawah layar; di `/keranjang` HP digantikan bar total + `Pesan via WhatsApp`.
 
 ---
 
@@ -77,6 +78,7 @@ Urutan section dari atas ke bawah dan tujuan tiap tombol:
 - Toolbar: `Urutkan` (terbaru, harga terendah/tertinggi, nama A-Z) dan toggle `Grid/Daftar` (hanya ubah query/tampilan); `Filter` (HP) buka panel filter.
 - Filter (brand, harga, stok, dll.) + chip filter aktif: hanya ubah query URL, tidak pindah halaman. Paginasi: query `page`.
 - Kartu produk (gambar/nama) → `/produk/:slug`.
+- Tombol keranjang bulat di pojok foto kartu (tampilan Daftar: `Tambah ke keranjang`) → masuk keranjang, tetap di halaman; toast `Lihat keranjang` → `/keranjang`. Stok habis: tombol nonaktif.
 - Kosong/tidak ketemu: `Lihat semua katalog` `/katalog`, atau `Tanya via WhatsApp`.
 
 ### 3.3 Pencarian `/cari?q=`
@@ -90,7 +92,9 @@ Breadcrumb `Beranda` → `Pencarian`. Hasil memakai komponen katalog yang sama (
 | Chip ruangan (produk cocok untuk ruangan) | `/ruangan/:slug` |
 | Galeri foto | buka Lightbox (tetap di halaman) |
 | `Salin SKU`, `Bagikan` (salin link) | aksi di halaman |
-| `Tanya via WhatsApp` / `Tanya ketersediaan` (stok habis) | WhatsApp dengan pesan terisi SKU + link produk |
+| `Tanya via WhatsApp` / `Tanya harga` / `Tanya ketersediaan` (stok habis) | WhatsApp, pesan dari template admin "Pesan per produk" (SKU + nama + link) |
+| Jumlah `−` / `+` + `Tambah ke keranjang` (tidak tampil bila stok habis) | tetap di halaman; toast `Lihat keranjang` → `/keranjang`; "Sudah ada … di keranjang. `Lihat keranjang`" → `/keranjang` |
+| HP: bar bawah harga · ikon keranjang · WhatsApp | tambah ke keranjang / WhatsApp |
 | `Chat tim proyek` (jumlah besar) | WhatsApp |
 | "Butuh pemasangan?" (jasa dari kategori produk ini, bila ada): nama jasa / `Konsultasi jasa` | `/jasa/:slug` / WhatsApp (pesan berisi jasa + SKU produk) |
 | `Unduh datasheet` (jika ada) | PDF eksternal |
@@ -98,6 +102,18 @@ Breadcrumb `Beranda` → `Pencarian`. Hasil memakai komponen katalog yang sama (
 | Produk terkait: kartu | `/produk/:slug` lain |
 | Produk terkait: `Lihat kategori` | `/katalog/:kategori` |
 | Produk tidak ada | `Lihat katalog` `/katalog` |
+
+### 3.4a Keranjang `/keranjang` (4 Nov 2026, KEPUTUSAN #23)
+| Elemen | Tujuan |
+|---|---|
+| Breadcrumb | `Beranda` `/` |
+| Nama / foto produk | `/produk/:slug` |
+| Jumlah `−` / `+` (atau ketik), ikon hapus | tetap di halaman; hapus → toast `Urungkan` |
+| `Tambah produk lain` | `/katalog` |
+| `Kosongkan keranjang` | konfirmasi "Kosongkan keranjang?" → keranjang kosong |
+| `Pesan via WhatsApp` (ringkasan; HP juga di bar bawah) | WhatsApp, pesan dari template admin "Pesan keranjang" berisi semua produk |
+| `Lihat isi pesan` | buka teks pesan di halaman |
+| Keranjang kosong: `Lihat katalog` | `/katalog` |
 
 ### 3.5 Brand
 - `/brand` (daftar brand): breadcrumb `Beranda`; kartu brand → `/brand/:slug`.
@@ -175,6 +191,7 @@ Header halaman menampilkan `grup › judul` dan label role. HP: sidebar jadi dra
 | Katalog | Produk | `/admin/produk` | `product.view` |
 | | Kategori | `/admin/kategori` | `category.view` |
 | | Brand | `/admin/brand` | `brand.view` |
+| | Brand di Beranda | `/admin/brand-beranda` | `brand.view` |
 | | Ruangan | `/admin/ruangan` | `room.view` |
 | Membership | Member | `/admin/member` | `member.view` |
 | | Input poin | `/admin/poin/input` | `point.create` |
@@ -182,6 +199,7 @@ Header halaman menampilkan `grup › judul` dan label role. HP: sidebar jadi dra
 | | Artikel dan promo | `/admin/artikel` | `article.view` |
 | | Jasa | `/admin/jasa` | `service.view` |
 | | Pengaturan toko | `/admin/pengaturan` | `setting.update` |
+| | Template WhatsApp | `/admin/template-whatsapp` | `setting.update` |
 | Sistem | Pengguna admin | `/admin/pengguna` | `user.view` |
 | | Role dan izin | `/admin/role` | `role.view` |
 | | Log aktivitas | `/admin/log-aktivitas` | `log.view` |
@@ -201,7 +219,8 @@ Role contoh: **Super Admin** (semua) · **Admin Katalog** (grup Katalog) · **Ad
 - `/admin/produk` (daftar + filter query): `Tambah produk` → `/admin/produk/baru`; baris `Ubah` → `/admin/produk/:id`; baris/aksi lain → `/admin/produk/:id/pratinjau`.
 - `/admin/produk/baru` & `/admin/produk/:id`: form produk (foto, spesifikasi, ruangan, datasheet, tambah brand cepat via modal). `Simpan`/`Batal` → kembali ke daftar sebelumnya (`/admin/produk` + filter terakhir). Produk tidak ada → `Kembali ke daftar produk`.
 - `/admin/produk/:id/pratinjau`: `Ubah produk` → `/admin/produk/:id`; `Kembali ke daftar produk` → `/admin/produk`.
-- `/admin/kategori`, `/admin/brand`, `/admin/ruangan`: tabel + modal tambah/ubah (tanpa halaman terpisah). Di Ruangan baris: `Lihat produk` → `/admin/produk?room=:id`.
+- `/admin/kategori`, `/admin/brand`, `/admin/ruangan`: tabel + modal tambah/ubah (tanpa halaman terpisah). `/admin/brand` juga punya kolom centang **Lingkaran Beranda** (maks 16, ringkasan "x dari 16 terisi", filter "Hanya yang dicentang"); yang dicentang tampil di lingkaran "Brand pilihan" `/`. Tombol `Atur urutan & pratinjau` → `/admin/brand-beranda`.
+- `/admin/brand-beranda`: pratinjau lingkaran Beranda (Desktop/HP), urutan (↑ ↓, `Lepas`), cari + `Tambah` brand aktif, `Simpan` / `Batalkan perubahan`. Tautan `Katalog › Brand` → `/admin/brand` (unggah logo). Pindah halaman sebelum simpan → "Buang perubahan?". Tanpa izin `brand.update`: hanya lihat. Di Ruangan baris: `Lihat produk` → `/admin/produk?room=:id`.
 
 **Membership**
 - `/admin/member`: tabel + filter; `Input poin` → `/admin/poin/input`; baris `Lihat/Detail` → `/admin/member/:id`.
@@ -215,7 +234,8 @@ Role contoh: **Super Admin** (semua) · **Admin Katalog** (grup Katalog) · **Ad
 - `/admin/artikel/baru` & `/admin/artikel/:id`: simpan pertama kali → pindah ke `/admin/artikel/:id`; `Kembali` → `/admin/artikel`.
 - `/admin/jasa`: `Tambah jasa` → `/admin/jasa/baru`; `Ubah` → `/admin/jasa/:id`; `Lihat` → `/jasa/:slug` (tab baru); urutan ↑ ↓ dan sakelar aktif (konfirmasi saat menonaktifkan) di tabel.
 - `/admin/jasa/baru` & `/admin/jasa/:id`: simpan/batal → `/admin/jasa` (batal dengan perubahan → "Buang perubahan?").
-- `/admin/pengaturan`: alamat, jam buka, nomor WA, rasio poin (tetap di halaman).
+- `/admin/pengaturan`: alamat, jam buka, nomor WA, rasio poin (tetap di halaman). Tautan `Template WhatsApp` → `/admin/template-whatsapp`.
+- `/admin/template-whatsapp`: template pesan per produk, pesan keranjang, dan format baris per produk; tombol sisipkan kode, `Arti setiap kode`, `Kembalikan ke bawaan`, pratinjau (Contoh produk: Biasa / Harga disembunyikan / Stok habis; Pratinjau sebagai: Tamu / Member masuk), `Coba di WhatsApp` (WhatsApp); `Simpan` / `Batalkan perubahan`; tautan `Pengaturan toko` → `/admin/pengaturan`. Pindah halaman sebelum simpan → "Buang perubahan?".
 
 **Sistem**
 - `/admin/pengguna`: tabel, `Tambah admin` (modal), `Ubah role` (modal).
@@ -239,6 +259,7 @@ Role contoh: **Super Admin** (semua) · **Admin Katalog** (grup Katalog) · **Ad
 8. **Admin kelola landing page**: `/admin/banner` + `/admin/artikel` + `/admin/jasa` + logo di `/admin/brand` → tampil di `/`, `/promo`, `/jasa`.
 9. **Pengunjung → jasa → WhatsApp**: `/` atau menu `Jasa` → `/jasa` → `/jasa/:slug` → `Konsultasi via WhatsApp`; atau `/produk/:slug` → "Butuh pemasangan?" → `Konsultasi jasa`.
 10. **Member membuka admin**: `/admin` → `/admin/masuk?redirect=/admin` (pemberitahuan ganti akun) → masuk dengan akun admin → `/admin`.
+11. **Pengunjung → keranjang → WhatsApp**: kartu/detail produk → `Tambah ke keranjang` (ulangi untuk produk lain) → ikon keranjang header `/keranjang` → atur jumlah → `Pesan via WhatsApp`.
 
 ---
 

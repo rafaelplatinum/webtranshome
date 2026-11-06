@@ -1,7 +1,8 @@
 // Rute API tiruan panel admin (Fase 2). Bentuk mengikuti lampiran docs/FRONTEND_BUILD_PLAN.md.
 // TODO: ganti ke API begitu endpoint /admin/* tersedia di backend.
 import { brands, categories, productImages, productRooms, products, rooms } from '@/services/mock/data/catalog'
-import { activityLogs, imageAssets, menus, qontakContacts, syncLogs } from './data/admin'
+import { MAKS_LINGKARAN_BRAND } from '@/utils/brandBeranda'
+import { activityLogs, menus, qontakContacts, syncLogs } from './data/admin'
 import { pointTransactions, users } from '@/services/mock/data/akun'
 import { banners } from '@/services/mock/data/konten'
 import { idBaru, simpanDb } from './db'
@@ -326,9 +327,26 @@ function daftarMaster(jenis) {
   }
 }
 
+// Lingkaran Beranda penuh? Hanya brand aktif yang dihitung (brand nonaktif tidak tampil walau dicentang).
+const lingkaranPenuh = (idSendiri) => brands.filter((b) => b.show_on_home && b.is_active && !sama(b.id, idSendiri)).length >= MAKS_LINGKARAN_BRAND
+const pesanPenuh = `Lingkaran Beranda sudah penuh (maksimal ${MAKS_LINGKARAN_BRAND} brand aktif). Hapus centang brand lain dulu.`
+
+// Urutan lingkaran: nomori ulang 1..n mengikuti home_order lama (yang baru dicentang = null → paling akhir).
+function rapikanUrutanBeranda() {
+  for (const b of brands) if (!b.show_on_home) b.home_order = null
+  brands
+    .filter((b) => b.show_on_home)
+    .sort((a, b) => (a.home_order ?? Infinity) - (b.home_order ?? Infinity) || a.id - b.id)
+    .forEach((b, i) => (b.home_order = i + 1))
+}
+
 function validasiMaster(jenis, body, idSendiri = null) {
   const m = MASTER[jenis]
   const errors = {}
+  if (jenis === 'brands' && body.show_on_home === true && body.is_active !== false && lingkaranPenuh(idSendiri)) {
+    const lama = brands.find((b) => sama(b.id, idSendiri))
+    if (!lama?.show_on_home || !lama.is_active) errors.show_on_home = [pesanPenuh]
+  }
   if (kosong(body.name)) errors.name = ['Nama wajib diisi']
   if (kosong(body.slug)) errors.slug = ['Slug wajib diisi']
   else if (!POLA_SLUG.test(body.slug)) errors.slug = ['Slug hanya boleh huruf kecil, angka, dan tanda hubung']
@@ -350,6 +368,7 @@ function kolomMaster(jenis, body) {
   const m = MASTER[jenis]
   const kolom = { name: body.name.trim(), slug: body.slug, [m.gambar]: body[m.gambar] || null, is_active: body.is_active !== false, updated_at: sekarang() }
   if (jenis === 'categories') kolom.parent_id = kosong(body.parent_id) ? null : Number(body.parent_id)
+  if (jenis === 'brands') kolom.show_on_home = body.show_on_home === true
   return kolom
 }
 
@@ -366,6 +385,7 @@ function buatMaster(jenis) {
       baris.sort_order = saudara.reduce((maks, x) => Math.max(maks, x.sort_order), 0) + 1
     }
     m.tabel.push(baris)
+    if (jenis === 'brands') rapikanUrutanBeranda()
     catat(u, `${m.izin}.create`, m.modul, { sesudah: { name: baris.name, slug: baris.slug, is_active: baris.is_active } })
     simpanDb()
     return { status: 201, data: { data: { ...baris, product_count: 0 } } }
@@ -383,6 +403,7 @@ function ubahMaster(jenis) {
     if (salah) return salah
     const lama = { ...baris }
     Object.assign(baris, kolomMaster(jenis, body))
+    if (jenis === 'brands') rapikanUrutanBeranda()
     catat(u, `${m.izin}.update`, m.modul, perubahan(lama, baris, ['name']))
     simpanDb()
     return { data: { data: { ...baris, product_count: jumlahProduk(jenis, baris) } } }
@@ -397,13 +418,50 @@ function patchMaster(jenis) {
     const baris = m.tabel.find((x) => sama(x.id, params.id))
     if (!baris) return tidakDitemukan(`${m.label} tidak ditemukan.`)
     const lama = { ...baris }
+    // Mencentang lingkaran Beranda atau mengaktifkan brand yang sudah dicentang tidak boleh melebihi batas.
+    const tambahLingkaran = jenis === 'brands' && ((body.show_on_home === true && !baris.show_on_home && baris.is_active)
+      || (body.is_active === true && !baris.is_active && baris.show_on_home))
+    if (tambahLingkaran && lingkaranPenuh(baris.id)) return galatIsian({ show_on_home: [pesanPenuh] })
     if ('is_active' in body) baris.is_active = Boolean(body.is_active)
+    if (jenis === 'brands' && 'show_on_home' in body) {
+      baris.show_on_home = Boolean(body.show_on_home)
+      rapikanUrutanBeranda()
+    }
     if (m.urut && 'sort_order' in body) baris.sort_order = Number(body.sort_order)
     baris.updated_at = sekarang()
     catat(u, `${m.izin}.update`, m.modul, perubahan(lama, baris, ['name']))
     simpanDb()
     return { data: { data: { ...baris, product_count: jumlahProduk(jenis, baris) } } }
   }
+}
+
+// Halaman admin "Brand di Beranda": simpan sekaligus daftar brand lingkaran beserta urutannya (KEPUTUSAN #21).
+// Body { brand_ids: [id berurutan] } → show_on_home & home_order 1..n; brand lain dilepas. Maks 16, hanya brand aktif.
+function aturBrandBeranda({ headers, body }) {
+  const { u, gagal } = cekAdmin(headers, 'brand.update')
+  if (gagal) return gagal
+  const ids = body?.brand_ids
+  if (!Array.isArray(ids)) return galatIsian({ brand_ids: ['Daftar brand tidak valid'] })
+  const unik = [...new Set(ids.map(Number))]
+  if (unik.length !== ids.length) return galatIsian({ brand_ids: ['Ada brand yang dobel'] })
+  if (unik.length > MAKS_LINGKARAN_BRAND) return galatIsian({ brand_ids: [`Maksimal ${MAKS_LINGKARAN_BRAND} brand di lingkaran Beranda`] })
+  const pilih = unik.map((id) => brands.find((b) => b.id === id))
+  if (pilih.some((b) => !b)) return galatIsian({ brand_ids: ['Ada brand yang tidak ditemukan'] })
+  if (pilih.some((b) => !b.is_active)) return galatIsian({ brand_ids: ['Brand nonaktif tidak bisa ditampilkan di Beranda'] })
+  const urutLama = () => brands.filter((b) => b.show_on_home).sort((a, b) => (a.home_order ?? Infinity) - (b.home_order ?? Infinity)).map((b) => b.name)
+  const sebelum = urutLama()
+  for (const b of brands) {
+    b.show_on_home = false
+    b.home_order = null
+  }
+  pilih.forEach((b, i) => {
+    b.show_on_home = true
+    b.home_order = i + 1
+    b.updated_at = sekarang()
+  })
+  catat(u, 'brand.update', 'Brand', { sebelum: { lingkaran_beranda: sebelum }, sesudah: { lingkaran_beranda: urutLama() } })
+  simpanDb()
+  return daftarMaster('brands')({ headers })
 }
 
 // Hapus permanen hanya brand nonaktif yang tidak dipakai produk mana pun (aktif maupun nonaktif).
@@ -450,88 +508,6 @@ async function unggah({ headers, body }) {
   return { status: 201, data: { data: { url, name: file.name, size: file.size, type: file.type } } }
 }
 
-// ---------- pengelolaan aset gambar (mode mock lokal) ----------
-
-const SLOT_GAMBAR = new Set([
-  'home.hero', 'home.promo_banner', 'home.side_banner', 'category.tile', 'product.main', 'product.gallery',
-  'brand.logo', 'room.cover', 'service.cover', 'article.cover', 'promo.cover', 'event.cover',
-  'store.front', 'store.map', 'site.logo', 'site.favicon', 'site.og_image',
-])
-
-function daftarAsetGambar({ headers, query }) {
-  const { gagal } = cekAdmin(headers, 'image.manage')
-  if (gagal) return gagal
-  const data = [...imageAssets]
-    .filter((asset) => !query.slot_key || asset.slot_key === query.slot_key)
-    .sort((a, b) => a.slot_key.localeCompare(b.slot_key) || a.sort_order - b.sort_order || a.id - b.id)
-  return { data: { data } }
-}
-
-async function buatAsetGambar({ headers, body }) {
-  const { u, gagal } = cekAdmin(headers, 'image.manage')
-  if (gagal) return gagal
-  const file = body?.get?.('file')
-  const slotKey = String(body?.get?.('slot_key') ?? '')
-  const altText = String(body?.get?.('alt_text') ?? '').trim()
-  if (!SLOT_GAMBAR.has(slotKey)) return galatIsian({ slot_key: ['Slot gambar tidak dikenal'] })
-  if (!file || !['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 2 * 1024 * 1024) {
-    return galatIsian({ file: ['Pilih gambar JPG, PNG, atau WebP maksimal 2 MB'] })
-  }
-  if (!altText || altText.length > 255) return galatIsian({ alt_text: ['Teks alternatif wajib diisi (maksimal 255 karakter)'] })
-  const imageUrl = await new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => resolve(reader.result)
-    reader.onerror = reject
-    reader.readAsDataURL(file)
-  })
-  const sortOrder = imageAssets.filter((asset) => asset.slot_key === slotKey).reduce((max, asset) => Math.max(max, asset.sort_order), 0) + 1
-  const now = sekarang()
-  const asset = {
-    id: idBaru(imageAssets), slot_key: slotKey, owner_type: null, owner_id: null,
-    file_path: imageUrl, image_url: imageUrl, alt_text: altText, sort_order: sortOrder, is_active: true,
-    mime: file.type, size: file.size, width: null, height: null, is_dummy: false,
-    created_by: u.id, created_at: now, updated_at: now,
-  }
-  imageAssets.push(asset)
-  catat(u, 'image.create', 'Pengelolaan gambar', { sesudah: { slot_key: slotKey, alt_text: altText, size: file.size } })
-  simpanDb()
-  return { status: 201, data: { data: asset } }
-}
-
-function ubahAsetGambar({ headers, params, body }) {
-  const { u, gagal } = cekAdmin(headers, 'image.manage')
-  if (gagal) return gagal
-  const asset = imageAssets.find((item) => sama(item.id, params.id))
-  if (!asset) return tidakDitemukan('Gambar tidak ditemukan.')
-  const sebelum = { alt_text: asset.alt_text, sort_order: asset.sort_order, is_active: asset.is_active }
-  if (body.alt_text !== undefined) {
-    const alt = String(body.alt_text).trim()
-    if (!alt || alt.length > 255) return galatIsian({ alt_text: ['Teks alternatif wajib diisi (maksimal 255 karakter)'] })
-    asset.alt_text = alt
-  }
-  if (body.sort_order !== undefined) {
-    const order = Number(body.sort_order)
-    if (!Number.isInteger(order) || order < 1) return galatIsian({ sort_order: ['Urutan harus bilangan bulat positif'] })
-    asset.sort_order = order
-  }
-  if (body.is_active !== undefined) asset.is_active = Boolean(body.is_active)
-  asset.updated_at = sekarang()
-  catat(u, 'image.update', 'Pengelolaan gambar', { sebelum, sesudah: { alt_text: asset.alt_text, sort_order: asset.sort_order, is_active: asset.is_active } })
-  simpanDb()
-  return { data: { data: asset } }
-}
-
-function hapusAsetGambar({ headers, params }) {
-  const { u, gagal } = cekAdmin(headers, 'image.manage')
-  if (gagal) return gagal
-  const index = imageAssets.findIndex((item) => sama(item.id, params.id))
-  if (index < 0) return tidakDitemukan('Gambar tidak ditemukan.')
-  const [asset] = imageAssets.splice(index, 1)
-  catat(u, 'image.delete', 'Pengelolaan gambar', { sebelum: { slot_key: asset.slot_key, alt_text: asset.alt_text } })
-  simpanDb()
-  return { data: { message: 'Gambar dihapus.' } }
-}
-
 // ---------- sync Qontak ----------
 
 export function bentukKontak(c) {
@@ -571,6 +547,8 @@ export const ruteAdmin = [
   ['get', '/admin/products/:id', produkAdmin],
   ['put', '/admin/products/:id', ubahProduk],
   ['patch', '/admin/products/:id', patchProduk],
+  // Sebelum PUT /admin/brands/:id supaya "home" tidak terbaca sebagai id.
+  ['put', '/admin/brands/home', aturBrandBeranda],
   ...Object.keys(MASTER).flatMap((jenis) => [
     ['get', `/admin/${jenis}`, daftarMaster(jenis)],
     ['post', `/admin/${jenis}`, buatMaster(jenis)],
@@ -579,10 +557,6 @@ export const ruteAdmin = [
   ]),
   ['delete', '/admin/brands/:id', hapusBrand],
   ['post', '/admin/uploads', unggah],
-  ['get', '/admin/image-assets', daftarAsetGambar],
-  ['post', '/admin/image-assets', buatAsetGambar],
-  ['patch', '/admin/image-assets/:id', ubahAsetGambar],
-  ['delete', '/admin/image-assets/:id', hapusAsetGambar],
   ['post', '/admin/qontak/contacts/:id/retry', ulangSync],
   ['get', '/admin/qontak/contacts/:id', detailKontak],
 ]

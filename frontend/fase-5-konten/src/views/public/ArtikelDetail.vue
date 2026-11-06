@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { Eye } from 'lucide-vue-next'
 import Breadcrumb from '@/components/ui/Breadcrumb.vue'
 import ErrorState from '@/components/ui/ErrorState.vue'
@@ -13,7 +13,7 @@ import { useSeo } from '@/composables/useSeo'
 import { useWhatsApp } from '@/composables/useWhatsApp'
 import { getArticle } from '@/services/kontenService'
 import { pesanError } from '@/services/errors'
-import { TIPE_ARTIKEL, daftarAsal } from '@/utils/artikel'
+import { TIPE_ARTIKEL, daftarAsal, tautanArtikel } from '@/utils/artikel'
 import { formatTanggal } from '@/utils/format'
 
 const AJAKAN = {
@@ -23,6 +23,7 @@ const AJAKAN = {
 }
 
 const route = useRoute()
+const router = useRouter()
 const { kontenLink } = useWhatsApp()
 
 const status = ref('loading') // loading | ready | tidak-ada | error
@@ -36,6 +37,12 @@ async function muat() {
   status.value = 'loading'
   try {
     artikel.value = await getArticle(route.params.slug, route.query.preview, { signal: pengendali.signal })
+    // Alamat mengikuti tipe: tautan lama (mis. /artikel/<slug promo>) dipindah ke alamat yang benar.
+    const alamat = tautanArtikel(artikel.value)
+    if (route.path !== alamat) {
+      router.replace({ path: alamat, query: route.query, hash: route.hash })
+      return
+    }
     status.value = 'ready'
   } catch (error) {
     if (error?.code === 'ERR_CANCELED') return
@@ -75,6 +82,7 @@ useSeo({
     return status.value === 'ready' ? artikel.value.title : null
   },
   description: () => (status.value === 'ready' ? artikel.value.excerpt : null),
+  canonical: () => (status.value === 'ready' ? tautanArtikel(artikel.value) : null),
 })
 </script>
 
@@ -136,7 +144,7 @@ useSeo({
             <h2 id="judul-tanya-konten" class="text-lg font-bold">{{ ajakan.judul }}</h2>
             <p class="text-muted">{{ ajakan.isi }}</p>
           </div>
-          <WhatsAppButton class="self-start sm:self-auto" :context="kontenLink(artikel)" />
+          <WhatsAppButton class="self-start sm:self-auto" :href="kontenLink(artikel)" />
         </aside>
       </article>
       <ArtikelLainnya v-if="!halamanTetap" :key="artikel.id" class="mt-12" :artikel="artikel" />

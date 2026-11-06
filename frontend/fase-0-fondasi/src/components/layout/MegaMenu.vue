@@ -9,11 +9,12 @@ import Skeleton from '@/components/ui/Skeleton.vue'
 // Tautan tambahan yang di HP tidak muat di header.
 const NAVIGASI_HP = [
   { label: 'Ruangan', to: '/ruangan' },
-  { label: 'Brand', to: '/brand' },
   { label: 'Jasa', to: '/jasa' },
   { label: 'Promo', to: '/promo' },
   { label: 'Artikel', to: '/artikel' },
+  { label: 'Membership', to: '/membership' },
   { label: 'Tentang Kami', to: '/info-toko' },
+  { label: 'Keranjang belanja', to: '/keranjang' },
 ]
 
 const route = useRoute()
@@ -71,7 +72,7 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', klikDiLuar))
       type="button"
       :aria-expanded="terbuka ? 'true' : 'false'"
       :aria-controls="idPanel"
-      class="inline-flex h-11 items-center gap-2 rounded-md border border-border-strong bg-background px-3.5 text-sm font-semibold transition-colors duration-150 hover:border-foreground hover:bg-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:px-4"
+      class="inline-flex h-11 items-center gap-2 rounded-md border border-foreground bg-surface px-3.5 text-sm font-semibold transition-colors duration-150 hover:bg-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:px-4"
       @click="terbuka ? tutup() : buka()"
     >
       <Menu class="size-4.5" aria-hidden="true" />

@@ -5,10 +5,12 @@ import Button from '@/components/ui/Button.vue'
 import TombolGoogle from '@/components/akun/TombolGoogle.vue'
 import WhatsAppButton from '@/components/layout/WhatsAppButton.vue'
 import { useSeo } from '@/composables/useSeo'
+import { useWhatsApp } from '@/composables/useWhatsApp'
 import { useSettingsStore } from '@/stores/settings'
 import { formatRupiah } from '@/utils/format'
 
 const settings = useSettingsStore()
+const { generalLink } = useWhatsApp()
 const rasio = computed(() => {
   const nilai = settings.data?.point_ratio_rupiah
   return nilai ? `Rasio poin saat ini: 1 poin tiap belanja ${formatRupiah(nilai)} di toko.` : 'Poin tercatat berdasarkan total belanja di toko.'
@@ -46,7 +48,7 @@ useSeo({ title: 'Trans Family', description: 'Kenali program Trans Family dan da
         </div>
         <div class="relative mx-auto flex h-64 w-full max-w-lg items-center justify-center sm:h-80" aria-hidden="true">
           <div class="absolute h-[72%] w-[90%] rotate-[-8deg] rounded-[24px] bg-th-yellow"></div>
-          <div class="relative flex h-[72%] w-[90%] rotate-[3deg] flex-col justify-between rounded-[24px] border border-white/10 bg-[#243b53] p-6 shadow-2xl sm:p-8">
+          <div class="relative flex h-[72%] w-[90%] rotate-[3deg] flex-col justify-between rounded-[24px] border border-white/10 bg-secondary-hover p-6 shadow-2xl sm:p-8">
             <div class="flex items-center justify-between"><strong class="text-lg">Trans Family</strong><span class="rounded-full bg-th-yellow px-3 py-1 text-[13px] font-extrabold text-th-navy">Member</span></div>
             <div class="flex items-end justify-between gap-4"><span class="h-3 w-2/3 rounded bg-white/15"></span><span class="h-3 w-1/4 rounded bg-white/10"></span></div>
             <div class="flex items-center gap-3"><span class="grid size-10 place-items-center rounded-full bg-th-yellow text-th-navy"><Check class="size-5" /></span><span class="font-semibold text-white/80">Kode member digital</span></div>
@@ -86,7 +88,7 @@ useSeo({ title: 'Trans Family', description: 'Kenali program Trans Family dan da
     </section>
 
     <section class="th-container grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16" aria-labelledby="judul-faq-member">
-      <div class="flex flex-col items-start gap-4"><span class="th-eyebrow">Pertanyaan umum</span><h2 id="judul-faq-member" class="text-3xl leading-tight font-extrabold tracking-tight sm:text-4xl">Masih ada yang ingin ditanyakan?</h2><WhatsAppButton class="mt-2" :context="{ topic: 'Lainnya', message: 'Saya ingin bertanya tentang Trans Family.' }" label="Tanya via WhatsApp" /></div>
+      <div class="flex flex-col items-start gap-4"><span class="th-eyebrow">Pertanyaan umum</span><h2 id="judul-faq-member" class="text-3xl leading-tight font-extrabold tracking-tight sm:text-4xl">Masih ada yang ingin ditanyakan?</h2><WhatsAppButton :href="generalLink()" class="mt-2" label="Tanya via WhatsApp" /></div>
       <div class="flex flex-col gap-3"><details v-for="item in FAQ" :key="item.tanya" class="th-card group p-5 sm:p-6"><summary class="flex cursor-pointer list-none items-center justify-between gap-4 text-base font-extrabold"><span>{{ item.tanya }}</span><CircleHelp class="size-5 shrink-0 text-th-orange" aria-hidden="true" /></summary><p class="mt-3 text-base leading-relaxed text-th-muted">{{ item.jawab }}</p></details></div>
     </section>
   </main>

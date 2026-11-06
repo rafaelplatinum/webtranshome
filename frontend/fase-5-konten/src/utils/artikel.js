@@ -32,8 +32,13 @@ export function blokIsi(isi) {
     .flatMap(satuBlok)
 }
 
-/** Alamat publik artikel; token pratinjau hanya untuk draf (dibuka dari panel admin). */
-export const tautanArtikel = (slug, token = null) => `/artikel/${slug}${token ? `?preview=${encodeURIComponent(token)}` : ''}`
+// Tipe menentukan awalan alamat publik (permintaan pemilik 6 Nov 2026): /artikel, /promo, /event, /halaman.
+export const AWALAN_TIPE = { ARTIKEL: 'artikel', PROMO: 'promo', EVENT: 'event', HALAMAN: 'halaman' }
+export const awalanArtikel = (tipe) => `/${AWALAN_TIPE[tipe] ?? 'artikel'}/`
+
+/** Alamat publik artikel menurut tipenya; token pratinjau hanya untuk draf (dibuka dari panel admin). */
+export const tautanArtikel = (artikel, token = null) =>
+  `${awalanArtikel(artikel?.type)}${artikel?.slug ?? ''}${token ? `?preview=${encodeURIComponent(token)}` : ''}`
 
 /** Halaman daftar asal sebuah artikel: promo & event di /promo, sisanya di /artikel. */
 export const daftarAsal = (tipe) => (tipe === 'PROMO' || tipe === 'EVENT' ? { label: 'Promo dan event', to: '/promo' } : { label: 'Artikel', to: '/artikel' })

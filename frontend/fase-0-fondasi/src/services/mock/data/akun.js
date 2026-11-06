@@ -1,6 +1,6 @@
 // Data contoh akun, poin, dan pengaturan toko. Kolom mengikuti docs/transhome_postgres.sql. TODO: ganti ke API.
 // Akun contoh HANYA untuk mode mock (VITE_USE_MOCK=true). Semua password: rahasia123.
-import backup from './backup.json'
+import { TEMPLATE_BAWAAN } from '@/utils/templateWhatsApp'
 
 export const MOCK_PASSWORD = 'rahasia123'
 
@@ -76,7 +76,7 @@ const izinKonten = [
 
 // Usulan pemetaan role → izin (lampiran docs/FRONTEND_BUILD_PLAN.md). Backend yang menentukan versi final.
 export const rolePermissions = {
-  SUPER_ADMIN: [...izinKatalog, 'brand.delete', ...izinMembership, 'point.adjust', ...izinKonten, 'image.manage', 'setting.point_ratio', 'user.view', 'user.create', 'user.update', 'role.view', 'role.update', 'log.view'],
+  SUPER_ADMIN: [...izinKatalog, 'brand.delete', ...izinMembership, 'point.adjust', ...izinKonten, 'setting.point_ratio', 'user.view', 'user.create', 'user.update', 'role.view', 'role.update', 'log.view'],
   ADMIN_KATALOG: [...izinKatalog, 'brand.delete'],
   ADMIN_MEMBERSHIP: izinMembership,
   ADMIN_KONTEN: izinKonten,
@@ -129,25 +129,16 @@ export const pointTransactions = [
 export const emailKeluar = []
 export const tokenVerifikasi = []
 export const tokenReset = []
-// Hanya tersedia di server mock lokal untuk membantu QA menguji OTP tanpa gateway sungguhan.
-export const otpKeluar = []
 
-// Pengaturan situs publik diambil dari snapshot database. WhatsApp tetap baca saja di panel admin.
-const idBrandPilihan = (() => {
-  try {
-    const nilai = backup.site_settings.home_featured_brand_ids
-    const parsed = typeof nilai === 'string' ? JSON.parse(nilai) : nilai
-    return Array.isArray(parsed) ? parsed.map(Number).filter(Number.isFinite) : null
-  } catch {
-    return null
-  }
-})()
-
+// site_settings yang boleh dibaca publik. Nomor WhatsApp di sini nomor contoh, bukan nomor toko.
+// Template pesan WhatsApp (KEPUTUSAN #23) diubah di admin › Konten › Template WhatsApp; isi awal = bawaan.
 export const publicSettings = {
-  wa_number: backup.site_settings.wa_number || '087708777989',
-  address: backup.site_settings.address || 'Jl. Raya Solo–Yogyakarta Km 11, Berbah, Sleman',
-  opening_hours: backup.site_settings.opening_hours || 'Senin–Sabtu, 08.00–17.00',
-  maps_url: backup.site_settings.maps_url || 'https://www.google.com/maps/search/?api=1&query=Transhome+Berbah+Sleman',
-  point_ratio_rupiah: Number(backup.site_settings.point_ratio_rupiah || 1000000),
-  home_featured_brand_ids: idBrandPilihan,
+  wa_number: '6287708777989', // nomor WhatsApp toko (0877 0877 7989, config/contact.js)
+  address: 'Jl. Raya Solo–Yogyakarta Km 11, Berbah, Sleman',
+  opening_hours: 'Senin–Sabtu, 08.00–17.00',
+  maps_url: 'https://www.google.com/maps/search/?api=1&query=Transhome+Berbah+Sleman',
+  point_ratio_rupiah: 1000000,
+  wa_template_product: TEMPLATE_BAWAAN.produk,
+  wa_template_cart: TEMPLATE_BAWAAN.keranjang,
+  wa_template_cart_item: TEMPLATE_BAWAAN.baris,
 }

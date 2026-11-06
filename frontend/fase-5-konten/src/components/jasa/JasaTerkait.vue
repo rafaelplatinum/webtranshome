@@ -47,7 +47,7 @@ watch(
           <span class="text-sm text-muted">{{ j.summary }}</span>
           <span class="text-sm font-semibold text-success-ink">{{ LABEL_HARGA_JASA }}</span>
         </div>
-        <WhatsAppButton class="shrink-0" :context="jasaLink(j, produk)" label="Konsultasi jasa" />
+        <WhatsAppButton class="shrink-0" :href="jasaLink(j, produk)" label="Konsultasi jasa" />
       </li>
     </ul>
   </section>

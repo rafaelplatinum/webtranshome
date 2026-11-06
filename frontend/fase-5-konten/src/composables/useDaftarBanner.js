@@ -65,8 +65,7 @@ export function useDaftarBanner() {
     try {
       ganti(baris, await patchBanner(baris.id, { is_active: false }))
       konfirmasi.value = null
-      const lokasi = baris.position === 'ABOUT_HERO' ? 'halaman Tentang Kami' : 'Beranda'
-      ui.tampilkanToast({ pesan: `Banner “${baris.title}” tidak tampil lagi di ${lokasi}.`, jenis: 'success' })
+      ui.tampilkanToast({ pesan: `Banner “${baris.title}” tidak tampil lagi di Beranda.`, jenis: 'success' })
     } catch (error) {
       ui.tampilkanToast({ pesan: pesanError(error), jenis: 'danger' })
     } finally {

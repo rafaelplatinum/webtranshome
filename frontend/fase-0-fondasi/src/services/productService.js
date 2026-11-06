@@ -2,7 +2,7 @@ import http from './http'
 
 /**
  * Daftar produk aktif. Parameter: q, category (slug), brand / stock / room (dipisah koma),
- * attr[kunci] (dipisah koma), min, max, exclude, featured,
+ * attr[kunci] (dipisah koma), min, max, exclude, featured, ids (dipisah koma; keranjang memperbarui harga & stok),
  * sort (terbaru | harga_terendah | harga_tertinggi | nama), page, per_page.
  * Hasil: { data: [...], meta: { page, per_page, total, total_pages, facets } }.
  */

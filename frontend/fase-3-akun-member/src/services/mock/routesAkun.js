@@ -1,7 +1,7 @@
 // Rute API tiruan untuk akun (Fase 3): masuk, daftar, verifikasi email, lupa/reset password, Google, dan /me.
 // TODO: ganti ke API begitu endpoint /auth/* dan /me/* tersedia di backend.
 import { normalisasiNomorHp } from '@/utils/format'
-import { MOCK_PASSWORD, emailKeluar, otpKeluar, pointTransactions, tokenReset, tokenVerifikasi, users } from '@/services/mock/data/akun'
+import { MOCK_PASSWORD, emailKeluar, pointTransactions, tokenReset, tokenVerifikasi, users } from '@/services/mock/data/akun'
 import { qontakContacts } from '@/services/mock/data/admin'
 import { idBaru, simpanDb } from '@/services/mock/db'
 import { antrekan } from '@/services/mock/antreanQontak'
@@ -14,10 +14,6 @@ const galatIsian = (errors) => ({ status: 422, data: { message: 'Periksa kembali
 const tokenTidakValid = (pesan) => ({ status: 422, data: { message: pesan, code: 'TOKEN_TIDAK_VALID' } })
 const cariEmail = (email) => users.find((u) => huruf(u.email) === huruf(email))
 const tokenAcak = () => [...crypto.getRandomValues(new Uint8Array(16))].map((b) => b.toString(16).padStart(2, '0')).join('')
-const tokenKuat = () => [...crypto.getRandomValues(new Uint8Array(32))].map((b) => b.toString(16).padStart(2, '0')).join('')
-const otpPassword = []
-const tokenResetOtp = []
-const hashTeks = async (value) => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value)))].map((b) => b.toString(16).padStart(2, '0')).join('')
 
 // Password akun baru disimpan sebagai hash (bukan teks asli), meski hanya mock.
 export async function hashPassword(teks) {
@@ -150,89 +146,6 @@ async function resetPassword({ body }) {
   return { data: { message: 'Password diperbarui.' } }
 }
 
-function normalTujuanOtp(channel, raw) {
-  if (channel === 'email') return huruf(raw)
-  if (channel === 'whatsapp') return normalisasiNomorHp(raw)
-  return ''
-}
-
-function lupaPasswordOtp({ body }) {
-  const channel = body.channel
-  const destination = normalTujuanOtp(channel, String(body.destination ?? ''))
-  if (!destination) return galatIsian({ destination: ['Alamat email atau nomor WhatsApp belum benar'] })
-  const u = users.find((x) => x.is_active && (channel === 'email' ? huruf(x.email) === destination && x.email_verified_at : x.phone_number === destination && x.phone_verified_at))
-  const now = Date.now()
-  otpPassword.filter((x) => x.destination === destination && x.channel === channel && !x.used_at).forEach((x) => { x.used_at = sekarang() })
-  if (u) {
-    const code = String(crypto.getRandomValues(new Uint32Array(1))[0] % 1000000).padStart(6, '0')
-    otpPassword.push({ channel, destination, user_id: u.id, code, attempts: 0, created_at: now, expires_at: now + 5 * 60 * 1000, used_at: null })
-    otpKeluar.unshift({ id: idBaru(otpKeluar), channel, to: destination, code, created_at: sekarang(), expires_at: now + 5 * 60 * 1000 })
-  } else otpPassword.push({ channel, destination, user_id: null, code: '', attempts: 0, created_at: now, expires_at: now + 5 * 60 * 1000, used_at: null })
-  return { data: { message: 'Jika data terdaftar, kode verifikasi sudah dikirim.' } }
-}
-
-async function verifikasiPasswordOtp({ body }) {
-  const channel = body.channel
-  const destination = normalTujuanOtp(channel, String(body.destination ?? ''))
-  const code = String(body.code ?? '')
-  const challenge = otpPassword.filter((x) => x.destination === destination && x.channel === channel && !x.purpose).at(-1)
-  if (!challenge || !/^\d{6}$/.test(code) || !challenge.user_id || challenge.used_at || challenge.expires_at <= Date.now() || challenge.attempts >= 5) {
-    return { status: 422, data: { message: 'Kode tidak valid atau sudah kedaluwarsa.' } }
-  }
-  if (code !== challenge.code) {
-    challenge.attempts += 1
-    if (challenge.attempts >= 5) challenge.used_at = sekarang()
-    return { status: 422, data: { message: 'Kode tidak valid atau sudah kedaluwarsa.' } }
-  }
-  challenge.used_at = sekarang()
-  const token = tokenKuat()
-  tokenResetOtp.push({ token_hash: await hashTeks(token), user_id: challenge.user_id, expires_at: Date.now() + 10 * 60 * 1000, used_at: null })
-  return { data: { data: { reset_token: token } } }
-}
-
-async function resetPasswordOtp({ body }) {
-  const tokenHash = await hashTeks(String(body.token ?? ''))
-  const record = tokenResetOtp.find((x) => x.token_hash === tokenHash && !x.used_at && x.expires_at > Date.now())
-  if (!record) return tokenTidakValid('TOKEN_TIDAK_VALID')
-  const password = String(body.password ?? '')
-  if (password.length < 8 || password.length > 72) return galatIsian({ password: ['Password minimal 8 karakter'] })
-  const u = users.find((x) => x.id === record.user_id)
-  if (!u || !u.is_active) return tokenTidakValid('TOKEN_TIDAK_VALID')
-  u.password_hash = await hashPassword(password)
-  u.email_verified_at ??= sekarang()
-  u.auth_version = (u.auth_version ?? 0) + 1
-  record.used_at = sekarang()
-  simpanDb()
-  return { data: { message: 'Password diperbarui.' } }
-}
-
-function mintaOtpHp({ headers }) {
-  const u = penggunaDariToken(headers)
-  if (!u) return belumMasuk
-  if (!u.phone_number) return { status: 422, data: { message: 'Tambahkan nomor WhatsApp valid terlebih dahulu.' } }
-  otpPassword.filter((x) => x.destination === u.phone_number && x.channel === 'whatsapp' && x.purpose === 'phone_verify' && !x.used_at).forEach((x) => { x.used_at = sekarang() })
-  const code = String(crypto.getRandomValues(new Uint32Array(1))[0] % 1000000).padStart(6, '0')
-  otpPassword.push({ channel: 'whatsapp', destination: u.phone_number, user_id: u.id, purpose: 'phone_verify', code, attempts: 0, created_at: Date.now(), expires_at: Date.now() + 5 * 60 * 1000, used_at: null })
-  otpKeluar.unshift({ id: idBaru(otpKeluar), channel: 'whatsapp', to: u.phone_number, code, created_at: sekarang(), expires_at: Date.now() + 5 * 60 * 1000 })
-  return { data: { message: 'Jika nomor valid, kode verifikasi sudah dikirim.' } }
-}
-
-function verifikasiOtpHp({ headers, body }) {
-  const u = penggunaDariToken(headers)
-  if (!u) return belumMasuk
-  const challenge = otpPassword.filter((x) => x.destination === u.phone_number && x.channel === 'whatsapp' && x.purpose === 'phone_verify').at(-1)
-  if (!challenge || challenge.used_at || challenge.expires_at <= Date.now() || challenge.attempts >= 5) return { status: 422, data: { message: 'Kode tidak valid atau sudah kedaluwarsa.' } }
-  if (String(body.code ?? '') !== challenge.code) {
-    challenge.attempts += 1
-    if (challenge.attempts >= 5) challenge.used_at = sekarang()
-    return { status: 422, data: { message: 'Kode tidak valid atau sudah kedaluwarsa.' } }
-  }
-  challenge.used_at = sekarang()
-  u.phone_verified_at = sekarang()
-  simpanDb()
-  return { data: { message: 'Nomor WhatsApp terverifikasi.' } }
-}
-
 // ---------- Google (khusus mode mock) ----------
 // API asli: GET /auth/google/redirect → OAuth → kembali ke return_to#token=… (lihat lampiran rencana build).
 
@@ -274,7 +187,6 @@ function ubahProfil({ headers, body }) {
     return { status: 409, data: { message: 'Nomor HP sudah dipakai akun lain.', errors: { phone_number: ['Nomor HP sudah dipakai akun lain'] } } }
   }
   u.profile = { ...u.profile, full_name: nama }
-  if (u.phone_number !== hp) u.phone_verified_at = null
   u.phone_number = hp
   simpanDb()
   return { data: { data: { user: profilPengguna(u) } } }
@@ -326,7 +238,6 @@ function poinSaya({ headers, query }) {
 function emailTiruan() {
   return { data: { data: emailKeluar.slice(0, 30) } }
 }
-function otpTiruan() { return { data: { data: otpKeluar.slice(0, 30) } } }
 
 export const ruteAkun = [
   ['post', '/auth/login', (req) => masuk(req)],
@@ -336,18 +247,12 @@ export const ruteAkun = [
   ['post', '/auth/email/resend', kirimUlangVerifikasi],
   ['post', '/auth/email/verify', verifikasiEmail],
   ['post', '/auth/forgot-password', lupaPassword],
-  ['post', '/auth/password/forgot', lupaPasswordOtp],
-  ['post', '/auth/password/verify-otp', verifikasiPasswordOtp],
-  ['post', '/auth/password/reset', resetPasswordOtp],
   ['post', '/auth/reset-password', resetPassword],
   ['post', '/auth/google/mock', googleMock],
   ['get', '/me', profilSaya],
   ['patch', '/me', ubahProfil],
   ['patch', '/me/consent', ubahPersetujuan],
   ['post', '/me/password', ubahPassword],
-  ['post', '/member/phone/request-otp', mintaOtpHp],
-  ['post', '/member/phone/verify', verifikasiOtpHp],
   ['get', '/me/points', poinSaya],
   ['get', '/dev/emails', emailTiruan],
-  ['get', '/dev/otps', otpTiruan],
 ]

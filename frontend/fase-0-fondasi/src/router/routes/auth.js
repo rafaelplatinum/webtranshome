@@ -16,7 +16,6 @@ export default [
   halaman('/masuk', 'masuk', 'Masuk', () => import('@/views/auth/Masuk.vue')),
   halaman('/daftar', 'daftar', 'Daftar member', () => import('@/views/auth/Daftar.vue')),
   halaman('/lupa-password', 'lupa-password', 'Lupa password', () => import('@/views/auth/LupaPassword.vue')),
-  halaman('/lupa-password/verifikasi', 'lupa-password-verifikasi', 'Verifikasi kode', () => import('@/views/auth/VerifikasiPassword.vue')),
   halaman('/verifikasi', 'verifikasi', 'Verifikasi email', () => import('@/views/auth/Verifikasi.vue'), 'public'),
   halaman('/reset-password', 'reset-password', 'Buat password baru', () => import('@/views/auth/ResetPassword.vue'), 'public'),
   halaman('/masuk/google', 'masuk-google', 'Masuk dengan Google', () => import('@/views/auth/MasukGoogle.vue'), 'public'),

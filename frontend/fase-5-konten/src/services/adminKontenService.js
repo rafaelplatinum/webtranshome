@@ -61,7 +61,7 @@ export async function setArticleStatus(id, status) {
   return data.data
 }
 
-/** Pengaturan admin: { address, opening_hours, maps_url, point_ratio_rupiah, home_featured_brand_ids }. */
+/** { wa_number, address, opening_hours, maps_url, point_ratio_rupiah }. */
 export async function getAdminSettings() {
   const { data } = await http.get('/admin/settings')
   return data.data
@@ -70,6 +70,18 @@ export async function getAdminSettings() {
 /** Simpan pengaturan toko. Rasio poin hanya bisa diubah pemegang izin setting.point_ratio (403). */
 export async function updateSettings(payload) {
   const { data } = await http.put('/admin/settings', payload, TANPA_TOAST)
+  return data.data
+}
+
+/** Template pesan WhatsApp (KEPUTUSAN #23): { wa_template_product, wa_template_cart, wa_template_cart_item }. Izin setting.update. */
+export async function getWaTemplates() {
+  const { data } = await http.get('/admin/settings/whatsapp-templates')
+  return data.data
+}
+
+/** Simpan ketiga template sekaligus. 422 `errors.<kunci>` bila ada kode tak dikenal / kode wajib hilang. */
+export async function updateWaTemplates(payload) {
+  const { data } = await http.put('/admin/settings/whatsapp-templates', payload, TANPA_TOAST)
   return data.data
 }
 

@@ -48,10 +48,10 @@ src/
                     CopyButton, Modal, ConfirmModal, Toast, EmptyState, ErrorState, Skeleton, Pagination, Table)
   components/<fitur>/  layout/, katalog/, produk/, akun/, admin/
   composables/      useAuth, usePermission (+ directive v-can), useWhatsApp, useFilter, useSeo
-  stores/           auth, menu, ui, settings (Pinia)
+  stores/           auth, menu, ui, settings, keranjang (Pinia)
   services/         http.js + satu service per modul (productService.js, dst) + mock/
   router/           routes/ per area + guard.js
-  utils/            format.js (Rupiah, tanggal, nomor HP), whatsapp.js
+  utils/            format.js (Rupiah, tanggal, nomor HP), whatsapp.js, templateWhatsApp.js
 ```
 - Satu komponen = satu tanggung jawab. Pecah jika > ~200 baris.
 - `defineProps` / `defineEmits` wajib jelas: props pakai objek `{ type, default }` (JavaScript).
@@ -61,12 +61,12 @@ src/
 ## 3. Peta Halaman
 ```
 Publik : /  /katalog  /katalog/:kategori  /produk/:slug  /brand  /brand/:slug  /ruangan  /ruangan/:slug
-         /artikel  /artikel/:slug  /promo  /info-toko  /cari?q=  /jasa  /jasa/:slug
+         /artikel  /artikel/:slug  /promo  /info-toko  /cari?q=  /jasa  /jasa/:slug  /keranjang  /membership
 Auth   : /masuk  /daftar  /verifikasi  /lupa-password  /reset-password
 Member : /akun  /akun/poin  /akun/profil  /akun/keamanan
 Admin  : /admin/masuk  /admin  /admin/produk  /admin/produk/baru  /admin/produk/:id
-         /admin/kategori  /admin/brand  /admin/ruangan  /admin/member  /admin/member/:id
-         /admin/poin/input  /admin/banner  /admin/artikel  /admin/jasa  /admin/jasa/baru  /admin/jasa/:id  /admin/pengaturan
+         /admin/kategori  /admin/brand  /admin/brand-beranda  /admin/ruangan  /admin/member  /admin/member/:id
+         /admin/poin/input  /admin/banner  /admin/artikel  /admin/jasa  /admin/jasa/baru  /admin/jasa/:id  /admin/pengaturan  /admin/template-whatsapp
          /admin/pengguna  /admin/role  /admin/log-aktivitas  /admin/sync-qontak
 Sistem : /tidak-punya-akses  halaman 404   ·   Dev: /dev/components (hanya development)
 ```
@@ -91,8 +91,8 @@ Sistem : /tidak-punya-akses  halaman 404   ·   Dev: /dev/components (hanya deve
 Urutan kerja mengikuti `docs/FRONTEND_BUILD_PLAN.md` (Fase 0–6). Kerjakan SATU fase per permintaan, jalankan checklist QA fase itu, lalu berhenti. Jangan mulai fase berikutnya sebelum diminta.
 
 ## 6. DI LUAR SCOPE — JANGAN DIBUAT
-Keranjang, checkout, payment gateway, ongkir, kalkulator material, booking konsultasi desain, FORMULIR konsultasi proyek, katalog hadiah, halaman penukaran poin oleh member, wishlist, pengingat stok, ulasan produk, rincian produk per nota, kartu member fisik, harga bertingkat, multi-cabang, upgrade tier.
-- Muka 1 = SATU harga umum (`price_general`). Tombol aksi utama produk = "Tanya via WhatsApp", BUKAN "Beli" / "Tambah ke Keranjang".
+Checkout, payment gateway, ongkir, kalkulator material, booking konsultasi desain, FORMULIR konsultasi proyek, katalog hadiah, halaman penukaran poin oleh member, wishlist, pengingat stok, ulasan produk, rincian produk per nota, kartu member fisik, harga bertingkat, multi-cabang, upgrade tier.
+- Muka 1 = SATU harga umum (`price_general`). Pembelian tetap lewat WhatsApp: tombol "Tanya via WhatsApp" per produk, dan **keranjang belanja** (KEPUTUSAN #23, 4 Nov 2026) hanya mengumpulkan produk + jumlah untuk dikirim sekaligus lewat WhatsApp. TIDAK ada tombol "Beli", checkout, pembayaran, atau ongkir.
 - Konsultasi proyek & pertanyaan produk = HANYA lewat WhatsApp (Mekari Qontak). Tidak ada form lead.
 - Penukaran poin dicatat ADMIN sebagai transaksi REDEEM, bukan dipilih member di website.
 
@@ -104,7 +104,8 @@ Keranjang, checkout, payment gateway, ongkir, kalkulator material, booking konsu
 - **Input poin (Admin Membership):** cari member via member_code / email / HP, input `reference_no` (nomor nota) + total belanja. Nomor nota duplikat ditolak dengan pesan jelas. REDEEM ditolak jika saldo kurang.
 - **Status stok** (badge + label teks + ikon, bukan warna saja): TERSEDIA, SISA STOK, PRE-ORDER, HABIS.
 - **Harga boleh disembunyikan per produk** (`show_price`, KEPUTUSAN #15): tampil "Harga via WhatsApp" + tombol "Tanya harga"; harga boleh kosong bila disembunyikan. Pakai `hargaDisembunyikan()` / `labelTanyaProduk()` di `utils/whatsapp.js` dan `PriceTag` (prop `show`), jangan cek manual.
-- **Tanya via WA:** pesan otomatis berisi SKU + nama produk + link produk; produk HABIS → "Tanya ketersediaan". Nomor WA dari pengaturan toko (API), jangan hardcode.
+- **Tanya via WA:** pesan otomatis berisi SKU + nama produk + link produk; produk HABIS → "Tanya ketersediaan". Nomor WA dari pengaturan toko (API), jangan hardcode. Isi pesan memakai template admin (Konten › Template WhatsApp, KEPUTUSAN #23): per produk `wa_template_product` (wajib `{nama_produk}` `{sku}` `{link}`), keranjang `wa_template_cart` + `wa_template_cart_item`. Susun pesan lewat `useWhatsApp()` (`productLink`, `keranjangLink`), jangan merangkai teks sendiri.
+- **Keranjang (KEPUTUSAN #23):** store `keranjang` (localStorage `transhome.keranjang`), maks 30 produk, jumlah mulai dari `min_order`, stok HABIS tidak bisa ditambah. Harga & stok diperbarui dari `GET /products?ids=` setiap `/keranjang` dibuka; produk nonaktif ditandai dan tidak ikut pesan. "Perkiraan total" hanya dari harga yang tampil, selalu disertai catatan harga final dari CS.
 - **Lupa password:** lewat email. Pesan selalu sama ("Jika email terdaftar, link reset sudah dikirim").
 - **Produk:** tidak dihapus permanen, cukup toggle aktif/nonaktif. Minimal 1 foto, 1 foto utama.
 - **Brand:** semua brand aktif tampil (Beranda, `/brand`, filter katalog). Hapus permanen hanya untuk brand NONAKTIF yang tidak dipakai produk mana pun, izin `brand.delete` (keputusan pemilik proyek 8 Okt 2026). Brand yang masih dipakai: pindahkan produknya dulu.
@@ -133,7 +134,7 @@ Keranjang, checkout, payment gateway, ongkir, kalkulator material, booking konsu
 - URL produk/kategori/brand/ruangan/artikel pakai `slug`.
 - Set `<title>` & meta description per halaman lewat `useSeo` (pakai `meta_title` / `meta_description` jika ada). `useSeo` juga menerima `canonical`, `robots`, `image`, dan `jsonLd` (schema.org); tag dibersihkan otomatis saat halaman ditutup. Halaman hasil cari/filter = `noindex, follow` + canonical ke halaman bersih (contoh di `/brand`, KEPUTUSAN #17). Alamat situs untuk canonical dari `VITE_SITE_URL`.
 - Paginasi daftar publik berupa tautan (`PaginationBar` prop `tautan`) supaya bisa diikuti mesin pencari.
-- Karena SPA, pratinjau link di WhatsApp/Facebook memakai meta default di `index.html`. Pratinjau per produk butuh prerender/SSR, di luar stack saat ini.
+- HTML mentah halaman publik beralamat tetap (`/`, `/katalog`, `/brand`, `/ruangan`, `/jasa`, `/artikel`, `/promo`, `/info-toko`) sudah membawa judul/deskripsi/canonical/OG/JSON-LD lewat plugin `transhome-seo-statis` di `vite.config.js` (KEPUTUSAN #22). Ubah teksnya bersamaan dengan `useSeo` di halaman terkait. Halaman berparameter tetap diisi JavaScript; karena SPA, pratinjau link di WhatsApp/Facebook untuk halaman itu masih memakai meta default di `index.html`. Pratinjau per produk butuh prerender/SSR, di luar stack saat ini.
 - Gambar: `loading="lazy"`, `alt` deskriptif, ukuran eksplisit agar tidak layout shift.
 - Daftar produk pakai pagination. Filter katalog disimpan di URL query.
 

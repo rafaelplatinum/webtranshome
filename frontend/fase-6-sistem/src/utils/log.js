@@ -41,9 +41,10 @@ const KOLOM = {
   image_cover: 'Cover', sort_order: 'Urutan', member_code: 'Kode member', member: 'Member', type: 'Jenis', points: 'Poin',
   reference_no: 'Nomor nota', purchase_amount: 'Total belanja', note: 'Catatan', start_at: 'Mulai tayang', end_at: 'Selesai tayang',
   position: 'Posisi', link_url: 'Tautan', subtitle: 'Subjudul', video_url: 'Video', cta_label: 'Label tombol',
-  cta2_label: 'Label tombol kedua', cta2_url: 'Tautan tombol kedua', summary: 'Ringkasan',
+  cta2_label: 'Label tombol kedua', cta2_url: 'Tautan tombol kedua', summary: 'Ringkasan', show_on_home: 'Tampil di lingkaran Beranda', home_order: 'Urutan di lingkaran Beranda', lingkaran_beranda: 'Lingkaran Beranda',
   service_area: 'Area layanan', category_ids: 'Kategori produk terkait', status: 'Status', published_at: 'Terbit', wa_number: 'Nomor WhatsApp', address: 'Alamat',
   opening_hours: 'Jam buka', maps_url: 'Link Google Maps', point_ratio_rupiah: 'Rasio poin', sync_status: 'Status sync', count: 'Jumlah kontak',
+  wa_template_product: 'Template WA per produk', wa_template_cart: 'Template WA keranjang', wa_template_cart_item: 'Format baris produk keranjang',
 }
 
 export const labelKolom = (kunci) => KOLOM[kunci] ?? kunci
@@ -56,7 +57,7 @@ const LABEL_NILAI = {
   stock_status: { TERSEDIA: 'Tersedia', SISA_STOK: 'Sisa stok', PRE_ORDER: 'Pre-order', HABIS: 'Habis' },
   status: { DRAFT: 'Draf', PUBLISHED: 'Terbit' },
   type: { EARN: 'Poin belanja', REDEEM: 'Tukar poin', ADJUST: 'Penyesuaian', ARTIKEL: 'Artikel', PROMO: 'Promo', EVENT: 'Event', HALAMAN: 'Halaman' },
-  position: { HOME_HERO: 'Hero Beranda', ABOUT_HERO: 'Hero Tentang Kami', HOME_SLIDER: 'Slider Beranda', HOME_SIDE: 'Samping slider' },
+  position: { HOME_SLIDER: 'Slider Beranda', HOME_SIDE: 'Samping slider' },
 }
 const WAKTU = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/
 

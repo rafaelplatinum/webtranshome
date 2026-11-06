@@ -26,7 +26,17 @@ export async function deleteBrand(id) {
   bersihkanCachePublik()
 }
 
-/** { is_active } atau { sort_order }. */
+/**
+ * Halaman "Brand di Beranda": simpan daftar brand lingkaran Beranda berurutan (maks 16, hanya brand aktif).
+ * Hasil: daftar brand admin terbaru (show_on_home, home_order). 422 errors.brand_ids bila tidak valid.
+ */
+export async function saveBrandHome(brandIds) {
+  const { data } = await http.put('/admin/brands/home', { brand_ids: brandIds }, { tanpaToast: true })
+  bersihkanCachePublik()
+  return data.data
+}
+
+/** { is_active } atau { sort_order }; brand juga { show_on_home } (masuk/lepas lingkaran Beranda, urutan paling akhir). */
 export async function patchMaster(jenis, id, perubahan) {
   const { data } = await http.patch(`/admin/${jenis}/${id}`, perubahan, { tanpaToast: true })
   bersihkanCachePublik()

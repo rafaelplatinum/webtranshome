@@ -11,16 +11,17 @@ export const menus = [
   { id: 11, parent_id: 10, name: 'Produk', code: 'product', route: '/admin/produk', icon: 'package', sort_order: 1, is_active: true, izin: 'product.view' },
   { id: 12, parent_id: 10, name: 'Kategori', code: 'category', route: '/admin/kategori', icon: 'folder-tree', sort_order: 2, is_active: true, izin: 'category.view' },
   { id: 13, parent_id: 10, name: 'Brand', code: 'brand', route: '/admin/brand', icon: 'tag', sort_order: 3, is_active: true, izin: 'brand.view' },
-  { id: 14, parent_id: 10, name: 'Ruangan', code: 'room', route: '/admin/ruangan', icon: 'sofa', sort_order: 4, is_active: true, izin: 'room.view' },
+  { id: 15, parent_id: 10, name: 'Brand di Beranda', code: 'brand_home', route: '/admin/brand-beranda', icon: 'circle-dot', sort_order: 4, is_active: true, izin: 'brand.view' },
+  { id: 14, parent_id: 10, name: 'Ruangan', code: 'room', route: '/admin/ruangan', icon: 'sofa', sort_order: 5, is_active: true, izin: 'room.view' },
   { id: 20, parent_id: null, name: 'Membership', code: 'membership', route: null, icon: null, sort_order: 3, is_active: true },
   { id: 21, parent_id: 20, name: 'Member', code: 'member', route: '/admin/member', icon: 'users', sort_order: 1, is_active: true, izin: 'member.view' },
   { id: 22, parent_id: 20, name: 'Input poin', code: 'point', route: '/admin/poin/input', icon: 'coins', sort_order: 2, is_active: true, izin: 'point.create' },
   { id: 30, parent_id: null, name: 'Konten', code: 'konten', route: null, icon: null, sort_order: 4, is_active: true },
   { id: 31, parent_id: 30, name: 'Banner', code: 'banner', route: '/admin/banner', icon: 'image', sort_order: 1, is_active: true, izin: 'banner.view' },
-  { id: 35, parent_id: 30, name: 'Pengelolaan gambar', code: 'images', route: '/admin/pengelolaan-gambar', icon: 'images', sort_order: 2, is_active: true, izin: 'image.manage' },
   { id: 32, parent_id: 30, name: 'Artikel dan promo', code: 'article', route: '/admin/artikel', icon: 'newspaper', sort_order: 2, is_active: true, izin: 'article.view' },
   { id: 34, parent_id: 30, name: 'Jasa', code: 'service', route: '/admin/jasa', icon: 'wrench', sort_order: 3, is_active: true, izin: 'service.view' },
   { id: 33, parent_id: 30, name: 'Pengaturan toko', code: 'setting', route: '/admin/pengaturan', icon: 'settings', sort_order: 4, is_active: true, izin: 'setting.update' },
+  { id: 35, parent_id: 30, name: 'Template WhatsApp', code: 'wa_template', route: '/admin/template-whatsapp', icon: 'message-square-text', sort_order: 5, is_active: true, izin: 'setting.update' },
   { id: 40, parent_id: null, name: 'Sistem', code: 'sistem', route: null, icon: null, sort_order: 5, is_active: true },
   { id: 41, parent_id: 40, name: 'Pengguna admin', code: 'user', route: '/admin/pengguna', icon: 'user-cog', sort_order: 1, is_active: true, izin: 'user.view' },
   { id: 42, parent_id: 40, name: 'Role dan izin', code: 'role', route: '/admin/role', icon: 'shield', sort_order: 2, is_active: true, izin: 'role.view' },
@@ -37,10 +38,6 @@ export const activityLogs = [
   { id: 2, admin_id: 1, action: 'role.update', module: 'Role dan izin', before_data: { role: 'Admin Membership', permissions: ['member.view', 'member.update', 'point.create'] }, after_data: { role: 'Admin Membership', permissions: ['member.view', 'member.update', 'point.create', 'qontak.retry'] }, ip_address: '10.0.0.10', created_at: '2026-10-01T15:00:00' },
   { id: 1, admin_id: 3, action: 'point.create', module: 'Poin', before_data: null, after_data: { member_code: 'TF-000124', type: 'EARN', points: 3, reference_no: 'NT-2026-10-0431', purchase_amount: '3600000.00', note: null }, ip_address: '10.0.0.15', created_at: '2026-09-30T11:45:00' },
 ]
-
-// Slot aset yang dikelola lewat halaman Pengelolaan gambar. Data unggahan mock
-// disimpan sebagai URL data di localStorage dan hanya untuk pengembangan lokal.
-export const imageAssets = []
 
 // Tabel qontak_contacts: satu baris per member. Member 102 & 103 gagal tersinkron (untuk tombol "Coba lagi").
 export const qontakContacts = [

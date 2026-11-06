@@ -1,20 +1,25 @@
 <script setup>
+// Footer (desain dari redesign Dylan, 6 Nov 2026, diminta pemilik): kolom Belanja, Informasi, toko, belanja online,
+// sosial media. Tombol WhatsApp tetap langsung ke WhatsApp (pesan umum), sesuai tampilan lama.
 import { computed } from 'vue'
 import { Facebook, Instagram, MapPin, Phone, ShoppingBag, Store, Youtube } from 'lucide-vue-next'
 import { RouterLink } from 'vue-router'
 import LogoTranshome from '@/components/layout/LogoTranshome.vue'
 import WhatsAppButton from './WhatsAppButton.vue'
 import { CONTACT } from '@/config/contact'
+import { useWhatsApp } from '@/composables/useWhatsApp'
 import { useSettingsStore } from '@/stores/settings'
+import { formatNomorHp } from '@/utils/format'
 
 const BELANJA = [
   { label: 'Semua produk', to: '/katalog' },
   { label: 'Kategori', to: '/katalog' },
   { label: 'Promo', to: '/promo' },
-  { label: 'Daftar belanja', to: '/keranjang' },
+  { label: 'Keranjang belanja', to: '/keranjang' },
 ]
 const INFORMASI = [
   { label: 'Tentang kami', to: '/info-toko' },
+  { label: 'Membership', to: '/membership' },
   { label: 'Project', to: '/jasa' },
   { label: 'Fasilitas', to: '/info-toko#fasilitas' },
   { label: 'Tips & artikel', to: '/artikel' },
@@ -30,6 +35,9 @@ const MARKETPLACE = [
   { label: 'Tokopedia', url: CONTACT.marketplace.tokopedia, icon: Store },
 ]
 const settings = useSettingsStore()
+const { generalLink } = useWhatsApp()
+// Nomor yang tampil = nomor yang dipakai tombol (pengaturan toko); cadangan dari config kontak.
+const nomorWa = computed(() => (settings.waNumber ? formatNomorHp(settings.waNumber) : CONTACT.whatsappDisplay))
 const alamat = computed(() => settings.data?.address || CONTACT.address)
 const jamBuka = computed(() => settings.data?.opening_hours || CONTACT.openingHours)
 const peta = computed(() => settings.data?.maps_url)
@@ -79,8 +87,8 @@ const classesLink = 'rounded-sm text-on-dark/85 transition-colors hover:text-pri
         <p>{{ jamBuka }}</p>
         <a :href="`tel:${CONTACT.telephone.replaceAll(' ', '')}`" class="inline-flex items-center gap-2 hover:text-primary-on-dark"><Phone class="size-4" aria-hidden="true" />{{ CONTACT.telephone }}</a>
         <div class="flex flex-col items-start gap-2">
-          <p class="text-on-dark-muted">WhatsApp {{ CONTACT.whatsappDisplay }}</p>
-          <WhatsAppButton :label="`WhatsApp ${CONTACT.storeName}`" />
+          <p class="text-on-dark-muted">WhatsApp {{ nomorWa }}</p>
+          <WhatsAppButton :href="generalLink()" :label="`WhatsApp ${CONTACT.storeName}`" />
         </div>
       </section>
 

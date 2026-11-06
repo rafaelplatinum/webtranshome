@@ -7,6 +7,8 @@ defineProps({
   label: { type: String, required: true },
   description: { type: String, default: '' },
   disabled: { type: Boolean, default: false },
+  // Label hanya untuk pembaca layar (mis. kotak centang di sel tabel).
+  hideLabel: { type: Boolean, default: false },
 })
 
 const id = useId()
@@ -22,7 +24,7 @@ const id = useId()
       :aria-describedby="description ? `${id}-desc` : undefined"
       class="mt-0.5 size-5 shrink-0 cursor-pointer accent-primary disabled:cursor-not-allowed"
     />
-    <span class="flex flex-col gap-0.5">
+    <span class="flex flex-col gap-0.5" :class="hideLabel && 'sr-only'">
       <span class="text-sm font-semibold">{{ label }}</span>
       <span v-if="description" :id="`${id}-desc`" class="text-sm text-muted">{{ description }}</span>
     </span>

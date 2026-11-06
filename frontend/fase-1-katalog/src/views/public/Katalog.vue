@@ -85,7 +85,7 @@ useSeo({
 
   <div v-else class="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:py-6">
     <Breadcrumb :items="remah" />
-    <h1 class="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">
+    <h1 class="mt-2 text-2xl font-extrabold sm:text-3xl">
       <template v-if="judul">{{ judul }}</template>
       <Skeleton v-else class="inline-block h-8 w-56 align-middle" />
     </h1>

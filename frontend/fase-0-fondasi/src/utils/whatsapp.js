@@ -1,3 +1,10 @@
+import { normalisasiNomorHp } from './format'
+
+/** Link wa.me dengan pesan yang sudah di-encode. Nomor diambil dari pengaturan toko, jangan hardcode. */
+export function buatLinkWhatsApp(nomorWa, pesan) {
+  return `https://wa.me/${normalisasiNomorHp(nomorWa)}?text=${encodeURIComponent(pesan)}`
+}
+
 /**
  * Harga produk tidak ditampilkan: admin mematikan "Tampilkan harga di website" (`show_price` false)
  * atau produk memang belum diberi harga. Pelanggan melihat "Harga via WhatsApp".
@@ -11,15 +18,8 @@ export function labelTanyaProduk(produk) {
   return 'Tanya via WhatsApp'
 }
 
-/** "Tanya via WhatsApp" di produk; HABIS → tanya ketersediaan; harga disembunyikan → tanya harga. */
-export function pesanTanyaProduk({ sku, nama, url, habis = false, tanyaHarga = false }) {
-  const pembuka = habis
-    ? 'Halo Transhome, apakah produk ini akan tersedia lagi?'
-    : tanyaHarga
-      ? 'Halo Transhome, saya ingin menanyakan harga produk ini:'
-      : 'Halo Transhome, saya ingin bertanya tentang produk ini:'
-  return [pembuka, nama, `SKU: ${sku}`, url].join('\n')
-}
+// Pesan "Tanya via WhatsApp" per produk dan pesan keranjang memakai template dari admin:
+// fase-1-katalog/src/utils/templateWhatsApp.js (KEPUTUSAN #23).
 
 /** "Chat tim proyek" untuk kebutuhan jumlah besar. */
 export function pesanJumlahBesar({ sku, nama, url }) {

@@ -1,29 +1,26 @@
 <script setup>
 import { MessageCircle } from 'lucide-vue-next'
 import Button from '@/components/ui/Button.vue'
-import { useWhatsAppContactStore } from '@/stores/whatsappContact'
 
-const props = defineProps({
-  // Context untuk mengisi topik dan detail produk pada form bersama.
-  context: { type: Object, default: () => ({}) },
+defineProps({
+  // Link dari useWhatsApp(); null selama nomor toko belum dimuat → tombol nonaktif.
+  href: { type: String, default: null },
   label: { type: String, default: 'Tanya via WhatsApp' },
-  variant: { type: String, default: 'whatsapp' },
   size: { type: String, default: 'md' },
   block: { type: Boolean, default: false },
   wrap: { type: Boolean, default: false },
 })
-const form = useWhatsAppContactStore()
-
-function bukaForm() { form.buka(props.context) }
 </script>
 
 <template>
   <Button
-    :variant="variant"
+    variant="whatsapp"
+    :href="href"
+    :disabled="!href"
     :size="size"
     :block="block"
     :wrap="wrap"
-    @click="bukaForm"
+    :title="href ? undefined : 'Nomor WhatsApp toko belum tersedia'"
   >
     <template #icon><MessageCircle class="size-4.5" aria-hidden="true" /></template>
     {{ label }}

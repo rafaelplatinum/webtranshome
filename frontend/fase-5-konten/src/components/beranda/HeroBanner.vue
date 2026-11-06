@@ -1,99 +1,140 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { RouterLink } from 'vue-router'
-import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-vue-next'
+import { computed, nextTick, ref, watch } from 'vue'
+import { ArrowRight, ChevronDown, Pause, Play } from 'lucide-vue-next'
+import Button from '@/components/ui/Button.vue'
 import { useMuat } from '@/composables/useMuat'
 import { listBanners } from '@/services/kontenService'
+import { perilakuGulir } from '@/utils/gerak'
 
-// Hero Beranda hanya menampilkan foto dari banner HOME_HERO. Beberapa banner aktif
-// menjadi slide; judul admin hanya dipakai sebagai teks alternatif untuk pembaca layar.
-const muat = useMuat(async () => (await listBanners('HOME_HERO')).filter((banner) => banner.image_url))
-const banners = computed(() => muat.data.value ?? [])
-const indeks = ref(0)
-const dijeda = ref(false)
-const disentuh = ref(false)
-const kurangiGerak = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true
-const otomatis = computed(() => banners.value.length > 1 && !kurangiGerak && !dijeda.value)
-let pengatur = null
-
-watch(banners, (daftar) => {
-  if (indeks.value >= daftar.length) indeks.value = 0
-})
-
-function ke(i) {
-  const total = banners.value.length
-  if (!total) return
-  indeks.value = (i + total) % total
+// Hero banner Beranda (wireframe 01, blok A11:L18) = landing page: setinggi layar di bawah header, media selebar
+// layar (gambar atau video) + judul di kiri, tombol di kanan bawah. Isi dari banner posisi HOME_HERO di admin;
+// tanpa banner tayang → teks bawaan tanpa media. "Lihat selengkapnya" selalu ada. Tanpa tombol WhatsApp di hero
+// (keputusan pemilik 2 Nov 2026); WhatsApp tetap di header dan tombol melayang.
+const BAWAAN = {
+  title: 'Dari pondasi sampai atap, semua kebutuhan rumah ada di sini.',
+  subtitle: 'Cari bahan untuk tiap tahap rumahmu, cek harga dan stok.',
+  cta_label: 'Jelajahi katalog',
+  link_url: '/katalog',
+  cta2_label: null,
+  cta2_url: null,
+  image_url: null,
+  video_url: null,
 }
 
-onMounted(() => {
-  pengatur = window.setInterval(() => {
-    if (otomatis.value && !disentuh.value && document.visibilityState === 'visible') ke(indeks.value + 1)
-  }, 6000)
+const muat = useMuat(async () => (await listBanners('HOME_HERO'))[0] ?? null)
+// Kolom kosong di banner memakai nilai bawaan (mis. tombol tanpa label → "Jelajahi katalog").
+const hero = computed(() => {
+  const b = muat.data.value ?? {}
+  return Object.fromEntries(Object.entries(BAWAAN).map(([k, v]) => [k, b[k] || v]))
 })
-onBeforeUnmount(() => window.clearInterval(pengatur))
+// Tautan diawali / → RouterLink; https:// → tautan biasa.
+const tujuan = (url) => (url.startsWith('/') ? { to: url } : { href: url })
+const tombolKedua = computed(() => (hero.value.cta2_label && hero.value.cta2_url ? hero.value : null))
 
-const internal = (banner) => banner.link_url?.startsWith('/')
+// Video berjalan otomatis tanpa suara. Tidak diputar otomatis bila pengguna meminta animasi dikurangi,
+// dan tidak dimuat sama sekali bila mode hemat data aktif; gambar tetap tampil sebagai cadangan.
+const kurangiGerak = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true
+const hematData = navigator.connection?.saveData === true
+const videoEl = ref(null)
+const videoGagal = ref(false)
+const berjalan = ref(!kurangiGerak)
+const pakaiVideo = computed(() => Boolean(hero.value.video_url) && !hematData && !videoGagal.value)
+
+watch(
+  () => hero.value.video_url,
+  async () => {
+    videoGagal.value = false
+    await nextTick()
+    if (videoEl.value && berjalan.value) videoEl.value.play().catch(() => (berjalan.value = false))
+  },
+)
+
+function gantiPutar() {
+  const v = videoEl.value
+  if (!v) return
+  if (berjalan.value) v.pause()
+  else v.play().catch(() => {})
+  berjalan.value = !berjalan.value
+}
+
+// "Lihat selengkapnya": gulir ke seksi sesudah hero dan pindahkan fokus ke sana (pengguna keyboard lanjut dari situ).
+const bagianEl = ref(null)
+function gulirKeBawah() {
+  const berikut = bagianEl.value?.nextElementSibling
+  if (!berikut) return
+  berikut.scrollIntoView({ behavior: perilakuGulir(), block: 'start' })
+  if (!berikut.hasAttribute('tabindex')) {
+    berikut.setAttribute('tabindex', '-1')
+    berikut.classList.add('outline-none')
+  }
+  berikut.focus({ preventScroll: true })
+}
 </script>
 
 <template>
-  <section
-    class="relative w-full overflow-hidden bg-secondary"
-    :class="banners.length ? 'aspect-[12/5] min-h-[17rem] sm:min-h-[24rem] lg:min-h-[30rem]' : 'h-[min(62svh,800px)] min-h-[17rem]'"
-    role="group"
-    aria-roledescription="carousel"
-    aria-label="Banner utama Transhome"
-    data-hero-banner
-    @mouseenter="disentuh = true"
-    @mouseleave="disentuh = false"
-    @focusin="disentuh = true"
-    @focusout="disentuh = false"
-  >
-    <span class="sr-only" aria-live="polite">{{ banners.length ? `Banner ${indeks + 1} dari ${banners.length}` : 'Banner utama' }}</span>
-    <Transition
-      mode="out-in"
-      enter-active-class="transition-opacity duration-500 ease-out"
-      enter-from-class="opacity-0"
-      leave-active-class="transition-opacity duration-300 ease-in"
-      leave-to-class="opacity-0"
-    >
-      <div v-if="banners[indeks]" :key="banners[indeks].id" class="absolute inset-0" role="group" aria-roledescription="slide">
-        <RouterLink v-if="internal(banners[indeks])" :to="banners[indeks].link_url" class="absolute inset-0 block focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-primary">
-          <img :src="banners[indeks].image_url" :alt="banners[indeks].title || 'Banner Transhome'" :fetchpriority="indeks === 0 ? 'high' : undefined" :loading="indeks === 0 ? 'eager' : 'lazy'" width="1920" height="800" class="size-full object-cover" />
-        </RouterLink>
-        <a v-else-if="banners[indeks].link_url" :href="banners[indeks].link_url" target="_blank" rel="noopener" class="absolute inset-0 block focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-primary">
-          <img :src="banners[indeks].image_url" :alt="banners[indeks].title || 'Banner Transhome'" :fetchpriority="indeks === 0 ? 'high' : undefined" :loading="indeks === 0 ? 'eager' : 'lazy'" width="1920" height="800" class="size-full object-cover" />
-        </a>
-        <img v-else :src="banners[indeks].image_url" :alt="banners[indeks].title || 'Banner Transhome'" :fetchpriority="indeks === 0 ? 'high' : undefined" :loading="indeks === 0 ? 'eager' : 'lazy'" width="1920" height="800" class="size-full object-cover" />
-      </div>
-      <div v-else key="empty" class="absolute inset-0" aria-hidden="true" />
-    </Transition>
+  <section ref="bagianEl" aria-labelledby="judul-beranda" class="relative isolate overflow-hidden bg-secondary text-secondary-foreground" data-hero-banner>
+    <!-- Media sebagai latar; lapisan navy 70% menjaga kontras teks putih di atas foto/video apa pun. -->
+    <div v-if="hero.image_url || pakaiVideo" class="absolute inset-0 -z-10" aria-hidden="true">
+      <img v-if="hero.image_url" :src="hero.image_url" alt="" width="1920" height="800" fetchpriority="high" class="size-full object-cover" data-hero-gambar />
+      <video
+        v-if="pakaiVideo"
+        ref="videoEl"
+        :src="hero.video_url"
+        :poster="hero.image_url ?? undefined"
+        :autoplay="berjalan"
+        muted
+        loop
+        playsinline
+        preload="metadata"
+        tabindex="-1"
+        class="absolute inset-0 size-full object-cover"
+        data-hero-video
+        @error="videoGagal = true"
+      />
+      <div class="absolute inset-0 bg-secondary/70" />
+    </div>
 
-    <div v-if="banners.length > 1" class="absolute inset-x-0 bottom-0 flex items-center justify-center gap-2 bg-gradient-to-t from-black/45 to-transparent px-4 pt-12 pb-4 sm:justify-between sm:px-6 sm:pb-5 lg:px-10">
-      <div class="hidden items-center gap-1.5 sm:flex" aria-label="Pilih banner">
+    <!-- Tinggi = layar dikurangi header (--tinggi-header-penuh dari AppHeader), minimal 26rem untuk layar pendek. -->
+    <div class="mx-auto flex min-h-[max(26rem,calc(100svh-var(--tinggi-header-penuh,0px)))] max-w-7xl flex-col gap-8 px-4 pt-10 pb-4 sm:px-6 lg:pt-16">
+      <div v-if="muat.status.value === 'loading'" class="flex max-w-2xl flex-1 flex-col justify-center gap-4" aria-busy="true">
+        <span class="sr-only">Memuat hero…</span>
+        <div v-for="w in ['w-full', 'w-3/4', 'w-2/3']" :key="w" class="h-10 animate-pulse rounded-md bg-secondary-hover motion-reduce:animate-none" :class="w" aria-hidden="true" />
+      </div>
+      <div v-else class="flex max-w-2xl flex-1 flex-col justify-center gap-4">
+        <h1 id="judul-beranda" class="text-3xl leading-tight font-extrabold text-balance sm:text-4xl lg:text-5xl">{{ hero.title }}</h1>
+        <p v-if="hero.subtitle" class="max-w-xl text-lg text-on-dark">{{ hero.subtitle }}</p>
+      </div>
+
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <button
-          v-for="(banner, i) in banners"
-          :key="banner.id"
+          v-if="pakaiVideo"
           type="button"
-          class="flex size-8 items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-          :aria-label="`Tampilkan banner ${i + 1}`"
-          :aria-current="i === indeks ? 'true' : undefined"
-          @click="ke(i)"
+          class="inline-flex min-h-11 items-center gap-2 self-start rounded-md border border-on-dark-muted/60 px-3.5 text-sm font-semibold text-on-dark transition-colors duration-150 hover:bg-secondary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-on-dark sm:self-auto"
+          data-jeda-hero
+          @click="gantiPutar"
         >
-          <span class="h-1.5 rounded-full transition-all" :class="i === indeks ? 'w-6 bg-white' : 'w-1.5 bg-white/65'" />
+          <component :is="berjalan ? Pause : Play" class="size-4" aria-hidden="true" />
+          {{ berjalan ? 'Jeda video' : 'Putar video' }}
         </button>
+        <!-- CTA kanan bawah (wireframe): tombol utama, lalu tombol kedua bila diisi admin. Di HP bertumpuk penuh. -->
+        <div v-if="muat.status.value !== 'loading'" class="flex flex-col gap-3 sm:ml-auto sm:flex-row sm:flex-wrap sm:justify-end" data-hero-tombol>
+          <Button size="lg" v-bind="tujuan(hero.link_url)">
+            {{ hero.cta_label }}
+            <ArrowRight class="size-5" aria-hidden="true" />
+          </Button>
+          <Button v-if="tombolKedua" variant="outline" size="lg" v-bind="tujuan(tombolKedua.cta2_url)">{{ tombolKedua.cta2_label }}</Button>
+        </div>
       </div>
-      <div class="flex items-center gap-2">
-        <button type="button" class="inline-flex size-10 items-center justify-center rounded-full border border-white/45 bg-black/25 text-white backdrop-blur-sm transition hover:bg-black/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white" :aria-label="dijeda ? 'Putar slide otomatis' : 'Jeda slide otomatis'" @click="dijeda = !dijeda">
-          <component :is="dijeda ? Play : Pause" class="size-4" aria-hidden="true" />
-        </button>
-        <button type="button" class="inline-flex size-10 items-center justify-center rounded-full border border-white/45 bg-black/25 text-white backdrop-blur-sm transition hover:bg-black/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white" aria-label="Banner sebelumnya" @click="ke(indeks - 1)">
-          <ChevronLeft class="size-5" aria-hidden="true" />
-        </button>
-        <button type="button" class="inline-flex size-10 items-center justify-center rounded-full border border-white/45 bg-black/25 text-white backdrop-blur-sm transition hover:bg-black/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white" aria-label="Banner berikutnya" @click="ke(indeks + 1)">
-          <ChevronRight class="size-5" aria-hidden="true" />
-        </button>
-      </div>
+
+      <button
+        type="button"
+        class="mx-auto inline-flex min-h-11 flex-col items-center justify-center rounded-md px-3 text-sm font-semibold text-on-dark transition-colors duration-150 hover:text-secondary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-on-dark"
+        data-gulir-hero
+        @click="gulirKeBawah"
+      >
+        Lihat selengkapnya
+        <ChevronDown class="size-5" aria-hidden="true" />
+      </button>
     </div>
   </section>
 </template>
