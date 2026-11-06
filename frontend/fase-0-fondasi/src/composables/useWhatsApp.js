@@ -1,6 +1,7 @@
 import { computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useSettingsStore } from '@/stores/settings'
+import { tautanArtikel } from '@/utils/artikel'
 import { buatLinkWhatsApp, pesanCariProduk, pesanJumlahBesar, pesanKonsultasiJasa, pesanTanyaKonten, pesanUmum } from '@/utils/whatsapp'
 import { pesanKeranjang, pesanProduk, teksPelanggan } from '@/utils/templateWhatsApp'
 
@@ -59,7 +60,7 @@ export function useWhatsApp() {
   /** Promo, event, atau artikel (Fase 5): pesan berisi judul dan tautan halamannya. */
   function kontenLink(artikel) {
     if (!nomor.value || !artikel) return null
-    const url = new URL(`/artikel/${artikel.slug}`, window.location.origin).href
+    const url = new URL(tautanArtikel(artikel), window.location.origin).href
     return buatLinkWhatsApp(nomor.value, pesanTanyaKonten({ judul: artikel.title, url }))
   }
 

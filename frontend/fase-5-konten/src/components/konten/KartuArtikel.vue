@@ -23,7 +23,7 @@ defineProps({
       <h3 class="text-base leading-snug font-bold">
         <!-- Tautan meliputi seluruh kartu (::after), satu tab stop per kartu. -->
         <RouterLink
-          :to="tautanArtikel(artikel.slug)"
+          :to="tautanArtikel(artikel)"
           class="rounded-sm after:absolute after:inset-0 after:content-[''] hover:text-primary focus-visible:outline-none focus-visible:after:rounded-xl focus-visible:after:ring-2 focus-visible:after:ring-ring"
         >
           {{ artikel.title }}

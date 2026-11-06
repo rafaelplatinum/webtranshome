@@ -17,7 +17,7 @@ import { useKonfirmasiKeluar } from '@/composables/useKonfirmasiKeluar'
 import { usePermission } from '@/composables/usePermission'
 import { tujuanKembali } from '@/composables/useTujuanKembali'
 import { useUiStore } from '@/stores/ui'
-import { TIPE_ARTIKEL } from '@/utils/artikel'
+import { TIPE_ARTIKEL, awalanArtikel } from '@/utils/artikel'
 import { formatTanggalJam } from '@/utils/format'
 
 const router = useRouter()
@@ -114,7 +114,7 @@ onMounted(f.muat)
             label="Slug (alamat halaman)"
             required
             autocomplete="off"
-            prefix="/artikel/"
+            :prefix="awalanArtikel(form.type)"
             :error="errors.slug ?? ''"
             hint="Dibuat otomatis dari judul. Boleh diubah: huruf kecil, angka, tanda hubung."
             @update:model-value="f.ubahSlug"

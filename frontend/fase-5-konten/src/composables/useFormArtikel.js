@@ -35,7 +35,7 @@ export function useFormArtikel() {
   const tautanPratinjau = computed(() => {
     const a = tersimpan.value
     if (!a) return null
-    return terbit.value ? tautanArtikel(a.slug) : tautanArtikel(a.slug, a.preview_token)
+    return terbit.value ? tautanArtikel(a) : tautanArtikel(a, a.preview_token)
   })
 
   function isi(a) {
