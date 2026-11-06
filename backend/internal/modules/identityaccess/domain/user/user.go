@@ -11,6 +11,7 @@ const (
 
 type User struct {
 	ID           int64
+	AuthVersion  int64
 	Email        string
 	PasswordHash string
 	IsActive     bool

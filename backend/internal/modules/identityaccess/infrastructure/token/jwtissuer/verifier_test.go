@@ -12,17 +12,17 @@ import (
 
 func TestVerifierAcceptsIssuedAccessToken(t *testing.T) {
 	issuer := NewIssuer("test-secret", 60)
-	token, err := issuer.Issue(context.Background(), 42)
+	token, err := issuer.Issue(context.Background(), 42, 3)
 	if err != nil {
 		t.Fatalf("Issue() error = %v", err)
 	}
 
-	userID, err := NewVerifier("test-secret").Verify(context.Background(), token)
+	verified, err := NewVerifier("test-secret").Verify(context.Background(), token)
 	if err != nil {
 		t.Fatalf("Verify() error = %v", err)
 	}
-	if userID != 42 {
-		t.Fatalf("Verify() userID = %d, want 42", userID)
+	if verified.UserID != 42 || verified.AuthVersion != 3 {
+		t.Fatalf("Verify() token = %+v, want user 42 version 3", verified)
 	}
 }
 

@@ -38,7 +38,7 @@ type loginTokenIssuerStub struct {
 	err   error
 }
 
-func (s loginTokenIssuerStub) Issue(context.Context, int64) (string, error) {
+func (s loginTokenIssuerStub) Issue(context.Context, int64, int64) (string, error) {
 	return s.token, s.err
 }
 

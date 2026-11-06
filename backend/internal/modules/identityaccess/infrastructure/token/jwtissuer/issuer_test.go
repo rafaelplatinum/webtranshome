@@ -11,13 +11,14 @@ import (
 
 func TestIssuerSignsTokenWithUserAndExpiryClaims(t *testing.T) {
 	issuer := NewIssuer("test-secret", 60)
-	signedToken, err := issuer.Issue(context.Background(), 42)
+	signedToken, err := issuer.Issue(context.Background(), 42, 7)
 	if err != nil {
 		t.Fatalf("Issue() error = %v", err)
 	}
 
 	claims := &struct {
-		UserID int64 `json:"userId"`
+		UserID      int64 `json:"userId"`
+		AuthVersion int64 `json:"authVersion"`
 		jwtlib.RegisteredClaims
 	}{}
 	token, err := jwtlib.ParseWithClaims(signedToken, claims, func(token *jwtlib.Token) (interface{}, error) {
@@ -32,7 +33,7 @@ func TestIssuerSignsTokenWithUserAndExpiryClaims(t *testing.T) {
 	if !token.Valid {
 		t.Fatal("issued token is invalid")
 	}
-	if claims.UserID != 42 || claims.Subject != strconv.FormatInt(42, 10) {
+	if claims.UserID != 42 || claims.AuthVersion != 7 || claims.Subject != strconv.FormatInt(42, 10) {
 		t.Fatalf("claims identify user %d with subject %q, want user 42", claims.UserID, claims.Subject)
 	}
 	if claims.ExpiresAt == nil || !claims.ExpiresAt.Time.After(time.Now()) {
@@ -46,7 +47,7 @@ func TestIssuerRejectsInvalidConfiguration(t *testing.T) {
 		NewIssuer("test-secret", 0),
 		NewIssuer("test-secret", -1),
 	} {
-		if _, err := issuer.Issue(context.Background(), 42); err == nil {
+		if _, err := issuer.Issue(context.Background(), 42, 0); err == nil {
 			t.Fatal("Issue() succeeded with invalid JWT configuration")
 		}
 	}

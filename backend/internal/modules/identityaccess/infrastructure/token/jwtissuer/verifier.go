@@ -17,13 +17,14 @@ func NewVerifier(secret string) *Verifier {
 	return &Verifier{secret: secret}
 }
 
-func (v *Verifier) Verify(_ context.Context, tokenString string) (int64, error) {
+func (v *Verifier) Verify(_ context.Context, tokenString string) (port.VerifiedToken, error) {
 	if v.secret == "" {
-		return 0, port.ErrInvalidTokenConfiguration
+		return port.VerifiedToken{}, port.ErrInvalidTokenConfiguration
 	}
 
 	claims := struct {
-		UserID int64 `json:"userId"`
+		UserID      int64 `json:"userId"`
+		AuthVersion int64 `json:"authVersion"`
 		jwt.RegisteredClaims
 	}{}
 	token, err := jwt.ParseWithClaims(tokenString, &claims, func(token *jwt.Token) (interface{}, error) {
@@ -33,15 +34,15 @@ func (v *Verifier) Verify(_ context.Context, tokenString string) (int64, error) 
 		return []byte(v.secret), nil
 	})
 	if err != nil || token == nil || !token.Valid {
-		return 0, port.ErrInvalidAccessToken
+		return port.VerifiedToken{}, port.ErrInvalidAccessToken
 	}
 
 	userID, err := strconv.ParseInt(claims.Subject, 10, 64)
 	if err != nil || userID <= 0 || claims.UserID != userID || claims.ExpiresAt == nil {
-		return 0, port.ErrInvalidAccessToken
+		return port.VerifiedToken{}, port.ErrInvalidAccessToken
 	}
 
-	return userID, nil
+	return port.VerifiedToken{UserID: userID, AuthVersion: claims.AuthVersion}, nil
 }
 
 var _ port.TokenVerifier = (*Verifier)(nil)

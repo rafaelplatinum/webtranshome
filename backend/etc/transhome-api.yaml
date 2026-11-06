@@ -14,3 +14,14 @@ Auth:
 Qontak:
   BaseURL: ${QONTAK_BASE_URL}
   Token: ${QONTAK_API_TOKEN}
+
+PasswordReset:
+  HMACSecret: ${OTP_HMAC_SECRET}
+  WhatsAppGatewayURL: ${WHATSAPP_GATEWAY_URL}
+  WhatsAppGatewayToken: ${WHATSAPP_GATEWAY_TOKEN}
+  EmailGatewayURL: ${EMAIL_GATEWAY_URL}
+  EmailGatewayToken: ${EMAIL_GATEWAY_TOKEN}
+
+ImageStorage:
+  Directory: ./uploads
+  MaxBytes: 2097152

@@ -65,7 +65,7 @@ func (l *Login) Execute(ctx context.Context, command LoginCommand) (LoginResult,
 		return LoginResult{}, err
 	}
 
-	token, err := l.tokenIssuer.Issue(ctx, account.ID)
+	token, err := l.tokenIssuer.Issue(ctx, account.ID, account.AuthVersion)
 	if err != nil {
 		return LoginResult{}, err
 	}

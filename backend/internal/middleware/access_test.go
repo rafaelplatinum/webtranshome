@@ -16,9 +16,18 @@ type tokenVerifierStub struct {
 	token  string
 }
 
-func (v *tokenVerifierStub) Verify(_ context.Context, token string) (int64, error) {
+func (v *tokenVerifierStub) Verify(_ context.Context, token string) (port.VerifiedToken, error) {
 	v.token = token
-	return v.userID, v.err
+	return port.VerifiedToken{UserID: v.userID}, v.err
+}
+
+type authVersionReaderStub struct {
+	version int64
+	err     error
+}
+
+func (s authVersionReaderStub) AuthVersion(context.Context, int64) (int64, error) {
+	return s.version, s.err
 }
 
 type permissionCheckerStub struct {
@@ -57,7 +66,7 @@ func TestAuthenticate(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			verifier := &tokenVerifierStub{userID: test.userID, err: test.verifyErr}
 			nextCalled := false
-			next := Authenticate(verifier)(func(w http.ResponseWriter, r *http.Request) {
+			next := Authenticate(verifier, authVersionReaderStub{})(func(w http.ResponseWriter, r *http.Request) {
 				nextCalled = true
 				if userID, ok := UserIDFromContext(r.Context()); !ok || userID != 42 {
 					t.Fatalf("UserIDFromContext() = %d, %t; want 42, true", userID, ok)
