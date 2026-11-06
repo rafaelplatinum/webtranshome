@@ -1,4 +1,10 @@
 <script setup>
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
+const pendaftaran = computed(() => route.name === 'daftar')
+
 defineProps({
   judul: { type: String, required: true },
   deskripsi: { type: String, default: '' },
@@ -7,11 +13,11 @@ defineProps({
 
 <template>
   <!-- Kerangka halaman masuk, daftar, verifikasi, dan password (di dalam AuthLayout). -->
-  <div class="flex flex-col gap-6 rounded-2xl border border-border bg-surface p-6 sm:p-8">
+  <div class="flex flex-col gap-5" :class="pendaftaran ? '' : 'rounded-2xl border border-border bg-surface p-6'">
     <div class="flex flex-col gap-2">
-      <span class="self-start rounded bg-accent px-2.5 py-1 text-xs font-bold text-accent-foreground">Trans Family</span>
-      <h1 class="text-2xl font-extrabold">{{ judul }}</h1>
-      <p v-if="deskripsi" class="text-sm text-muted">{{ deskripsi }}</p>
+      <span class="self-start rounded-md bg-th-yellow px-2.5 py-1 text-[13px] font-extrabold text-th-navy">Trans Family</span>
+      <component :is="pendaftaran ? 'h2' : 'h1'" class="text-3xl leading-tight font-extrabold tracking-tight">{{ judul }}</component>
+      <p v-if="deskripsi" class="text-base leading-relaxed text-th-muted">{{ deskripsi }}</p>
     </div>
     <slot />
   </div>

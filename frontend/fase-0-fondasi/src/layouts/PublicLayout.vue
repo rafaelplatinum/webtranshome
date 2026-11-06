@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted } from 'vue'
 import { RouterView, useRoute } from 'vue-router'
-import AppFooter from '@/components/layout/AppFooter.vue'
+import FooterSitus from '@/components/layout/FooterSitus.vue'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import WhatsAppFloat from '@/components/layout/WhatsAppFloat.vue'
 import { useSettingsStore } from '@/stores/settings'
@@ -24,7 +24,7 @@ onMounted(() => settings.load())
     <main id="konten" tabindex="-1" class="flex-1 focus:outline-none">
       <RouterView />
     </main>
-    <AppFooter />
+    <FooterSitus />
     <WhatsAppFloat />
   </div>
 </template>

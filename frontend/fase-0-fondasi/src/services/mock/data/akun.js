@@ -133,7 +133,7 @@ export const tokenReset = []
 // site_settings yang boleh dibaca publik. Nomor WhatsApp di sini nomor contoh, bukan nomor toko.
 // Template pesan WhatsApp (KEPUTUSAN #23) diubah di admin › Konten › Template WhatsApp; isi awal = bawaan.
 export const publicSettings = {
-  wa_number: '6280000000000',
+  wa_number: '6287708777989', // nomor WhatsApp toko (0877 0877 7989, config/contact.js)
   address: 'Jl. Raya Solo–Yogyakarta Km 11, Berbah, Sleman',
   opening_hours: 'Senin–Sabtu, 08.00–17.00',
   maps_url: 'https://www.google.com/maps/search/?api=1&query=Transhome+Berbah+Sleman',

@@ -79,6 +79,11 @@ const SEO_STATIS = {
     deskripsi: 'Alamat, jam buka, dan peta toko Transhome di Berbah, Sleman, Yogyakarta. Tanya langsung lewat WhatsApp.',
     remah: 'Info toko',
   },
+  '/membership': {
+    judul: 'Trans Family',
+    deskripsi: 'Kenali program Trans Family dan daftar member gratis untuk mengumpulkan poin belanja di Transhome.',
+    remah: 'Trans Family',
+  },
 }
 
 const escHtml = (teks) => String(teks).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')

@@ -61,7 +61,7 @@ src/
 ## 3. Peta Halaman
 ```
 Publik : /  /katalog  /katalog/:kategori  /produk/:slug  /brand  /brand/:slug  /ruangan  /ruangan/:slug
-         /artikel  /artikel/:slug  /promo  /info-toko  /cari?q=  /jasa  /jasa/:slug  /keranjang
+         /artikel  /artikel/:slug  /promo  /info-toko  /cari?q=  /jasa  /jasa/:slug  /keranjang  /membership
 Auth   : /masuk  /daftar  /verifikasi  /lupa-password  /reset-password
 Member : /akun  /akun/poin  /akun/profil  /akun/keamanan
 Admin  : /admin/masuk  /admin  /admin/produk  /admin/produk/baru  /admin/produk/:id

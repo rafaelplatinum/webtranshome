@@ -12,7 +12,9 @@ const NAVIGASI_HP = [
   { label: 'Jasa', to: '/jasa' },
   { label: 'Promo', to: '/promo' },
   { label: 'Artikel', to: '/artikel' },
-  { label: 'Info toko', to: '/info-toko' },
+  { label: 'Membership', to: '/membership' },
+  { label: 'Tentang Kami', to: '/info-toko' },
+  { label: 'Keranjang belanja', to: '/keranjang' },
 ]
 
 const route = useRoute()

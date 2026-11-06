@@ -18,6 +18,8 @@ const NAVIGASI = [
   { label: 'Jasa', to: '/jasa' },
   { label: 'Promo', to: '/promo' },
   { label: 'Artikel', to: '/artikel' },
+  { label: 'Membership', to: '/membership' },
+  { label: 'Tentang Kami', to: '/info-toko' },
 ]
 
 const route = useRoute()
@@ -96,22 +98,26 @@ const kelasTautanGelap =
         </RouterLink>
 
         <div class="ml-auto flex items-center gap-2 lg:order-last lg:ml-0">
+          <!-- Menu keranjang (permintaan pemilik 6 Nov 2026): ikon + tulisan "Keranjang" di layar lebar, angka = banyaknya produk. -->
           <RouterLink
             to="/keranjang"
-            class="relative inline-flex size-11 shrink-0 items-center justify-center rounded-md text-foreground transition-colors duration-150 hover:bg-subtle hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            class="inline-flex h-11 min-w-11 shrink-0 items-center justify-center gap-2 rounded-md px-2 text-foreground transition-colors duration-150 hover:bg-subtle hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring lg:px-3"
             active-class="text-primary"
             :aria-label="labelKeranjang"
             data-ikon-keranjang
           >
-            <ShoppingCart class="size-6" aria-hidden="true" />
-            <span
-              v-if="keranjang.jumlahProduk"
-              class="absolute top-0.5 right-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-xs font-bold text-primary-foreground tabular-nums ring-2 ring-surface"
-              aria-hidden="true"
-              data-angka-keranjang
-            >
-              {{ keranjang.jumlahProduk > 99 ? '99+' : keranjang.jumlahProduk }}
+            <span class="relative">
+              <ShoppingCart class="size-6" aria-hidden="true" />
+              <span
+                v-if="keranjang.jumlahProduk"
+                class="absolute -top-2 -right-2.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-xs font-bold text-primary-foreground tabular-nums ring-2 ring-surface"
+                aria-hidden="true"
+                data-angka-keranjang
+              >
+                {{ keranjang.jumlahProduk > 99 ? '99+' : keranjang.jumlahProduk }}
+              </span>
             </span>
+            <span class="hidden text-sm font-semibold lg:inline" aria-hidden="true">Keranjang</span>
           </RouterLink>
           <UserMenu v-if="auth.isLoggedIn" />
           <template v-else>
@@ -125,7 +131,8 @@ const kelasTautanGelap =
           <SearchBox class="flex-1" />
         </div>
 
-        <nav aria-label="Navigasi utama" class="hidden items-center gap-5 text-sm font-semibold xl:flex">
+        <!-- Baris menu sendiri di bawah pencarian (6 Nov 2026): 7 menu + Keranjang tidak muat satu baris dengan kotak cari. -->
+        <nav aria-label="Navigasi utama" class="hidden w-full items-center gap-x-7 border-t border-border pt-3 text-sm font-semibold lg:order-[10000] lg:flex">
           <RouterLink
             v-for="item in NAVIGASI"
             :key="item.to"
