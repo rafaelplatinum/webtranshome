@@ -712,3 +712,24 @@ service transhome-api {
 //   group: content         (artikel, banner, pengaturan situs)
 //   group: audit           (log aktivitas admin)
 //   group: integration     (status sync Qontak)
+// ===== Incremental API compatibility extension (7 Nov 2026) =====
+// Rute di bawah didaftarkan manual oleh internal/handler/routes.go.
+// PENTING: Jangan menjalankan `make gen`/`goctl api go` langsung: itu akan
+// menimpa routes.go dan membuang registrasi handler extension.
+// Sebelum regenerasi, definisikan tipe request/response dan seluruh handler
+// ekstensi di spesifikasi goctl secara lengkap, lalu bandingkan hasil diff.
+// Public: GET /auth/google/redirect, /auth/google/callback
+// Auth: POST /auth/login, /admin/auth/login, /auth/logout
+// Auth: GET /me, /me/points; PATCH /me, /me/consent; POST /me/password
+// Membership admin: GET /admin/members, /admin/members/search, /admin/members/:id
+// Membership admin: PATCH /admin/members/:id
+// Poin admin: GET /admin/points, /admin/points/check-reference; POST /admin/points
+// Admin konten: GET/POST /admin/banners; GET/PUT/PATCH /admin/banners/:id
+// Admin konten: GET/POST /admin/articles; GET/PUT/PATCH /admin/articles/:id
+// Admin konten: GET/POST /admin/services; GET/PUT/PATCH /admin/services/:id
+// Settings: GET/PUT /admin/settings, /admin/settings/whatsapp-templates
+// Audit log: GET /admin/activity-logs, /admin/activity-logs/options
+// Katalog canonical: /admin/catalog/{products,brands,categories,rooms}
+// Tambahan katalog: GET /admin/catalog/products/check-sku
+// Tambahan katalog: PUT /admin/catalog/brands/home; DELETE /admin/catalog/brands/:id
+// Detail kontrak response ada di PANDUAN_INTEGRASI.md dalam paket patch.

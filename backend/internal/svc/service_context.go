@@ -1,6 +1,10 @@
 package svc
 
 import (
+	"database/sql"
+	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/zeromicro/go-zero/core/stores/postgres"
+	"github.com/zeromicro/go-zero/rest"
 	"webtranshome/internal/config"
 	"webtranshome/internal/middleware"
 	"webtranshome/internal/model"
@@ -17,13 +21,11 @@ import (
 	mediaassets "webtranshome/internal/modules/media/application/assets"
 	mediaassetspg "webtranshome/internal/modules/media/infrastructure/postgres"
 	mediastorage "webtranshome/internal/modules/media/infrastructure/storage"
-
-	"github.com/zeromicro/go-zero/core/stores/postgres"
-	"github.com/zeromicro/go-zero/rest"
 )
 
 type ServiceContext struct {
 	Config                   config.Config
+	SQLDB                    *sql.DB
 	UserModel                model.UsersModel
 	LoginAdmin               *command.Login
 	PasswordReset            *passwordreset.Service
@@ -54,27 +56,26 @@ type ServiceContext struct {
 
 func NewServiceContext(c config.Config) *ServiceContext {
 	conn := postgres.New(c.Database.DataSource)
+	sqlDB, err := sql.Open("pgx", c.Database.DataSource)
+	if err != nil {
+		panic(err)
+	}
+	sqlDB.SetMaxOpenConns(20)
+	sqlDB.SetMaxIdleConns(5)
+	sqlDB.SetConnMaxLifetime(30 * 60 * 1e9)
 	userModel := model.NewUsersModel(conn)
 	userRepository := authpostgres.NewUserRepository(conn, userModel)
 	permissionRepository := authpostgres.NewPermissionRepository(conn)
 	accessControlRepository := authpostgres.NewAccessControlRepository(conn)
 	categoryRepository := catalogpostgres.NewCategoryRepository(conn)
-	loginAdmin := command.NewLogin(
-		userRepository,
-		passwordbcrypt.NewVerifier(),
-		jwtissuer.NewIssuer(c.Auth.AccessSecret, c.Auth.AccessExpire),
-	)
+	loginAdmin := command.NewLogin(userRepository, passwordbcrypt.NewVerifier(), jwtissuer.NewIssuer(c.Auth.AccessSecret, c.Auth.AccessExpire))
 	checkPermission := query.NewCheckPermission(permissionRepository)
 	resetRepository := authpostgres.NewPasswordResetRepository(conn)
 	whatsappSender := configuredSender(c.PasswordReset.WhatsAppGatewayURL, c.PasswordReset.WhatsAppGatewayToken, "whatsapp", c.Mode == "dev")
 	emailSender := configuredSender(c.PasswordReset.EmailGatewayURL, c.PasswordReset.EmailGatewayToken, "email", c.Mode == "dev")
 	resetService := passwordreset.New(resetRepository, c.PasswordReset.HMACSecret, whatsappSender, emailSender)
 	tokenVerifier := jwtissuer.NewVerifier(c.Auth.AccessSecret)
-	accessControlQueries := query.NewAccessControl(
-		accessControlRepository,
-		accessControlRepository,
-		accessControlRepository,
-	)
+	accessControlQueries := query.NewAccessControl(accessControlRepository, accessControlRepository, accessControlRepository)
 	replaceAccessAssignments := command.NewReplaceAccessAssignments(accessControlRepository)
 	manageRoles := command.NewManageRoles(accessControlRepository)
 	listCategories := catalogquery.NewListCategories(categoryRepository)
@@ -99,40 +100,17 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	replaceProductRooms := catalogcommand.NewReplaceProductRooms(productRepository, roomRepository, productRepository)
 	imageAssetRepository := mediaassetspg.NewAssetRepository(conn)
 	imageAssets := mediaassets.New(imageAssetRepository, mediastorage.NewLocal(c.ImageStorage.Directory, c.ImageStorage.MaxBytes))
-
 	return &ServiceContext{
-		Config:                   c,
-		UserModel:                userModel,
-		LoginAdmin:               loginAdmin,
-		PasswordReset:            resetService,
-		AccessControlQueries:     accessControlQueries,
-		ReplaceAccessAssignments: replaceAccessAssignments,
-		ManageRoles:              manageRoles,
-		ListCategories:           listCategories,
-		GetCategory:              getCategory,
-		CreateCategory:           createCategory,
-		UpdateCategory:           updateCategory,
-		ListBrands:               listBrands,
-		GetBrand:                 getBrand,
-		CreateBrand:              createBrand,
-		UpdateBrand:              updateBrand,
-		ListRooms:                listRooms,
-		GetRoom:                  getRoom,
-		CreateRoom:               createRoom,
-		UpdateRoom:               updateRoom,
-		ListProducts:             listProducts,
-		GetProduct:               getProduct,
-		CreateProduct:            createProduct,
-		UpdateProduct:            updateProduct,
-		ReplaceProductRooms:      replaceProductRooms,
-		ImageAssets:              imageAssets,
-		Authenticate:             middleware.Authenticate(tokenVerifier, userRepository),
-		RequirePermission: func(code string) rest.Middleware {
-			return middleware.RequirePermission(checkPermission, code)
-		},
+		Config: c, SQLDB: sqlDB, UserModel: userModel, LoginAdmin: loginAdmin, PasswordReset: resetService,
+		AccessControlQueries: accessControlQueries, ReplaceAccessAssignments: replaceAccessAssignments, ManageRoles: manageRoles,
+		ListCategories: listCategories, GetCategory: getCategory, CreateCategory: createCategory, UpdateCategory: updateCategory,
+		ListBrands: listBrands, GetBrand: getBrand, CreateBrand: createBrand, UpdateBrand: updateBrand,
+		ListRooms: listRooms, GetRoom: getRoom, CreateRoom: createRoom, UpdateRoom: updateRoom,
+		ListProducts: listProducts, GetProduct: getProduct, CreateProduct: createProduct, UpdateProduct: updateProduct, ReplaceProductRooms: replaceProductRooms,
+		ImageAssets: imageAssets, Authenticate: middleware.Authenticate(tokenVerifier, userRepository),
+		RequirePermission: func(code string) rest.Middleware { return middleware.RequirePermission(checkPermission, code) },
 	}
 }
-
 func configuredSender(endpoint, token, channel string, development bool) notification.Sender {
 	if endpoint != "" {
 		return notification.NewGatewaySender(endpoint, token)

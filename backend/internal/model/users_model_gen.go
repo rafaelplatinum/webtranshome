@@ -42,7 +42,7 @@ type (
 	Users struct {
 		Id              int64          `db:"id"`
 		Email           string         `db:"email"`
-		PhoneNumber     string         `db:"phone_number"`
+		PhoneNumber     sql.NullString `db:"phone_number"`
 		PasswordHash    sql.NullString `db:"password_hash"`
 		GoogleId        sql.NullString `db:"google_id"`
 		IsActive        bool           `db:"is_active"`

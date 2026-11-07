@@ -18,7 +18,7 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 			{
 				Method:  http.MethodPost,
 				Path:    "/auth/login",
-				Handler: LoginHandler(serverCtx),
+				Handler: ExtFrontendLoginHandler(serverCtx, false),
 			},
 			{Method: http.MethodPost, Path: "/auth/password/forgot", Handler: ForgotPasswordOTPHandler(serverCtx)},
 			{Method: http.MethodPost, Path: "/auth/password/verify-otp", Handler: VerifyPasswordOTPHandler(serverCtx)},
@@ -77,8 +77,8 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 			[]rest.Route{
 				{Method: http.MethodGet, Path: "/admin/catalog/categories", Handler: CatalogCategoriesHandler(serverCtx)},
 				{Method: http.MethodGet, Path: "/admin/catalog/categories/:categoryId", Handler: CatalogCategoryHandler(serverCtx)},
-				{Method: http.MethodPost, Path: "/admin/catalog/categories", Handler: CreateCatalogCategoryHandler(serverCtx)},
-				{Method: http.MethodPatch, Path: "/admin/catalog/categories/:categoryId", Handler: UpdateCatalogCategoryHandler(serverCtx)},
+				{Method: http.MethodPost, Path: "/admin/catalog/categories", Handler: extLegacyCatalogAudit(serverCtx, "category.create", "Kategori", CreateCatalogCategoryHandler(serverCtx))},
+				{Method: http.MethodPatch, Path: "/admin/catalog/categories/:categoryId", Handler: extLegacyCatalogAudit(serverCtx, "category.update", "Kategori", UpdateCatalogCategoryHandler(serverCtx))},
 			}...,
 		),
 		rest.WithPrefix("/api/v1"),
@@ -92,8 +92,8 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 			[]rest.Route{
 				{Method: http.MethodGet, Path: "/admin/catalog/brands", Handler: CatalogBrandsHandler(serverCtx)},
 				{Method: http.MethodGet, Path: "/admin/catalog/brands/:brandId", Handler: CatalogBrandHandler(serverCtx)},
-				{Method: http.MethodPost, Path: "/admin/catalog/brands", Handler: CreateCatalogBrandHandler(serverCtx)},
-				{Method: http.MethodPatch, Path: "/admin/catalog/brands/:brandId", Handler: UpdateCatalogBrandHandler(serverCtx)},
+				{Method: http.MethodPost, Path: "/admin/catalog/brands", Handler: extLegacyCatalogAudit(serverCtx, "brand.create", "Brand", CreateCatalogBrandHandler(serverCtx))},
+				{Method: http.MethodPatch, Path: "/admin/catalog/brands/:brandId", Handler: extLegacyCatalogAudit(serverCtx, "brand.update", "Brand", UpdateCatalogBrandHandler(serverCtx))},
 			}...,
 		),
 		rest.WithPrefix("/api/v1"),
@@ -107,8 +107,8 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 			[]rest.Route{
 				{Method: http.MethodGet, Path: "/admin/catalog/rooms", Handler: CatalogRoomsHandler(serverCtx)},
 				{Method: http.MethodGet, Path: "/admin/catalog/rooms/:roomId", Handler: CatalogRoomHandler(serverCtx)},
-				{Method: http.MethodPost, Path: "/admin/catalog/rooms", Handler: CreateCatalogRoomHandler(serverCtx)},
-				{Method: http.MethodPatch, Path: "/admin/catalog/rooms/:roomId", Handler: UpdateCatalogRoomHandler(serverCtx)},
+				{Method: http.MethodPost, Path: "/admin/catalog/rooms", Handler: extLegacyCatalogAudit(serverCtx, "room.create", "Ruangan", CreateCatalogRoomHandler(serverCtx))},
+				{Method: http.MethodPatch, Path: "/admin/catalog/rooms/:roomId", Handler: extLegacyCatalogAudit(serverCtx, "room.update", "Ruangan", UpdateCatalogRoomHandler(serverCtx))},
 			}...,
 		),
 		rest.WithPrefix("/api/v1"),
@@ -120,11 +120,6 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				serverCtx.RequirePermission(permission.AccessControlManageCode),
 			},
 			[]rest.Route{
-				{Method: http.MethodGet, Path: "/admin/catalog/products", Handler: CatalogProductsHandler(serverCtx)},
-				{Method: http.MethodGet, Path: "/admin/catalog/products/:productId", Handler: CatalogProductHandler(serverCtx)},
-				{Method: http.MethodPost, Path: "/admin/catalog/products", Handler: CreateCatalogProductHandler(serverCtx)},
-				{Method: http.MethodPatch, Path: "/admin/catalog/products/:productId", Handler: UpdateCatalogProductHandler(serverCtx)},
-				{Method: http.MethodPut, Path: "/admin/catalog/products/:productId/rooms", Handler: ReplaceCatalogProductRoomsHandler(serverCtx)},
 				{Method: http.MethodGet, Path: "/admin/access-control/catalog", Handler: AccessControlCatalogHandler(serverCtx)},
 				{Method: http.MethodPost, Path: "/admin/roles", Handler: CreateRoleHandler(serverCtx)},
 				{Method: http.MethodPut, Path: "/admin/roles/:roleId", Handler: UpdateRoleHandler(serverCtx)},
@@ -149,4 +144,94 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 		),
 		rest.WithPrefix("/api/v1"),
 	)
+
+	// Frontend-compatible login, logout and Google OAuth (with state verification).
+	server.AddRoutes([]rest.Route{
+		{Method: http.MethodPost, Path: "/admin/auth/login", Handler: ExtFrontendLoginHandler(serverCtx, true)},
+		{Method: http.MethodGet, Path: "/auth/google/redirect", Handler: ExtGoogleRedirectHandler(serverCtx)},
+		{Method: http.MethodGet, Path: "/auth/google/callback", Handler: ExtGoogleCallbackHandler(serverCtx)},
+	}, rest.WithPrefix("/api/v1"))
+	server.AddRoutes(rest.WithMiddlewares([]rest.Middleware{serverCtx.Authenticate}, []rest.Route{
+		{Method: http.MethodPost, Path: "/auth/logout", Handler: ExtLogoutHandler(serverCtx)},
+		{Method: http.MethodGet, Path: "/me", Handler: ExtMeHandler(serverCtx)},
+		{Method: http.MethodPatch, Path: "/me", Handler: ExtPatchProfileHandler(serverCtx)},
+		{Method: http.MethodPatch, Path: "/me/consent", Handler: ExtConsentHandler(serverCtx)},
+		{Method: http.MethodPost, Path: "/me/password", Handler: ExtChangePasswordHandler(serverCtx)},
+		{Method: http.MethodGet, Path: "/me/points", Handler: ExtPointsHandler(serverCtx, true)},
+	}...), rest.WithPrefix("/api/v1"))
+	// Existing Admin catalog route names remain canonical; frontend services adapt.
+	server.AddRoutes(rest.WithMiddlewares([]rest.Middleware{serverCtx.Authenticate, serverCtx.RequirePermission("catalog.product.manage")}, []rest.Route{
+		{Method: http.MethodGet, Path: "/admin/catalog/products", Handler: CatalogProductsHandler(serverCtx)},
+		{Method: http.MethodGet, Path: "/admin/catalog/products/check-sku", Handler: ExtCheckSKUHandler(serverCtx)},
+		{Method: http.MethodGet, Path: "/admin/catalog/products/:productId", Handler: CatalogProductHandler(serverCtx)},
+		{Method: http.MethodPost, Path: "/admin/catalog/products", Handler: extLegacyCatalogAudit(serverCtx, "product.create", "Produk", CreateCatalogProductHandler(serverCtx))},
+		{Method: http.MethodPatch, Path: "/admin/catalog/products/:productId", Handler: extLegacyCatalogAudit(serverCtx, "product.update", "Produk", UpdateCatalogProductHandler(serverCtx))},
+		{Method: http.MethodPut, Path: "/admin/catalog/products/:productId/rooms", Handler: ReplaceCatalogProductRoomsHandler(serverCtx)},
+	}...), rest.WithPrefix("/api/v1"))
+	server.AddRoutes(rest.WithMiddlewares([]rest.Middleware{serverCtx.Authenticate, serverCtx.RequirePermission("catalog.brand.manage")}, []rest.Route{
+		{Method: http.MethodPut, Path: "/admin/catalog/brands/home", Handler: ExtBrandHomeHandler(serverCtx)},
+		{Method: http.MethodDelete, Path: "/admin/catalog/brands/:id", Handler: ExtDeleteBrandHandler(serverCtx)},
+	}...), rest.WithPrefix("/api/v1"))
+	server.AddRoutes(rest.WithMiddlewares([]rest.Middleware{serverCtx.Authenticate, serverCtx.RequirePermission("member.view")}, []rest.Route{
+		{Method: http.MethodGet, Path: "/admin/members", Handler: ExtMembersHandler(serverCtx)},
+		{Method: http.MethodGet, Path: "/admin/members/search", Handler: ExtMemberSearchHandler(serverCtx)},
+		{Method: http.MethodGet, Path: "/admin/members/:id", Handler: ExtMemberDetailHandler(serverCtx)},
+	}...), rest.WithPrefix("/api/v1"))
+	server.AddRoutes(rest.WithMiddlewares([]rest.Middleware{serverCtx.Authenticate, serverCtx.RequirePermission("member.update")}, []rest.Route{
+		{Method: http.MethodPatch, Path: "/admin/members/:id", Handler: ExtMemberPatchHandler(serverCtx)},
+	}...), rest.WithPrefix("/api/v1"))
+	server.AddRoutes(rest.WithMiddlewares([]rest.Middleware{serverCtx.Authenticate, serverCtx.RequirePermission("point.view")}, []rest.Route{
+		{Method: http.MethodGet, Path: "/admin/points", Handler: ExtPointsHandler(serverCtx, false)},
+	}...), rest.WithPrefix("/api/v1"))
+	server.AddRoutes(rest.WithMiddlewares([]rest.Middleware{serverCtx.Authenticate, serverCtx.RequirePermission("point.create")}, []rest.Route{
+		{Method: http.MethodGet, Path: "/admin/points/check-reference", Handler: ExtCheckReferenceHandler(serverCtx)},
+		{Method: http.MethodPost, Path: "/admin/points", Handler: ExtCreatePointHandler(serverCtx)},
+	}...), rest.WithPrefix("/api/v1"))
+	server.AddRoutes(rest.WithMiddlewares([]rest.Middleware{serverCtx.Authenticate, serverCtx.RequirePermission("banner.view")}, []rest.Route{
+		{Method: http.MethodGet, Path: "/admin/banners", Handler: ExtBannerListHandler(serverCtx)},
+		{Method: http.MethodGet, Path: "/admin/banners/:id", Handler: ExtBannerGetHandler(serverCtx)},
+	}...), rest.WithPrefix("/api/v1"))
+	server.AddRoutes(rest.WithMiddlewares([]rest.Middleware{serverCtx.Authenticate, serverCtx.RequirePermission("banner.create")}, []rest.Route{
+		{Method: http.MethodPost, Path: "/admin/banners", Handler: ExtBannerMutationHandler(serverCtx, "create")},
+	}...), rest.WithPrefix("/api/v1"))
+	server.AddRoutes(rest.WithMiddlewares([]rest.Middleware{serverCtx.Authenticate, serverCtx.RequirePermission("banner.update")}, []rest.Route{
+		{Method: http.MethodPut, Path: "/admin/banners/:id", Handler: ExtBannerMutationHandler(serverCtx, "update")},
+		{Method: http.MethodPatch, Path: "/admin/banners/:id", Handler: ExtBannerMutationHandler(serverCtx, "patch")},
+	}...), rest.WithPrefix("/api/v1"))
+	server.AddRoutes(rest.WithMiddlewares([]rest.Middleware{serverCtx.Authenticate, serverCtx.RequirePermission("article.view")}, []rest.Route{
+		{Method: http.MethodGet, Path: "/admin/articles", Handler: ExtArticleListHandler(serverCtx)},
+		{Method: http.MethodGet, Path: "/admin/articles/:id", Handler: ExtArticleGetHandler(serverCtx)},
+	}...), rest.WithPrefix("/api/v1"))
+	server.AddRoutes(rest.WithMiddlewares([]rest.Middleware{serverCtx.Authenticate, serverCtx.RequirePermission("article.create")}, []rest.Route{
+		{Method: http.MethodPost, Path: "/admin/articles", Handler: ExtArticleMutationHandler(serverCtx, "create")},
+	}...), rest.WithPrefix("/api/v1"))
+	server.AddRoutes(rest.WithMiddlewares([]rest.Middleware{serverCtx.Authenticate, serverCtx.RequirePermission("article.update")}, []rest.Route{
+		{Method: http.MethodPut, Path: "/admin/articles/:id", Handler: ExtArticleMutationHandler(serverCtx, "update")},
+	}...), rest.WithPrefix("/api/v1"))
+	server.AddRoutes(rest.WithMiddlewares([]rest.Middleware{serverCtx.Authenticate, serverCtx.RequirePermission("article.publish")}, []rest.Route{
+		{Method: http.MethodPatch, Path: "/admin/articles/:id", Handler: ExtArticleMutationHandler(serverCtx, "status")},
+	}...), rest.WithPrefix("/api/v1"))
+	server.AddRoutes(rest.WithMiddlewares([]rest.Middleware{serverCtx.Authenticate, serverCtx.RequirePermission("service.view")}, []rest.Route{
+		{Method: http.MethodGet, Path: "/admin/services", Handler: ExtServiceListHandler(serverCtx)},
+		{Method: http.MethodGet, Path: "/admin/services/:id", Handler: ExtServiceGetHandler(serverCtx)},
+	}...), rest.WithPrefix("/api/v1"))
+	server.AddRoutes(rest.WithMiddlewares([]rest.Middleware{serverCtx.Authenticate, serverCtx.RequirePermission("service.create")}, []rest.Route{
+		{Method: http.MethodPost, Path: "/admin/services", Handler: ExtServiceMutationHandler(serverCtx, "create")},
+	}...), rest.WithPrefix("/api/v1"))
+	server.AddRoutes(rest.WithMiddlewares([]rest.Middleware{serverCtx.Authenticate, serverCtx.RequirePermission("service.update")}, []rest.Route{
+		{Method: http.MethodPut, Path: "/admin/services/:id", Handler: ExtServiceMutationHandler(serverCtx, "update")},
+		{Method: http.MethodPatch, Path: "/admin/services/:id", Handler: ExtServiceMutationHandler(serverCtx, "patch")},
+	}...), rest.WithPrefix("/api/v1"))
+	server.AddRoutes(rest.WithMiddlewares([]rest.Middleware{serverCtx.Authenticate, serverCtx.RequirePermission("setting.view")}, []rest.Route{
+		{Method: http.MethodGet, Path: "/admin/settings", Handler: ExtSettingsHandler(serverCtx, false, false)},
+		{Method: http.MethodGet, Path: "/admin/settings/whatsapp-templates", Handler: ExtSettingsHandler(serverCtx, true, false)},
+	}...), rest.WithPrefix("/api/v1"))
+	server.AddRoutes(rest.WithMiddlewares([]rest.Middleware{serverCtx.Authenticate, serverCtx.RequirePermission("setting.update")}, []rest.Route{
+		{Method: http.MethodPut, Path: "/admin/settings", Handler: ExtSettingsHandler(serverCtx, false, true)},
+		{Method: http.MethodPut, Path: "/admin/settings/whatsapp-templates", Handler: ExtSettingsHandler(serverCtx, true, true)},
+	}...), rest.WithPrefix("/api/v1"))
+	server.AddRoutes(rest.WithMiddlewares([]rest.Middleware{serverCtx.Authenticate, serverCtx.RequirePermission("log.view")}, []rest.Route{
+		{Method: http.MethodGet, Path: "/admin/activity-logs", Handler: ExtAuditListHandler(serverCtx)},
+		{Method: http.MethodGet, Path: "/admin/activity-logs/options", Handler: ExtAuditOptionsHandler(serverCtx)},
+	}...), rest.WithPrefix("/api/v1"))
 }

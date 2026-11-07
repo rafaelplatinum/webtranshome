@@ -284,15 +284,18 @@ func PublicArticleHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 			httpx.WriteJsonCtx(r.Context(), w, http.StatusBadRequest, map[string]string{"message": "Slug artikel tidak valid."})
 			return
 		}
-		// Intentional: draft previews require a separately designed,
-		// cryptographically verified preview token. Do not accept ?preview=
-		// as authentication; currently only PUBLISHED can be accessed.
+		// A 160-bit random preview token (created by the admin mutation) grants
+		// view-only access to one draft. Never return the token on public lists.
+		preview := strings.TrimSpace(r.URL.Query().Get("preview"))
+		w.Header().Set("Cache-Control", "no-store")
+		w.Header().Set("Referrer-Policy", "no-referrer")
 		var row publicArticleRow
 		err := db.QueryRowCtx(r.Context(), &row, `SELECT id,type,title,slug,thumbnail_url,content,status,
                to_char(published_at,'YYYY-MM-DD"T"HH24:MI:SS') AS published_at
              FROM crm_schema.articles
-             WHERE slug=$1 AND status='PUBLISHED'
-               AND (published_at IS NULL OR published_at <= timezone('Asia/Jakarta',now()))`, path.Slug)
+             WHERE slug=$1 AND ((status='PUBLISHED'
+               AND (published_at IS NULL OR published_at <= timezone('Asia/Jakarta',now())))
+               OR ($2 <> '' AND preview_token=$2))`, path.Slug, preview)
 		if errors.Is(err, sqlx.ErrNotFound) || errors.Is(err, sql.ErrNoRows) {
 			httpx.WriteJsonCtx(r.Context(), w, http.StatusNotFound, map[string]string{"message": "Artikel tidak ditemukan."})
 			return
