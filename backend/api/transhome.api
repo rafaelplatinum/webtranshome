@@ -13,6 +13,193 @@ info (
 // - Type di file ini hanya untuk request/response HTTP (internal/types).
 //   Input/output use case ada di modules/<modul>/application/dto.
 // =====================================================================
+// Public catalog responses match frontend/docs/FRONTEND_BUILD_PLAN.md.
+// Field names intentionally use snake_case, unlike the admin API.
+type PublicCategoryChild {
+	ID       int64   `json:"id"`
+	Name     string  `json:"name"`
+	Slug     string  `json:"slug"`
+	ImageURL *string `json:"image_url"`
+}
+
+type PublicCategoryItem {
+	ID       int64                `json:"id"`
+	Name     string               `json:"name"`
+	Slug     string               `json:"slug"`
+	ImageURL *string              `json:"image_url"`
+	Children []PublicCategoryChild `json:"children,omitempty"`
+}
+
+type PublicCategoryListResponse {
+	Data []PublicCategoryItem `json:"data"`
+}
+
+type PublicBrandCategory {
+	Name string `json:"name"`
+	Slug string `json:"slug"`
+}
+
+type PublicBrandItem {
+	ID           int64                 `json:"id"`
+	Name         string                `json:"name"`
+	Slug         string                `json:"slug"`
+	LogoURL      *string               `json:"logo_url"`
+	ProductCount int64                 `json:"product_count"`
+	ShowOnHome   bool                  `json:"show_on_home"`
+	HomeOrder    *int                  `json:"home_order"`
+	Categories   []PublicBrandCategory `json:"categories"`
+}
+
+type PublicBrandListResponse {
+	Data []PublicBrandItem `json:"data"`
+}
+
+type PublicBrandResponse {
+	Data PublicBrandItem `json:"data"`
+}
+
+type PublicRoomItem {
+	ID           int64  `json:"id"`
+	Name         string `json:"name"`
+	Slug         string `json:"slug"`
+	ImageCover   string `json:"image_cover"`
+	ProductCount int64  `json:"product_count"`
+}
+
+type PublicRoomListResponse {
+	Data []PublicRoomItem `json:"data"`
+}
+
+type PublicRoomResponse {
+	Data PublicRoomItem `json:"data"`
+}
+
+// Public catalog: GET /products returns { data: [...], meta: {...} }.
+// Go handlers construct the JSON response. These types document the contract.
+type PublicProductReference {
+	ID int64 `json:"id"`
+	Name string `json:"name"`
+	Slug string `json:"slug"`
+}
+
+type PublicProductCategory {
+	ID int64 `json:"id"`
+	Name string `json:"name"`
+	Slug string `json:"slug"`
+	ParentID *int64 `json:"parent_id"`
+	Parent *PublicProductReference `json:"parent,omitempty"`
+}
+
+type PublicProductImage {
+	ID int64 `json:"id"`
+	ProductID int64 `json:"product_id"`
+	ImageURL string `json:"image_url"`
+	IsPrimary bool `json:"is_primary"`
+	SortOrder int `json:"sort_order"`
+}
+
+type PublicProductItem {
+	ID int64 `json:"id"`
+	SKU string `json:"sku"`
+	Name string `json:"name"`
+	Slug string `json:"slug"`
+	PriceGeneral float64 `json:"price_general"`
+	ShowPrice bool `json:"show_price"`
+	UnitSale string `json:"unit_sale"`
+	MinOrder int64 `json:"min_order"`
+	StockStatus string `json:"stock_status"`
+	StockQtyLabel *string `json:"stock_qty_label"`
+	IsFeatured bool `json:"is_featured"`
+	Brand *PublicProductReference `json:"brand"`
+	Category *PublicProductCategory `json:"category"`
+	PrimaryImageURL *string `json:"primary_image_url"`
+}
+
+type PublicProductFacetOption {
+	Slug string `json:"slug"`
+	Name string `json:"name"`
+	Count int `json:"count"`
+}
+
+type PublicProductStockOption {
+	Value string `json:"value"`
+	Count int `json:"count"`
+}
+
+type PublicProductAttributeValue {
+	Value string `json:"value"`
+	Count int `json:"count"`
+}
+
+type PublicProductAttributeGroup {
+	Key string `json:"key"`
+	Values []PublicProductAttributeValue `json:"values"`
+}
+
+type PublicProductPriceRange {
+	Min float64 `json:"min"`
+	Max float64 `json:"max"`
+}
+
+type PublicProductFacets {
+	Brands []PublicProductFacetOption `json:"brands"`
+	Stock []PublicProductStockOption `json:"stock"`
+	Rooms []PublicProductFacetOption `json:"rooms"`
+	Attributes []PublicProductAttributeGroup `json:"attributes"`
+	Price *PublicProductPriceRange `json:"price"`
+}
+
+type PublicProductMeta {
+	Page int `json:"page"`
+	PerPage int `json:"per_page"`
+	Total int `json:"total"`
+	TotalPages int `json:"total_pages"`
+	Facets PublicProductFacets `json:"facets"`
+}
+
+type PublicProductsResponse {
+	Data []PublicProductItem `json:"data"`
+	Meta PublicProductMeta `json:"meta"`
+}
+
+type PublicProductDetail {
+	ID int64 `json:"id"`
+	SKU string `json:"sku"`
+	Name string `json:"name"`
+	Slug string `json:"slug"`
+	PriceGeneral float64 `json:"price_general"`
+	ShowPrice bool `json:"show_price"`
+	UnitSale string `json:"unit_sale"`
+	MinOrder int64 `json:"min_order"`
+	StockStatus string `json:"stock_status"`
+	StockQtyLabel *string `json:"stock_qty_label"`
+	IsFeatured bool `json:"is_featured"`
+	Brand *PublicProductReference `json:"brand"`
+	Category *PublicProductCategory `json:"category"`
+	PrimaryImageURL *string `json:"primary_image_url"`
+	Description string `json:"description"`
+	Specifications map[string]string `json:"specifications"`
+	DatasheetPDFURL *string `json:"datasheet_pdf_url"`
+	MetaTitle *string `json:"meta_title"`
+	MetaDescription *string `json:"meta_description"`
+	Images []PublicProductImage `json:"images"`
+	Rooms []PublicProductReference `json:"rooms"`
+}
+
+type PublicProductResponse {
+	Data PublicProductDetail `json:"data"`
+}
+
+type PublicProductSuggestionItems {
+	Products []PublicProductReference `json:"products"`
+	Categories []PublicProductReference `json:"categories"`
+	Brands []PublicProductReference `json:"brands"`
+}
+
+type PublicProductSuggestionsResponse {
+	Data PublicProductSuggestionItems `json:"data"`
+}
+
 type HealthResp {
 	Status   string `json:"status"`
 	Database string `json:"database"`
@@ -265,6 +452,113 @@ type CatalogMutationResponse {
 	Success bool `json:"success"`
 }
 
+// Public content, services and store settings (Tahap 3).
+// URL parameters are read and validated by the handlers.
+type PublicBannerItem {
+    ID int64 `json:"id"`
+    Title string `json:"title"`
+    ImageURL string `json:"image_url"`
+    LinkURL *string `json:"link_url"`
+    Position string `json:"position"`
+    StartAt *string `json:"start_at"`
+    EndAt *string `json:"end_at"`
+    Subtitle *string `json:"subtitle,omitempty"`
+    VideoURL *string `json:"video_url,omitempty"`
+    CTALabel *string `json:"cta_label,omitempty"`
+    CTA2Label *string `json:"cta2_label,omitempty"`
+    CTA2URL *string `json:"cta2_url,omitempty"`
+}
+
+type PublicBannerListResponse {
+    Data []PublicBannerItem `json:"data"`
+}
+
+type PublicArticleItem {
+    ID int64 `json:"id"`
+    Type string `json:"type"`
+    Title string `json:"title"`
+    Slug string `json:"slug"`
+    ThumbnailURL *string `json:"thumbnail_url"`
+    Excerpt string `json:"excerpt"`
+    PublishedAt *string `json:"published_at"`
+}
+
+type PublicArticleListMeta {
+    Page int `json:"page"`
+    PerPage int `json:"per_page"`
+    Total int64 `json:"total"`
+    TotalPages int `json:"total_pages"`
+}
+
+type PublicArticleListResponse {
+    Data []PublicArticleItem `json:"data"`
+    Meta PublicArticleListMeta `json:"meta"`
+}
+
+type PublicArticleDetail {
+    ID int64 `json:"id"`
+    Type string `json:"type"`
+    Title string `json:"title"`
+    Slug string `json:"slug"`
+    ThumbnailURL *string `json:"thumbnail_url"`
+    Excerpt string `json:"excerpt"`
+    PublishedAt *string `json:"published_at"`
+    Content string `json:"content"`
+    Status string `json:"status"`
+}
+
+type PublicArticleDetailResponse {
+    Data PublicArticleDetail `json:"data"`
+}
+
+type PublicServiceItem {
+    ID int64 `json:"id"`
+    Name string `json:"name"`
+    Slug string `json:"slug"`
+    Summary string `json:"summary"`
+    ImageURL *string `json:"image_url"`
+    ServiceArea *string `json:"service_area"`
+}
+
+type PublicServiceListResponse {
+    Data []PublicServiceItem `json:"data"`
+}
+
+type PublicServiceCategory {
+    Name string `json:"name"`
+    Slug string `json:"slug"`
+}
+
+type PublicServiceDetail {
+    ID int64 `json:"id"`
+    Name string `json:"name"`
+    Slug string `json:"slug"`
+    Summary string `json:"summary"`
+    ImageURL *string `json:"image_url"`
+    ServiceArea *string `json:"service_area"`
+    Description string `json:"description"`
+    Categories []PublicServiceCategory `json:"categories"`
+}
+
+type PublicServiceDetailResponse {
+    Data PublicServiceDetail `json:"data"`
+}
+
+type PublicStoreSettings {
+    WANumber *string `json:"wa_number"`
+    Address *string `json:"address"`
+    OpeningHours *string `json:"opening_hours"`
+    MapsURL *string `json:"maps_url"`
+    PointRatioRupiah *int64 `json:"point_ratio_rupiah"`
+    WATemplateProduct *string `json:"wa_template_product"`
+    WATemplateCart *string `json:"wa_template_cart"`
+    WATemplateCartItem *string `json:"wa_template_cart_item"`
+}
+
+type PublicStoreSettingsResponse {
+    Data PublicStoreSettings `json:"data"`
+}
+
 @server (
 	prefix: /api/v1
 )
@@ -278,6 +572,62 @@ service transhome-api {
 
 	@handler CurrentUserAccessHandler
 	get /auth/me/access returns (UserAccessResponse)
+
+	@doc "Pohon kategori publik (hanya kategori aktif)"
+	@handler PublicCategoriesHandler
+	get /categories returns (PublicCategoryListResponse)
+
+	@doc "Daftar merek publik, jumlah produk dan kategori utama"
+	@handler PublicBrandsHandler
+	get /brands returns (PublicBrandListResponse)
+
+	@doc "Detail merek berdasarkan slug"
+	@handler PublicBrandHandler
+	get /brands/:slug returns (PublicBrandResponse)
+
+	@doc "Daftar ruangan publik beserta jumlah produk"
+	@handler PublicRoomsHandler
+	get /rooms returns (PublicRoomListResponse)
+
+	@doc "Detail ruangan berdasarkan slug"
+	@handler PublicRoomHandler
+	get /rooms/:slug returns (PublicRoomResponse)
+
+	@doc "Autocomplete pencarian produk, kategori, dan brand; minimum dua karakter"
+	@handler PublicProductSuggestHandler
+	get /products/suggest returns (PublicProductSuggestionsResponse)
+
+	@doc "Katalog publik dengan filter, sorting, pagination, dan facets"
+	@handler PublicProductsHandler
+	get /products returns (PublicProductsResponse)
+
+	@doc "Detail produk publik, termasuk foto, spesifikasi, dan ruangan"
+	@handler PublicProductHandler
+	get /products/:slug returns (PublicProductResponse)
+
+	@doc "Banner aktif pada rentang tayang (opsional ?position=HOME_HERO/HOME_SLIDER/HOME_SIDE)"
+	@handler PublicBannersHandler
+	get /banners returns (PublicBannerListResponse)
+
+	@doc "Daftar artikel terbit; ?type=ARTIKEL,PROMO,EVENT&page=1&per_page=9"
+	@handler PublicArticlesHandler
+	get /articles returns (PublicArticleListResponse)
+
+	@doc "Detail artikel terbit; pratinjau draf belum diimplementasikan"
+	@handler PublicArticleHandler
+	get /articles/:slug returns (PublicArticleDetailResponse)
+
+	@doc "Daftar jasa aktif; ?category=slug-kategori&limit=3"
+	@handler PublicServicesHandler
+	get /services returns (PublicServiceListResponse)
+
+	@doc "Detail jasa aktif"
+	@handler PublicServiceHandler
+	get /services/:slug returns (PublicServiceDetailResponse)
+
+	@doc "Pengaturan toko yang boleh dibaca pengunjung"
+	@handler PublicSettingsHandler
+	get /settings/public returns (PublicStoreSettingsResponse)
 
 	@handler CatalogCategoriesHandler
 	get /admin/catalog/categories returns (CatalogCategoryListResponse)

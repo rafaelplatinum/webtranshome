@@ -35,6 +35,27 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 	server.AddRoutes([]rest.Route{
 		{Method: http.MethodGet, Path: "/media/:filename", Handler: ImageAssetFileHandler(serverCtx)},
 	})
+	// Public catalog endpoints: no admin authentication required.
+	// The frontend expects {"data": ...} with snake_case fields.
+	server.AddRoutes(
+		[]rest.Route{
+			{Method: http.MethodGet, Path: "/categories", Handler: PublicCategoriesHandler(serverCtx)},
+			{Method: http.MethodGet, Path: "/brands", Handler: PublicBrandsHandler(serverCtx)},
+			{Method: http.MethodGet, Path: "/brands/:slug", Handler: PublicBrandHandler(serverCtx)},
+			{Method: http.MethodGet, Path: "/rooms", Handler: PublicRoomsHandler(serverCtx)},
+			{Method: http.MethodGet, Path: "/rooms/:slug", Handler: PublicRoomHandler(serverCtx)},
+			{Method: http.MethodGet, Path: "/products/suggest", Handler: PublicProductSuggestHandler(serverCtx)},
+			{Method: http.MethodGet, Path: "/products", Handler: PublicProductsHandler(serverCtx)},
+			{Method: http.MethodGet, Path: "/products/:slug", Handler: PublicProductHandler(serverCtx)},
+			{Method: http.MethodGet, Path: "/banners", Handler: PublicBannersHandler(serverCtx)},
+			{Method: http.MethodGet, Path: "/articles", Handler: PublicArticlesHandler(serverCtx)},
+			{Method: http.MethodGet, Path: "/articles/:slug", Handler: PublicArticleHandler(serverCtx)},
+			{Method: http.MethodGet, Path: "/services", Handler: PublicServicesHandler(serverCtx)},
+			{Method: http.MethodGet, Path: "/services/:slug", Handler: PublicServiceHandler(serverCtx)},
+			{Method: http.MethodGet, Path: "/settings/public", Handler: PublicSettingsHandler(serverCtx)},
+		},
+		rest.WithPrefix("/api/v1"),
+	)
 	server.AddRoutes(
 		rest.WithMiddlewares(
 			[]rest.Middleware{serverCtx.Authenticate},
